@@ -2,24 +2,27 @@
 set -e
 
 echo "=== RM SaaS Platform Startup ==="
-echo "Python version: $(python --version)"
-echo "Django version: $(python -c 'import django; print(django.get_version())')"
+echo "Python: $(python --version 2>&1)"
 echo "PORT: ${PORT:-8000}"
-
-echo ""
-echo "=== Running App Check ==="
-python manage.py check_app
-
-echo ""
-echo "=== Collecting Static Files ==="
-python manage.py collectstatic --noinput --clear || echo "Static files collection failed, continuing..."
 
 echo ""
 echo "=== Running Migrations ==="
 python manage.py migrate --noinput
 
 echo ""
-echo "=== Starting Gunicorn ==="
+echo "=== Creating Superuser (if not exists) ==="
+python manage.py shell -c "
+from django.contrib.auth import get_user_model;
+User = get_user_model();
+if not User.objects.filter(username='admin').exists():
+    User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
+    print('Superuser created: admin / admin123')
+else:
+    print('Superuser already exists')
+" || echo "Note: Superuser creation skipped"
+
+echo ""
+echo "=== Starting Gunicorn on 0.0.0.0:${PORT:-8000} ==="
 exec gunicorn rm.wsgi \
     --bind 0.0.0.0:${PORT:-8000} \
     --workers 2 \
@@ -27,6 +30,4 @@ exec gunicorn rm.wsgi \
     --timeout 120 \
     --access-logfile - \
     --error-logfile - \
-    --log-level info \
-    --capture-output \
-    --enable-stdio-inheritance
+    --log-level info
