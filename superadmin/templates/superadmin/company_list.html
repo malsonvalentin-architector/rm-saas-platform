@@ -1,0 +1,152 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Компании - Super Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>🏢 Управление компаниями</h1>
+        <a href="{% url 'superadmin:dashboard' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Назад к Dashboard
+        </a>
+    </div>
+    
+    <!-- Фильтры -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="form-inline">
+                <div class="form-group mr-3">
+                    <label for="status" class="mr-2">Статус:</label>
+                    <select name="status" id="status" class="form-control">
+                        <option value="">Все</option>
+                        <option value="trial" {% if request.GET.status == 'trial' %}selected{% endif %}>Пробный период</option>
+                        <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Активна</option>
+                        <option value="expired" {% if request.GET.status == 'expired' %}selected{% endif %}>Истекла</option>
+                        <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Отменена</option>
+                    </select>
+                </div>
+                
+                <div class="form-group mr-3">
+                    <label for="search" class="mr-2">Поиск:</label>
+                    <input type="text" name="search" id="search" class="form-control" 
+                           value="{{ request.GET.search }}" placeholder="Название, email, ИНН">
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Найти
+                </button>
+                <a href="{% url 'superadmin:company_list' %}" class="btn btn-link">Сбросить</a>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Список компаний -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Всего компаний: {{ companies.count }}</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Компания</th>
+                        <th>Контакт</th>
+                        <th>Статус</th>
+                        <th>Пользователи</th>
+                        <th>Объекты</th>
+                        <th>Системы</th>
+                        <th>Создана</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for company in companies %}
+                    <tr>
+                        <td>{{ company.id }}</td>
+                        <td>
+                            <strong>{{ company.name }}</strong>
+                            {% if not company.is_active %}
+                            <span class="badge badge-secondary ml-2">Неактивна</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ company.contact_email }}<br>
+                            <small class="text-muted">{{ company.contact_person }}</small>
+                        </td>
+                        <td>
+                            {% if company.subscription_status == 'trial' %}
+                                <span class="badge badge-warning">Пробный период</span>
+                            {% elif company.subscription_status == 'active' %}
+                                <span class="badge badge-success">Активна</span>
+                            {% elif company.subscription_status == 'expired' %}
+                                <span class="badge badge-danger">Истекла</span>
+                            {% elif company.subscription_status == 'cancelled' %}
+                                <span class="badge badge-secondary">Отменена</span>
+                            {% else %}
+                                <span class="badge badge-info">{{ company.get_subscription_status_display }}</span>
+                            {% endif %}
+                            
+                            {% if company.days_until_expiration %}
+                                <br><small>Осталось: {{ company.days_until_expiration }} дн.</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ company.get_users_count }}</td>
+                        <td>{{ company.get_objects_count }}</td>
+                        <td>{{ company.get_systems_count }}</td>
+                        <td>{{ company.created_at|date:"d.m.Y" }}</td>
+                        <td>
+                            <a href="{% url 'superadmin:company_detail' company.pk %}" 
+                               class="btn btn-sm btn-info" title="Подробнее">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'superadmin:subscription_activate' company.pk %}" 
+                               class="btn btn-sm btn-success" title="Управление подпиской">
+                                <i class="fas fa-credit-card"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">
+                            Компании не найдены
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Пагинация -->
+    {% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">Первая</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                </li>
+            {% endif %}
+            
+            <li class="page-item active">
+                <span class="page-link">
+                    Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+                </span>
+            </li>
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Последняя</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

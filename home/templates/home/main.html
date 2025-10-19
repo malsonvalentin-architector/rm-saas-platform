@@ -1,0 +1,16 @@
+{% extends "base_menu.html" %}
+{% comment %} {% extends "base_bootstrap.html" %} {% endcomment %}
+
+
+{% block content %}
+    <h1>Welcome to Remote Monitoring App</h1>
+    {{ settings.APP_NAME }}
+
+    <ul>
+    <li><p><a href="/admin">Admin</a></p></li>
+    {%if user.is_authenticated%}
+        <li><p><a href="/data">Data</a></p></li>
+    {%endif%}   
+
+    </ul>
+{% endblock content %}

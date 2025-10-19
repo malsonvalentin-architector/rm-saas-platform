@@ -1,0 +1,28 @@
+# Django Core
+Django==1.11.29
+
+# Database
+psycopg2-binary==2.9.5  # PostgreSQL adapter
+
+# Web Server
+gunicorn==20.1.0  # WSGI HTTP Server
+
+# Task Queue (для email и уведомлений)
+celery==4.4.7
+redis==3.5.3
+
+# Environment Variables
+python-decouple==3.8
+
+# API для контроллеров CAREL
+requests==2.28.2
+
+# Charts и графики
+matplotlib==2.2.5
+numpy==1.16.6
+
+# Utils
+pytz==2023.3
+
+# Мониторинг (опционально)
+# sentry-sdk==1.14.0

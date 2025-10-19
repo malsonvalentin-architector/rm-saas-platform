@@ -1,0 +1,26 @@
+{% extends "base_menu.html" %}
+{% comment %} {% extends "base_bootstrap.html" %} {% endcomment %}
+{% load humanize %} <!-- https://docs.djangoproject.com/en/3.0/ref/contrib/humanize -->
+{% load crispy_forms_tags %} 
+
+{% block content %}
+<H1> Объект {{object}}  </h1>  
+<span style="float: right;">
+   ({{ object.updated_at|naturaltime }}) 
+</span> 
+
+<p><a href="{% url 'data:sys_create' user_pk=user.id obj_pk=object.id %}">Добавить систему</a></p>
+
+<p>Системы объекта:   </p>
+{%for sys in systems%}
+  <li> <a href = "{% url 'data:sys_detail' user.id object.id sys.id %}"> 
+    #{{sys.pk}}-{{sys}}</a>
+    <span style="float: right;">
+      <a href = "{% url 'data:sys_update' user.id object.id sys.id %}"> <i class="fa fa-pencil"></i></a>
+      <a href="{% url 'data:sys_delete' user.id object.id sys.id%}"><i class="fa fa-trash"></i></a>  
+    </span> 
+  </li>
+{%endfor%}
+
+
+{% endblock %}

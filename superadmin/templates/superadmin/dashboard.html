@@ -1,0 +1,159 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Super Admin - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h1>🚀 Super Admin Dashboard</h1>
+    <p class="lead">Управление SaaS платформой</p>
+    
+    <hr>
+    
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Компаний</h5>
+                    <h2>{{ stats.total_companies }}</h2>
+                    <small>Активных: {{ stats.active_companies }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Пользователей</h5>
+                    <h2>{{ stats.total_users }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Систем</h5>
+                    <h2>{{ stats.total_systems }}</h2>
+                    <small>Объектов: {{ stats.total_objects }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Доход/мес</h5>
+                    <h2>${{ stats.total_revenue_monthly|floatformat:0 }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Быстрые действия -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="btn-group" role="group">
+                <a href="{% url 'superadmin:company_list' %}" class="btn btn-primary">
+                    <i class="fas fa-building"></i> Все компании
+                </a>
+                <a href="{% url 'superadmin:subscription_list' %}" class="btn btn-success">
+                    <i class="fas fa-credit-card"></i> Подписки
+                </a>
+                <a href="{% url 'superadmin:invoice_list' %}" class="btn btn-warning">
+                    <i class="fas fa-file-invoice-dollar"></i> Счета
+                </a>
+                <a href="{% url 'superadmin:statistics' %}" class="btn btn-info">
+                    <i class="fas fa-chart-line"></i> Статистика
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Последние компании -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>📝 Последние компании</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Компания</th>
+                                <th>Email</th>
+                                <th>Статус</th>
+                                <th>Создана</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for company in recent_companies %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'superadmin:company_detail' company.pk %}">
+                                        {{ company.name }}
+                                    </a>
+                                </td>
+                                <td>{{ company.contact_email }}</td>
+                                <td>
+                                    {% if company.subscription_status == 'active' %}
+                                        <span class="badge badge-success">Активна</span>
+                                    {% elif company.subscription_status == 'trial' %}
+                                        <span class="badge badge-warning">Триал</span>
+                                    {% else %}
+                                        <span class="badge badge-danger">{{ company.get_subscription_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ company.created_at|date:"d.m.Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">Нет компаний</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>⚠️ Истекающие подписки</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Компания</th>
+                                <th>Истекает</th>
+                                <th>Осталось</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for company in expiring_soon %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'superadmin:company_detail' company.pk %}">
+                                        {{ company.name }}
+                                    </a>
+                                </td>
+                                <td>{{ company.subscription_expires_at|date:"d.m.Y" }}</td>
+                                <td>
+                                    <span class="badge badge-danger">
+                                        {{ company.days_until_expiration }} дн.
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center">Нет истекающих подписок</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

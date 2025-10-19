@@ -1,0 +1,36 @@
+{% extends "base_menu.html" %}
+
+{% block content %}
+
+<h1>Objects</h1>
+<p>
+{% if user_list %}
+<ul>
+ {% for user in user_list%}
+    <li>
+      <a href="{% url 'data:user_detail' user.id %}"> 
+      {% comment %} {% if user.owner == user %} {% endcomment %}
+          {{user.name}} {{user.last_name}}  </a> 
+          <a href="{% url 'data:user_update' user.id %}"><i class="fa fa-pencil"></i></a>
+          <a href="{% url 'data:user_delete' user.id %}"><i class="fa fa-trash"></i></a>  
+        {% comment %} {% endif %}   {% endcomment %}
+    </li>
+{% endfor %}
+</ul>
+{% else %}
+  <p>There are no Users in the database</p>
+  {% comment %} <a href {% url 'data:user_create'%}" {% endcomment %}
+  
+  {% endif %}
+
+
+{{i}}````
+</p>
+<p>
+{% comment %} <a href="{% url 'fm:add_file' %}">Добавить file</a>  {% endcomment %}
+{% if user.is_authenticated %}
+{% comment %} <a href="{% url 'logout' %}?next={% url 'folder:all' %}">Logout</a> {% endcomment %}
+{% else %}
+{% comment %} <a href="{% url 'login' %}?next={% url 'folder:all' %}">Login</a> {% endcomment %}
+{% endif %} 
+{% endblock %}

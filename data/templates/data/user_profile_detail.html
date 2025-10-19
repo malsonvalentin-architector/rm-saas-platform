@@ -1,0 +1,52 @@
+{% extends "base_menu.html" %}
+{% comment %} {% extends "base_bootstrap.html" %} {% endcomment %}
+{% load humanize %} <!-- https://docs.djangoproject.com/en/3.0/ref/contrib/humanize -->
+{% load crispy_forms_tags %} 
+{% block content %}
+
+<span style="float: right;">
+ ({{ user.updated_at|naturaltime }}) 
+  <a href="{% url 'data:user_update' user.id %}"><i class="fa fa-pencil"></i></a>
+  <a href="{% url 'data:user_delete' user.id %}"><i class="fa fa-trash"></i></a>  
+
+</span> 
+
+<h1>{{user.name}} {{user.last_name}} </h1>
+<p>Почта:{{user.email}}</p> 
+<p>Телефон: {{user.phone}} </p>
+{% if user.sueperuser%}
+<p> Администратор </p>
+{%endif%}
+
+
+<a href="{% url 'data:obj_create' user.id %}">Создать объект</a>
+</p>
+{%for obj in objects%}
+ <li> 
+  <a href="{% url 'data:obj_detail' user.id obj.id%}"> 
+  #{{obj.id}}-{{obj}} 
+  </a>
+  <span style="float: right;">
+   ({{ obj.updated_at|naturaltime }}) 
+    <a href="{% url 'data:obj_update' user.id obj.id%}"><i class="fa fa-pencil"></i></a>
+    <a href="{% url 'data:obj_delete' user.id  obj.id%}"><i class="fa fa-trash"></i></a>  
+  
+  </span> 
+   </li>
+{%endfor%}
+
+{% endblock %}
+{% comment %} 
+<iframe src="http://localhost:3000/d-solo/b7a8a89d-348a-4472-bea2-b4578e58f9cb/temp?orgId=1&from=1686179742373&to=1689075343077&panelId=1" 
+width="100%%" height="200" frameborder="0"></iframe> 
+
+ <p>
+  <a href="{% url 'cabinet:update_price_cirbr' circbr.id %}">Узнать сроки и стоимости</a>
+</p> 
+
+
+<p>
+<a href="{% url 'cabinet:all_cb' %}">All articles</a>
+</p> 
+
+{% endcomment %} 

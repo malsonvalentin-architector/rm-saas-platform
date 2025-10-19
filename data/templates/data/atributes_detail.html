@@ -1,0 +1,64 @@
+{% extends "base_menu.html" %}
+{% comment %} {% extends "base_bootstrap.html" %} {% endcomment %}
+{% load humanize %} <!-- https://docs.djangoproject.com/en/3.0/ref/contrib/humanize -->
+{% load crispy_forms_tags %} 
+{% block content %}
+<H1> Атрибуты {{atributes.sys}}</h1>  
+  <span style="float: right;">
+   ({{ atributes.updated_at|naturaltime }}) 
+   {%for sys in object.sys.all%}
+    <a href="{% url 'data:atr_update' object.id user.id  %}"><i class="fa fa-pencil"></i></a>
+    <a href="{% url 'data:atr_delete' object.id user.id %}"><i class="fa fa-trash"></i></a>  
+  </span> 
+  <p>{{sys.id}} {{object.id}} {{user.name}} {{user.last_name}} <p>
+{%endfor%}
+</span> 
+</li>
+
+<p>
+  <li>Атрибут:#{{atributes.id}}-{{atributes.name}}, UoM {{atributes.uom}} </li>
+  {%if not atributes.modbus_carel%}
+      <p> CAREL http </p>
+  {%else%} 
+      <p> Modbus register </p>
+ {% endif %}
+  <li>IP адрес{{atributes.sys.ipaddr}}</li>
+  <li> Объект: {{atributes.sys.obj}}</li>
+  <li> Tag: {{atributes.carel_reg}}</li>
+  <li> Изменяемый: {{atributes.write}}</li>
+</p>
+
+<p>
+  <a href="{% url 'data:data_create' user.id atributes.sys.obj.id atributes.sys.id atributes.id %}"> Добавить данные для пользователя {{user}}</a> 
+</p>
+{% if atributes.write %}
+<p>
+  <form method="post"%}">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <button type="submit" class="btn btn-primary">Изменить {{atributes.name}}</button>
+{% endif %}
+
+<p>
+  Данные:
+</p>
+{% comment %} <ul>  
+  {%for user in system.obj.user.all%}
+    {%for attr in system.atributes_set.all%}      
+     <a href='{% url 'atr_detail' user.id system.obj.pk system.pk attr.pk %}">  
+      Атрибуты: {{attr.name}} {{attr.uom}} </a> %}' 
+    {%endfor%}
+  {%endfor%}
+</ul> {% endcomment %}
+
+{% if atributes.data_set.all %}
+<ul id="dataList">
+  {% for data in atributes.data_set.all %}
+    <li> {{data.date}} {{ data.name }} {{ data.value }} {{ atributes.uom }} </li>
+  {% endfor %}
+</ul>
+{% else %}
+  <p>Нет данных для атрибута {{atributes.name}}</p>
+{% endif %}
+
+{% endblock %}

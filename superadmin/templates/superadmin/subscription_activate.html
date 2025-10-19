@@ -1,0 +1,45 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Активация подписки - {{ company.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>💳 Активация подписки</h1>
+    <h3 class="text-muted">{{ company.name }}</h3>
+    
+    <hr>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="plan_id">Выберите тарифный план:</label>
+            <select name="plan_id" id="plan_id" class="form-control" required>
+                <option value="">-- Выберите план --</option>
+                {% for plan in plans %}
+                <option value="{{ plan.id }}">
+                    {{ plan.name }} - ${{ plan.price_monthly }}/мес (${{ plan.price_yearly }}/год)
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="billing_period">Период оплаты:</label>
+            <select name="billing_period" id="billing_period" class="form-control" required>
+                <option value="monthly">Ежемесячно</option>
+                <option value="yearly">Ежегодно</option>
+            </select>
+        </div>
+        
+        <div class="alert alert-info">
+            <strong>Примечание:</strong> Подписка будет активирована сразу после сохранения.
+        </div>
+        
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-check"></i> Активировать подписку
+        </button>
+        <a href="{% url 'superadmin:company_detail' company.pk %}" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+{% endblock %}

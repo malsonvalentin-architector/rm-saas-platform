@@ -1,0 +1,291 @@
+{% extends "base_generic.html" %}
+{% load humanize %}
+
+{% block title %}{{ company.name }} - Super Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>🏢 {{ company.name }}</h1>
+        <div>
+            <a href="{% url 'superadmin:subscription_activate' company.pk %}" class="btn btn-success">
+                <i class="fas fa-credit-card"></i> Управление подпиской
+            </a>
+            <a href="{% url 'superadmin:company_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> К списку
+            </a>
+        </div>
+    </div>
+    
+    <!-- Статус подписки -->
+    <div class="alert {% if company.subscription_status == 'active' %}alert-success{% elif company.subscription_status == 'trial' %}alert-warning{% else %}alert-danger{% endif %}">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <strong>Статус подписки:</strong> {{ company.get_subscription_status_display }}
+                {% if company.days_until_expiration %}
+                    <span class="ml-3">Осталось: <strong>{{ company.days_until_expiration }}</strong> дней</span>
+                {% endif %}
+            </div>
+            {% if not company.is_active %}
+                <span class="badge badge-danger">Компания неактивна</span>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h3>{{ users.count }}</h3>
+                    <p class="mb-0">Пользователей</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h3>{{ objects.count }}</h3>
+                    <p class="mb-0">Объектов</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h3>{{ systems.count }}</h3>
+                    <p class="mb-0">Систем</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h3>{{ recent_data.count }}</h3>
+                    <p class="mb-0">Записей данных</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Основная информация -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">📋 Основная информация</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <th width="40%">Юридическое название:</th>
+                            <td>{{ company.legal_name|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>ИНН/БИН:</th>
+                            <td>{{ company.inn|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Контактное лицо:</th>
+                            <td>{{ company.contact_person }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email:</th>
+                            <td>{{ company.contact_email }}</td>
+                        </tr>
+                        <tr>
+                            <th>Телефон:</th>
+                            <td>{{ company.contact_phone|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Адрес:</th>
+                            <td>{{ company.city|default:"-" }}, {{ company.address|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Страна:</th>
+                            <td>{{ company.country }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">💰 Подписка</h5>
+                </div>
+                <div class="card-body">
+                    {% if subscription %}
+                    <table class="table table-sm">
+                        <tr>
+                            <th width="40%">Тарифный план:</th>
+                            <td><strong>{{ subscription.plan.name }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Цена:</th>
+                            <td>${{ subscription.plan.price_monthly }}/мес</td>
+                        </tr>
+                        <tr>
+                            <th>Период:</th>
+                            <td>{{ subscription.get_billing_period_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>Начало:</th>
+                            <td>{{ subscription.start_date|date:"d.m.Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Окончание:</th>
+                            <td>{{ subscription.end_date|date:"d.m.Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Оплачена:</th>
+                            <td>
+                                {% if subscription.is_paid %}
+                                    <span class="badge badge-success">Да</span>
+                                {% else %}
+                                    <span class="badge badge-danger">Нет</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Автопродление:</th>
+                            <td>
+                                {% if subscription.auto_renew %}
+                                    <span class="badge badge-success">Включено</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">Выключено</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">Подписка не активирована</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Пользователи -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">👥 Пользователи ({{ users.count }})</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Роль</th>
+                        <th>Superuser</th>
+                        <th>Активен</th>
+                        <th>Дата создания</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            {% if user.role == 'company_admin' %}
+                                <span class="badge badge-success">{{ user.get_role_display }}</span>
+                            {% elif user.role == 'operator' %}
+                                <span class="badge badge-info">{{ user.get_role_display }}</span>
+                            {% else %}
+                                <span class="badge badge-warning">{{ user.get_role_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{% if user.is_superuser %}✅{% else %}❌{% endif %}</td>
+                        <td>{% if user.is_active %}✅{% else %}❌{% endif %}</td>
+                        <td>{{ user.date_joined|date:"d.m.Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">Нет пользователей</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Объекты и системы -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">🏗️ Объекты и системы ({{ objects.count }})</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Объект</th>
+                        <th>Город</th>
+                        <th>Систем</th>
+                        <th>Активен</th>
+                        <th>Создан</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for obj in objects %}
+                    <tr>
+                        <td><strong>{{ obj.obj }}</strong></td>
+                        <td>{{ obj.city|default:"-" }}</td>
+                        <td>{{ obj.system_set.count }}</td>
+                        <td>{% if obj.is_active %}✅{% else %}❌{% endif %}</td>
+                        <td>{{ obj.created_at|date:"d.m.Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">Нет объектов</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Счета -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">📄 Последние счета</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Номер</th>
+                        <th>Сумма</th>
+                        <th>Статус</th>
+                        <th>Срок оплаты</th>
+                        <th>Создан</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for invoice in invoices %}
+                    <tr>
+                        <td>{{ invoice.invoice_number }}</td>
+                        <td>${{ invoice.amount }}</td>
+                        <td>
+                            {% if invoice.status == 'paid' %}
+                                <span class="badge badge-success">Оплачен</span>
+                            {% elif invoice.status == 'pending' %}
+                                <span class="badge badge-warning">Ожидает оплаты</span>
+                            {% else %}
+                                <span class="badge badge-secondary">{{ invoice.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ invoice.due_date|date:"d.m.Y" }}</td>
+                        <td>{{ invoice.created_at|date:"d.m.Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">Нет счетов</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

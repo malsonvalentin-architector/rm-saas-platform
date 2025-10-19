@@ -1,0 +1,61 @@
+{% extends "base_menu.html" %}
+{% load crispy_forms_tags %} 
+{% block content %}
+<p>
+  Добавление переменных
+  <form method="post"  enctype="multipart/form-data">
+  
+    {% csrf_token %}
+    {{form|crispy}}
+    <input type="submit" value="Submit">
+    <input type="submit" value="Cancel" onclick="window.location.href='{% url 'data:sys_detail' user.pk 1 1 %}';return false;">
+  </form>
+</p>
+
+<p> Переменные {{atributes.sys.obj.id}} {{atributes.sys.id}} {{atributes}} </p>
+{% comment %} {{form.errors}} {% endcomment %}
+
+
+<button id="sendRequestButton" class="btn btn-primary">Отправить запрос</button>
+{{atributes.sys.obj.user.first.id}} {{atributes.sys.obj.id}} {{atributes.sys.id}} {{atributes.id}}
+{% comment %} {{form.errors}} {% endcomment %}
+<!-- Кнопка для отправки запроса -->
+
+<!-- Место для отображения результата -->
+<div id="responseMessage" style="margin-top: 20px; color: green;"></div>
+{% comment %} <script>
+  document.getElementById('sendRequestButton').addEventListener('click', function () {
+    // URL для отправки запроса
+    const url = "{% url 'data:data_create' atributes.sys.obj.user.first.id atributes.sys.obj.id atributes.sys.id atributes.id %}";
+
+    // Отправка POST-запроса
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}', // CSRF-токен для защиты
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: 'Запрос отправлен!',
+      }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        // Отображение результата
+        const responseDiv = document.getElementById('responseMessage');
+        if (data.status === 'success') {
+          responseDiv.textContent = data.message;
+        } else {
+          responseDiv.textContent = 'Ошибка: ' + (data.error || 'Неизвестная ошибка');
+          responseDiv.style.color = 'red';
+        }
+      })
+      .catch(error => {
+        console.error('Ошибка:', error);
+        const responseDiv = document.getElementById('responseMessage');
+        responseDiv.textContent = 'Ошибка отправки запроса.';
+        responseDiv.style.color = 'red';
+      });
+  });
+</script>  {% endcomment %}
+{% endblock %}

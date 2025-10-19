@@ -1,0 +1,55 @@
+{% extends "base_menu.html" %}
+{% comment %} {% extends "base_bootstrap.html" %} {% endcomment %}
+{% load humanize %} <!-- https://docs.djangoproject.com/en/3.0/ref/contrib/humanize -->
+{% load crispy_forms_tags %} 
+{% block content %}
+<H1> Система {{system.name}}, {{system.obj}}</h1>  
+  <span style="float: right;">
+   ({{ object.updated_at|naturaltime }}) 
+  </span> 
+
+   {%for sys in system.all%}
+      <a href="{% url 'data:sys_update' object.id user.id  %}"><i class="fa fa-pencil"></i></a>
+      <a href="{% url 'data:sys_delete' user.id object.id sys.id %}"><i class="fa fa-trash"></i></a>  
+      <li>Система#</li>
+    {%endfor%}
+
+{%if objects%}
+  <p>Системы объекта: {{object.name}}</p>
+{%else%}
+  <p>Нет систем в объекте: {{object.name}}</p>
+{%endif%}
+</li>
+
+<p>
+
+  <li>Система:#{{system.id}}-{{system.name}}</li>
+  <li>IP адрес {{system.ipaddr}}</li>
+  <li> Объект: {{system.obj}}</li>
+      {% for user in system.obj.user.all%}
+        <li> Пользователь: {{user.name}}</li>
+      {%endfor%}
+
+<a href="{% url 'data:atr_create' user.id system.obj.pk system.pk%}">Добавить атрибут</a>
+<p><a href="{% url 'data:data_plot_user' user.id system.obj.pk system.pk %}">График данных </a> </p>
+
+{%if system.atributes_set.all%}
+<p>Атрибуты:</p>
+<ul>
+  {%for attr in system.atributes_set.all%}
+    {% comment %} {%for user in system.obj.user.all%} {% endcomment %}
+    <li> <a href="{% url 'data:atr_detail' user.id system.obj.pk system.pk attr.pk %}">    
+     {{attr.name}} {{attr.uom}} {{attr.pk}} </a> 
+    <span style="float: right;">
+    <a href="{% url 'data:atr_update' user.id system.obj.pk system.pk attr.pk %}"><i class="fa fa-pencil"></i></a>
+    <a href="{% url 'data:atr_delete' user.id system.obj.pk system.pk attr.pk %}"><i class="fa fa-trash"></i></a>  
+  </li> 
+    {% comment %} {%endfor%} {% endcomment %}
+  {%endfor%}
+
+</ul>
+{%endif%}
+
+
+
+{% endblock %}

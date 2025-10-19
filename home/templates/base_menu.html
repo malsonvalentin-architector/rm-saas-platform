@@ -1,0 +1,55 @@
+{% extends "base_bootstrap.html" %}
+{% block navbar %}
+{% load app_tags %} 
+{% comment %} {% load humanize %} {% endcomment %}
+<nav class="navbar navbar-default navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+        <a class="navbar-brand" href="/">{{ settings.APP_NAME }}</a>
+    </div>
+    <!-- https://stackoverflow.com/questions/22047251/django-dynamically-get-view-url-and-check-if-its-the-current-page -->
+  <ul class="nav navbar-nav">
+      {% url 'data:plot' as plot %}
+      <li {% if request.get_full_path == data_plot %}class="active"{% endif %}>
+          <a href="{% url 'data:data_plot' %}">Графики</a> </li>
+
+     {% url 'user_list' as  users%}
+      <li {% if request.get_full_path == users %}class="active"{% endif %}>
+                    <a href="{% url 'data:user_profile_list' %}">Пользователи</a> 
+{% comment %} 
+      {% url 'cabinet' as cabinet %}
+            <li {% if request.get_full_path == cabinet %}class="active"{% endif %}>
+                          <a href="{% url 'cabinet:all' %}">Оборудование</a>
+
+      {% url 'vent' as vent %}
+      <li {% if request.get_full_path == vent %}class="active"{% endif %}>
+                    <a href="{% url 'vent:all' %}">Вентиляция</a>
+          {% endcomment %}          
+    </ul> 
+{% comment %} {% comment %}  {% endcomment %}
+    <ul class="nav navbar-nav navbar-right">
+      {% if user.is_authenticated %}
+        <li>
+        <a href="{% url 'data:user_create' %}">Добавить клиента</a>
+        </li>
+        <li class="dropdown">
+            <a href="#" data-toggle="dropdown" class="dropdown-toggle">
+                 <img style="width: 25px;" src="{{ user|gravatar:60 }}"/><b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu">
+                <li><a href="{% url 'logout' %}?next={% url 'data:user_profile_list' %}">Logout</a></li>
+            </ul>
+        </li>
+      {% else %}
+        <li><a href="{% url 'login' %}">Войти</a></li>
+        <li><a href="{% url 'register' %}">Регистрация</a></li>
+      {% endif %}
+    </ul>
+  </div> 
+</nav>
+{% endblock %}
+
+
+
+
+

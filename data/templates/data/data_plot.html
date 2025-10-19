@@ -1,0 +1,45 @@
+{% extends "base_menu.html" %}
+{% block content %}
+<h1>График данных</h1>
+<p>График данных обновляется каждые 30 секунд.</p>
+
+<div id="plotly-chart" style="width:100vw; height:60vh;"></div>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+function fetchAndDraw(start=null, end=null) {
+    let url = "{% url 'data:data_plot_json_user' %}";
+
+    if (start && end) {
+        url += `?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+    }
+    fetch(url)
+        .then(r => r.json())
+        .then(series => {
+            let data = [];
+            for (let name in series) {
+                data.push({
+                    x: series[name].dates,
+                    y: series[name].values,
+                    mode: 'lines+markers',
+                    name: name,
+                    type: 'scattergl'
+                });
+            }
+            Plotly.react('plotly-chart', data, {title: 'График'});
+        });
+    
+}
+
+fetchAndDraw();
+setInterval(fetchAndDraw, 5000);
+
+var chartDiv = document.getElementById('plotly-chart');
+chartDiv.on('plotly_relayout', function(eventdata){
+    if (eventdata['xaxis.range[0]'] && eventdata['xaxis.range[1]']) {
+        let start = eventdata['xaxis.range[0]'];
+        let end = eventdata['xaxis.range[1]'];
+        fetchAndDraw(start, end);
+    }
+});
+</script>
+{% endblock %}

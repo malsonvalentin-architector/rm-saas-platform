@@ -1,0 +1,21 @@
+{% extends "base_menu.html" %}
+{% load crispy_forms_tags %} 
+{% block content %}
+<p>
+  Добавление новой системы
+  <form method="post"  enctype="multipart/form-data">
+  
+    {% csrf_token %}
+    {{form|crispy}}
+    <input type="submit" value="Submit">
+    <input type="submit" value="Cancel" onclick="window.location.href='{% url 'data:obj_list' user.pk %}';return false;">
+  </form>
+</p>
+
+<p>
+{% comment %} {{user.pk}} - {{pks}}  {% endcomment %}
+</p>
+{% comment %} {{pks}} {% endcomment %}
+{{form.errors}}
+
+{% endblock %}

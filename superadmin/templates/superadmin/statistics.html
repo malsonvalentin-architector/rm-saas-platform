@@ -1,0 +1,271 @@
+{% extends "base_bootstrap.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-graph-up"></i> Детальная статистика</h2>
+                <a href="{% url 'superadmin:dashboard' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Назад
+                </a>
+            </div>
+
+            <!-- Общая статистика -->
+            <h4 class="mb-3">Общие показатели</h4>
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-bg-primary">
+                        <div class="card-body">
+                            <h6>Всего компаний</h6>
+                            <h2>{{ total_companies }}</h2>
+                            <small>+{{ new_companies_this_month }} в этом месяце</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-bg-success">
+                        <div class="card-body">
+                            <h6>Активных</h6>
+                            <h2>{{ active_companies }}</h2>
+                            <small>{{ active_percent }}% от всех</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-bg-warning">
+                        <div class="card-body">
+                            <h6>На триале</h6>
+                            <h2>{{ trial_companies }}</h2>
+                            <small>{{ trial_percent }}% от всех</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-bg-danger">
+                        <div class="card-body">
+                            <h6>Неактивных</h6>
+                            <h2>{{ inactive_companies }}</h2>
+                            <small>{{ inactive_percent }}% от всех</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Доходы -->
+            <h4 class="mb-3">Финансовые показатели</h4>
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card border-success">
+                        <div class="card-body">
+                            <h6 class="text-success">Доход за месяц</h6>
+                            <h2>${{ revenue_this_month|floatformat:0 }}</h2>
+                            <small>Оплаченных счетов: {{ invoices_paid_this_month }}</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-info">
+                        <div class="card-body">
+                            <h6 class="text-info">Прогноз (MRR)</h6>
+                            <h2>${{ mrr|floatformat:0 }}</h2>
+                            <small>Monthly Recurring Revenue</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-warning">
+                        <div class="card-body">
+                            <h6 class="text-warning">Ожидает оплаты</h6>
+                            <h2>${{ pending_amount|floatformat:0 }}</h2>
+                            <small>Неоплаченных счетов: {{ pending_invoices }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Распределение по тарифам -->
+            <h4 class="mb-3">Распределение по тарифным планам</h4>
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5><span class="badge bg-secondary">Basic</span></h5>
+                            <h2>{{ basic_count }}</h2>
+                            <p class="mb-1">Компаний: {{ basic_companies }}</p>
+                            <p class="mb-0 text-muted">Доход: ${{ basic_revenue|floatformat:0 }}/мес</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5><span class="badge bg-primary">Professional</span></h5>
+                            <h2>{{ pro_count }}</h2>
+                            <p class="mb-1">Компаний: {{ pro_companies }}</p>
+                            <p class="mb-0 text-muted">Доход: ${{ pro_revenue|floatformat:0 }}/мес</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5><span class="badge bg-warning text-dark">Enterprise</span></h5>
+                            <h2>{{ enterprise_count }}</h2>
+                            <p class="mb-1">Компаний: {{ enterprise_companies }}</p>
+                            <p class="mb-0 text-muted">Доход: ${{ enterprise_revenue|floatformat:0 }}/мес</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Использование ресурсов -->
+            <h4 class="mb-3">Использование ресурсов</h4>
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="bi bi-people fs-1 text-primary"></i>
+                            <h3 class="mt-2">{{ total_users }}</h3>
+                            <p class="mb-0">Пользователей</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="bi bi-building fs-1 text-success"></i>
+                            <h3 class="mt-2">{{ total_objects }}</h3>
+                            <p class="mb-0">Объектов</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="bi bi-cpu fs-1 text-info"></i>
+                            <h3 class="mt-2">{{ total_systems }}</h3>
+                            <p class="mb-0">Систем</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="bi bi-speedometer2 fs-1 text-warning"></i>
+                            <h3 class="mt-2">{{ online_systems }}</h3>
+                            <p class="mb-0">Онлайн систем</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Топ компаний по использованию -->
+            <h4 class="mb-3">Топ-10 компаний по объектам</h4>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Компания</th>
+                                    <th>Тариф</th>
+                                    <th>Объектов</th>
+                                    <th>Систем</th>
+                                    <th>Пользователей</th>
+                                    <th>Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for company in top_companies %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <a href="{% url 'superadmin:company_detail' company.id %}">
+                                            {{ company.name }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {% if company.current_subscription %}
+                                        <span class="badge 
+                                            {% if company.current_subscription.plan.name == 'Basic' %}bg-secondary
+                                            {% elif company.current_subscription.plan.name == 'Professional' %}bg-primary
+                                            {% elif company.current_subscription.plan.name == 'Enterprise' %}bg-warning
+                                            {% endif %}">
+                                            {{ company.current_subscription.plan.name }}
+                                        </span>
+                                        {% else %}
+                                        <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>{{ company.objects_count }}</strong></td>
+                                    <td>{{ company.systems_count }}</td>
+                                    <td>{{ company.users_count }}</td>
+                                    <td>
+                                        {% if company.subscription_status == 'active' %}
+                                            <span class="badge bg-success">Активна</span>
+                                        {% elif company.subscription_status == 'trial' %}
+                                            <span class="badge bg-info">Триал</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Неактивна</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">
+                                        Нет данных
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Последние действия -->
+            <h4 class="mb-3">Последние события</h4>
+            <div class="card">
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for event in recent_events %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ event.title }}</h6>
+                                <small>{{ event.timestamp|date:"d.m.Y H:i" }}</small>
+                            </div>
+                            <p class="mb-1">{{ event.description }}</p>
+                            <small class="text-muted">{{ event.details }}</small>
+                        </div>
+                        {% empty %}
+                        <div class="list-group-item text-center text-muted">
+                            Нет последних событий
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 1rem;
+    }
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        color: #495057;
+    }
+    .fs-1 {
+        font-size: 3rem !important;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base_menu.html" %}
+{% block content %}
+<h1>Удалить атрибут</h1>
+
+<p>Вы уверены что хотите удалить атрибут: {{atributes.name}} ситсемы {{atributes.sys.all}}?</p>
+
+<form action="" method="POST">
+  {% csrf_token %}
+  <input type="submit" value="Yes, delete.">
+<input type="submit" value="Cancel" onclick="window.location.href='{% url 'data:user_list' %}';return false;">
+</form>
+{% endblock %}

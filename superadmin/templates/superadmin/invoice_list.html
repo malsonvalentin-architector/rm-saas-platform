@@ -1,0 +1,242 @@
+{% extends "base_bootstrap.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-receipt"></i> Счета на оплату</h2>
+                <a href="{% url 'superadmin:dashboard' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Назад
+                </a>
+            </div>
+
+            <!-- Фильтры -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <select name="status" class="form-select">
+                                <option value="">Все статусы</option>
+                                <option value="pending" {% if request.GET.status == "pending" %}selected{% endif %}>Ожидает оплаты</option>
+                                <option value="paid" {% if request.GET.status == "paid" %}selected{% endif %}>Оплачено</option>
+                                <option value="cancelled" {% if request.GET.status == "cancelled" %}selected{% endif %}>Отменён</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" name="company" class="form-control" placeholder="Название компании" value="{{ request.GET.company }}">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-funnel"></i> Применить
+                            </button>
+                            <a href="{% url 'superadmin:invoice_list' %}" class="btn btn-outline-secondary">
+                                Сбросить
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Статистика -->
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <div class="card text-bg-primary">
+                        <div class="card-body">
+                            <h5>Всего счетов</h5>
+                            <h2>{{ page_obj.paginator.count }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-bg-success">
+                        <div class="card-body">
+                            <h5>Оплачено</h5>
+                            <h2>${{ total_paid|floatformat:0 }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-bg-warning">
+                        <div class="card-body">
+                            <h5>Ожидает оплаты</h5>
+                            <h2>${{ total_pending|floatformat:0 }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-bg-info">
+                        <div class="card-body">
+                            <h5>Этот месяц</h5>
+                            <h2>${{ this_month|floatformat:0 }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Таблица счетов -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>№</th>
+                                    <th>Компания</th>
+                                    <th>Подписка</th>
+                                    <th>Сумма</th>
+                                    <th>Дата создания</th>
+                                    <th>Оплачен</th>
+                                    <th>Статус</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for invoice in page_obj %}
+                                <tr>
+                                    <td><strong>#{{ invoice.invoice_number }}</strong></td>
+                                    <td>
+                                        <a href="{% url 'superadmin:company_detail' invoice.subscription.company.id %}">
+                                            {{ invoice.subscription.company.name }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if invoice.subscription.plan.name == 'Basic' %}bg-secondary
+                                            {% elif invoice.subscription.plan.name == 'Professional' %}bg-primary
+                                            {% elif invoice.subscription.plan.name == 'Enterprise' %}bg-warning
+                                            {% endif %}">
+                                            {{ invoice.subscription.plan.name }}
+                                        </span>
+                                    </td>
+                                    <td><strong>${{ invoice.amount }}</strong></td>
+                                    <td>{{ invoice.issue_date|date:"d.m.Y H:i" }}</td>
+                                    <td>
+                                        {% if invoice.paid_date %}
+                                            {{ invoice.paid_date|date:"d.m.Y H:i" }}
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if invoice.status == 'paid' %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Оплачен
+                                            </span>
+                                        {% elif invoice.status == 'pending' %}
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-clock"></i> Ожидает
+                                            </span>
+                                        {% elif invoice.status == 'cancelled' %}
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle"></i> Отменён
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if invoice.status == 'pending' %}
+                                        <button class="btn btn-sm btn-success" 
+                                                onclick="markAsPaid({{ invoice.id }})" 
+                                                title="Отметить как оплаченный">
+                                            <i class="bi bi-check"></i> Оплачен
+                                        </button>
+                                        {% endif %}
+                                        <a href="#" class="btn btn-sm btn-outline-primary" title="Скачать PDF">
+                                            <i class="bi bi-file-pdf"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">
+                                        Счетов не найдено
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Пагинация -->
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Навигация по страницам">
+                        <ul class="pagination justify-content-center mt-3">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">Первая</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                            </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Последняя</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+function markAsPaid(invoiceId) {
+    if (confirm('Отметить счёт #' + invoiceId + ' как оплаченный?')) {
+        // AJAX запрос для обновления статуса
+        fetch('/superadmin/invoice/' + invoiceId + '/mark-paid/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Ошибка: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Ошибка сети');
+        });
+    }
+}
+</script>
+
+<style>
+    .card {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        color: #495057;
+    }
+</style>
+{% endblock %}

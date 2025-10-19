@@ -1,0 +1,12 @@
+{% extends "base_menu.html" %}
+{% block content %}
+<h1>Удалить систему</h1>
+
+<p>Вы уверены что хотите удалить Систему: {{system.name}} объекта {{system.obj.obj}}  ?</p>
+
+<form action="" method="POST">
+  {% csrf_token %}
+  <input type="submit" value="Yes, delete.">
+  <input type="submit" value="Cancel" onclick="window.location.href='{% url 'data:obj_detail' user.id object.id %}';return false;">
+</form>
+{% endblock %}
