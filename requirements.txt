@@ -2,40 +2,35 @@
 Django==1.11.29
 
 # Database
-psycopg2-binary==2.9.5  # PostgreSQL adapter
-dj-database-url==0.5.0  # Python 3.6 compatible
+psycopg2-binary==2.8.6
+dj-database-url==0.5.0
 
 # Web Server
-gunicorn==20.1.0  # WSGI HTTP Server
-whitenoise==5.3.0  # Last version for Python 3.6
+gunicorn==20.1.0
+whitenoise==5.3.0
 
-# Task Queue (для email и уведомлений)
-celery==4.4.7
+# Task Queue
+celery==4.4.6  # Last stable 4.x version with valid metadata
 redis==3.5.3
-django-redis==4.12.1  # For Django 1.11
-django-celery-beat==1.1.1  # For Django 1.11 compatibility
+django-redis==4.11.0
+django-celery-beat==1.1.1
 
 # Environment Variables
 python-decouple==3.8
 
-# API для контроллеров CAREL
-requests==2.27.1  # Last version compatible with Python 3.6
+# API
+requests==2.27.1
 
-# Forms (CRITICAL - required by settings.py)
-django-crispy-forms==1.7.2  # Last version for Django 1.11
+# Forms
+django-crispy-forms==1.7.2
 
 # Extensions
-django-extensions==2.0.7  # For Django 1.11
+django-extensions==2.0.7
 django-humanize==0.1.2
 
-# Charts и графики
+# Charts
 matplotlib==2.2.5
 numpy==1.16.6
-# django-plotly-dash==1.6.3  # Temporarily disabled - may have compatibility issues
 
 # Utils
 pytz==2023.3
-# django-view-breadcrumbs==2.2.0  # Temporarily disabled - may have compatibility issues
-
-# Мониторинг (опционально)
-# sentry-sdk==1.14.0
