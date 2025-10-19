@@ -10,10 +10,10 @@ from .models import User_profile, Obj, System, Atributes, Data
 from .utils.carel_req import get_carel_one_value, get_carel_all_values_json, set_carel_value
 import json
 from django.http import JsonResponse
-from view_breadcrumbs import DetailBreadcrumbMixin, ListBreadcrumbMixin, UpdateBreadcrumbMixin
+# from view_breadcrumbs import UpdateBreadcrumbMixin
 
 # Create your views here.
-class UserListView(ListBreadcrumbMixin, OwnerListView):
+class UserListView(OwnerListView):
     model=User_profile
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

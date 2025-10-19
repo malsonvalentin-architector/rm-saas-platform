@@ -22,14 +22,14 @@ from .forms import CreateUserForm, CreateObjForm, CreateSystemForm, CreateAtribF
 from .models import User_profile, Obj, System, Atributes, Data, Company
 from .utils.carel_req import get_carel_one_value, get_carel_all_values_json, set_carel_value
 import json
-from view_breadcrumbs import DetailBreadcrumbMixin, ListBreadcrumbMixin, UpdateBreadcrumbMixin
+# from view_breadcrumbs import UpdateBreadcrumbMixin
 
 
 # ============================================================================
 # USER VIEWS (обновлены для multi-tenancy)
 # ============================================================================
 
-class UserListView(ListBreadcrumbMixin, OwnerListView):
+class UserListView(OwnerListView):
     """Список пользователей компании"""
     model = User_profile
     
