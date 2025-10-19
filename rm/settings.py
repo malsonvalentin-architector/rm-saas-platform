@@ -25,9 +25,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '3=29jiyxu68o*_jy!!k(&c!lfvxz35z$0v=gch%$if$w&cceo+'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Set DEBUG=False in production via environment variable
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*']  # Allow all hosts for Railway deployment
+# Production domains for ProMonitor.kz
+ALLOWED_HOSTS = [
+    'promonitor.kz',
+    'www.promonitor.kz',
+    'web-production-19bde.up.railway.app',  # Railway subdomain
+    'localhost',
+    '127.0.0.1',
+]
 
 
 # Application definition
@@ -186,3 +194,8 @@ AUTH_USER_MODEL = 'data.User_profile'
 AUTH_PROFILE_MODULE='data.User_profile'
 
 PHONENUMBER_DEFAULT_REGION = 'KZ' # Your Prefered Country
+
+# Email configuration for ProMonitor.kz
+DEFAULT_FROM_EMAIL = 'ProMonitor.kz <admin@promonitor.kz>'
+SERVER_EMAIL = 'ProMonitor.kz <admin@promonitor.kz>'
+EMAIL_SUBJECT_PREFIX = '[ProMonitor.kz] '
