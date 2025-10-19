@@ -32,6 +32,9 @@ django-humanize==0.1.2
 django-phonenumber-field==2.4.0
 phonenumbers==8.12.10
 
+# Images
+Pillow==6.2.2
+
 # Charts
 matplotlib==2.2.5
 numpy==1.16.6
