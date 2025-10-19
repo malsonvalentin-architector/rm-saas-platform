@@ -50,12 +50,11 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     
     'crispy_forms',
-    'crispy_bootstrap4',
     'django_celery_beat',
-    "view_breadcrumbs",
+    # "view_breadcrumbs",
 
-    'django_plotly_dash.apps.DjangoPlotlyDashConfig',
-    "phonenumber_field",
+    # 'django_plotly_dash.apps.DjangoPlotlyDashConfig',
+    # "phonenumber_field",
     # 'humanize',
 ]
 
