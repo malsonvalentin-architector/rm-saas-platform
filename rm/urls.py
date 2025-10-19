@@ -13,7 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.urls import include, path 
+from django.conf.urls import url, include
 from django.contrib import admin
 from django.views.generic import TemplateView
 from django.contrib.auth import views as auth_views
@@ -21,19 +21,18 @@ from home.views import RegisterView
 
 urlpatterns = [
     # Admin panels
-    path('admin/', admin.site.urls),  # Django admin
-    path('superadmin/', include('superadmin.urls')),  # Super admin panel
+    url(r'^admin/', admin.site.urls),  # Django admin
+    url(r'^superadmin/', include('superadmin.urls')),  # Super admin panel
     
     # Main apps
-    path('data/', include('data.urls')),
+    url(r'^data/', include('data.urls')),
     
     # Auth
-    path('login/', auth_views.LoginView.as_view(), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-    path('accounts/register/', RegisterView.as_view(), name='register'),
-    path("accounts/", include("django.contrib.auth.urls")),
+    url(r'^login/$', auth_views.LoginView.as_view(), name='login'),
+    url(r'^logout/$', auth_views.LogoutView.as_view(), name='logout'),
+    url(r'^accounts/register/$', RegisterView.as_view(), name='register'),
+    url(r'^accounts/', include('django.contrib.auth.urls')),
     
     # Home
-    path('', TemplateView.as_view(template_name='home/main.html'), name='home'),
+    url(r'^$', TemplateView.as_view(template_name='home/main.html'), name='home'),
 ]
-

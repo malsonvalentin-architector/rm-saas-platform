@@ -1,5 +1,5 @@
 # from debug_toolbar import APP_NAME
-from django.urls import path, reverse_lazy, include
+from django.conf.urls import url, reverse_lazy, include
 from . import views
 from django.views.generic import TemplateView
 from django.conf import settings 
@@ -8,19 +8,19 @@ from django.conf.urls.static import static
 
 app_name='data'
 urlpatterns = [
-    path('accounts/', include('django.contrib.auth.urls')),
+    url(r'^accounts/', include('django.contrib.auth.urls'))
 
-    path('', views.UserListView.as_view(), name='user_profile_list'),
-    path('create', views.UserCreateView.as_view(), name='user_create'),
-    path('users/<int:pk>', views.UserDetailView.as_view(), name='user_detail'),
-    path('users/<int:pk>/delete', views.UserDeleteView.as_view(), name='user_delete'),
-    path('users/<int:pk>/update', views.UserUpdateView.as_view(), name='user_update'),
+    url(r'^$', views.UserListView.as_view(), name='user_profile_list')
+    url(r'^create$', views.UserCreateView.as_view(), name='user_create')
+    url(r'^users/(?P<pk>\d+)$', views.UserDetailView.as_view(), name='user_detail')
+    url(r'^users/(?P<pk>\d+)/delete$', views.UserDeleteView.as_view(), name='user_delete')
+    url(r'^users/(?P<pk>\d+)/update$', views.UserUpdateView.as_view(), name='user_update')
     
-    path('users/<int:user_pk>/obj_create', views.ObjCreateView.as_view(), name='obj_create'),
-    path('users/<int:user_pk>/obj_detail/<int:pk>', views.ObjDetailView.as_view(), name='obj_detail'),
-    path('users/<int:user_pk>/obj_update/<int:pk>', views.ObjUpdateView.as_view(), name='obj_update'),
-    path('users/<int:user_pk>/obj_delete/<int:pk>', views.ObjDeleteView.as_view(), name='obj_delete'),
-    path('users/<int:user_pk>/obj_list', views.ObjListView.as_view(), name='obj_list'),
+    url(r'^users/(?P<user_pk>\d+)/obj_create$', views.ObjCreateView.as_view(), name='obj_create')
+    url(r'^users/(?P<user_pk>\d+)/obj_detail/(?P<pk>\d+)$', views.ObjDetailView.as_view(), name='obj_detail')
+    url(r'^users/(?P<user_pk>\d+)/obj_update/(?P<pk>\d+)$', views.ObjUpdateView.as_view(), name='obj_update')
+    url(r'^users/(?P<user_pk>\d+)/obj_delete/(?P<pk>\d+)$', views.ObjDeleteView.as_view(), name='obj_delete')
+    url(r'^users/(?P<user_pk>\d+)/obj_list$', views.ObjListView.as_view(), name='obj_list')
     
     path ('users/<int:user_pk>/<int:obj_pk>/sys_create', views.SystemCreateView.as_view(), name='sys_create'),
     path ('users/<int:user_pk>/obj_detail/<int:obj_pk>/sys_detail/<int:pk>', views.SystemDetailView.as_view(), name='sys_detail'),

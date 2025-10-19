@@ -8,7 +8,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
-from django.urls import reverse_lazy
+from django.core.urlresolvers import reverse_lazy
 from django.db.models import Count, Q, Sum
 from django.utils import timezone
 from datetime import timedelta
