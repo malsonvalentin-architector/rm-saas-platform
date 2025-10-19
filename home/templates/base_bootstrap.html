@@ -54,9 +54,8 @@
     {% endif %}
 {% endblock %}
 
-{% load view_breadcrumbs %}
 {% block breadcrumbs %}
-    {% render_breadcrumbs %} {# Optionally provide a custom template e.g {% render_breadcrumbs "view_breadcrumbs/bootstrap5.html" %} #}
+    {# Breadcrumbs removed - view_breadcrumbs library not compatible with Django 1.11 #}
 {% endblock %}
 
 
