@@ -32,7 +32,7 @@ ALLOWED_HOSTS = ['*']  # Allow all hosts for Railway deployment
 
 # Application definition
 
-# APP_NAME='Remote Monitoring project'
+APP_NAME = 'ProMonitor.kz'
 
 INSTALLED_APPS = [
     # Core apps
