@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     # "view_breadcrumbs",
 
     # 'django_plotly_dash.apps.DjangoPlotlyDashConfig',
-    # "phonenumber_field",
+    "phonenumber_field",
     # 'humanize',
 ]
 
