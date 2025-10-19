@@ -574,7 +574,7 @@ class AlertRule(models.Model):
     notify_sms = models.BooleanField(default=False, verbose_name="SMS")
     
     # Получатели (JSON список email или telegram chat_id)
-    recipients = models.JSONField(default=list, blank=True, verbose_name="Получатели")
+    recipients = models.TextField(blank=True, default="[]", verbose_name="Получатели")  # JSON as text for Django 1.11
     
     # Статус
     enabled = models.BooleanField(default=True, verbose_name="Включено")
