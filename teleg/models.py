@@ -1,4 +1,3 @@
-from turtle import mode
 from django.db import models
 from data.models import User_profile, Obj, System, Atributes, Data
 
