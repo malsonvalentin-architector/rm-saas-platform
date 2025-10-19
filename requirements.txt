@@ -38,3 +38,6 @@ numpy==1.16.6
 
 # Utils
 pytz==2023.3
+
+# Backports for Python 3.6
+dataclasses==0.6  # Built-in in Python 3.7+, backport for 3.6
