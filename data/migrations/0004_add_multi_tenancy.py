@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                 ('notify_email', models.BooleanField(default=True, verbose_name='Email')),
                 ('notify_telegram', models.BooleanField(default=False, verbose_name='Telegram')),
                 ('notify_sms', models.BooleanField(default=False, verbose_name='SMS')),
-                ('recipients', models.JSONField(blank=True, default=list, verbose_name='Получатели')),
+                ('recipients', models.TextField(blank=True, default='[]', verbose_name='Получатели')),
                 ('enabled', models.BooleanField(default=True, verbose_name='Включено')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Создано')),
                 ('updated_at', models.DateTimeField(auto_now=True, verbose_name='Обновлено')),
