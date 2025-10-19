@@ -27,7 +27,7 @@ SECRET_KEY = '3=29jiyxu68o*_jy!!k(&c!lfvxz35z$0v=gch%$if$w&cceo+'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']  # Allow all hosts for Railway deployment
 
 
 # Application definition
