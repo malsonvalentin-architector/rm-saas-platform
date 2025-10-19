@@ -17,6 +17,9 @@ python-decouple==3.8
 # API для контроллеров CAREL
 requests==2.27.1  # Last version compatible with Python 3.6
 
+# Forms (CRITICAL - required by settings.py)
+django-crispy-forms==1.7.2  # Last version for Django 1.11
+
 # Charts и графики
 matplotlib==2.2.5
 numpy==1.16.6
