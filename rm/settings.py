@@ -93,24 +93,26 @@ WSGI_APPLICATION = 'rm.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+# PostgreSQL для Railway (используются переменные окружения)
+if os.environ.get('PGDATABASE'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('PGDATABASE'),
+            'USER': os.environ.get('PGUSER'),
+            'PASSWORD': os.environ.get('PGPASSWORD'),
+            'HOST': os.environ.get('PGHOST'),
+            'PORT': os.environ.get('PGPORT', '5432'),
+        }
     }
-}
-
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'rm_db',           # имя вашей БД
-#         'USER': 'rm_user',         # имя пользователя
-#         'PASSWORD': 'your_password', # пароль пользователя
-#         'HOST': 'localhost',       # или адрес сервера PostgreSQL
-#         'PORT': '5432',            # стандартный порт PostgreSQL
-#     }
-# }
+else:
+    # Fallback на SQLite для локальной разработки
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
