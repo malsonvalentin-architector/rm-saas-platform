@@ -1,5 +1,5 @@
 # from debug_toolbar import APP_NAME
-from django.conf.urls import url, reverse_lazy, include
+from django.conf.urls import url, include
 from . import views
 from django.views.generic import TemplateView
 from django.conf import settings 
