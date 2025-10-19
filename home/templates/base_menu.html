@@ -9,10 +9,6 @@
     </div>
     <!-- https://stackoverflow.com/questions/22047251/django-dynamically-get-view-url-and-check-if-its-the-current-page -->
   <ul class="nav navbar-nav">
-      {% url 'data:plot' as plot %}
-      <li {% if request.get_full_path == data_plot %}class="active"{% endif %}>
-          <a href="{% url 'data:data_plot' %}">Графики</a> </li>
-
      {% url 'user_list' as  users%}
       <li {% if request.get_full_path == users %}class="active"{% endif %}>
                     <a href="{% url 'data:user_profile_list' %}">Пользователи</a> 
