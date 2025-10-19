@@ -15,7 +15,7 @@ redis==3.5.3
 python-decouple==3.8
 
 # API для контроллеров CAREL
-requests==2.28.2
+requests==2.27.1  # Last version compatible with Python 3.6
 
 # Charts и графики
 matplotlib==2.2.5
