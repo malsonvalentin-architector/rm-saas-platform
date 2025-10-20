@@ -16,8 +16,11 @@ app = Celery('rm')
 # the configuration object to child processes.
 app.config_from_object('django.conf:settings', namespace='CELERY')
 
-# ===== НОВОЕ: Исправление Deprecation Warning =====
+# ===== Исправление Deprecation Warning =====
 app.conf.broker_connection_retry_on_startup = True
+
+# ===== Использование Redis для хранения расписания Beat (вместо файла) =====
+app.conf.beat_scheduler = 'django_celery_beat.schedulers:DatabaseScheduler'
 # ==================================================
 
 # Load task modules from all registered Django apps.
@@ -34,6 +37,28 @@ app.conf.beat_schedule = {
         'schedule': 60.0,  # Every minute
     },
     
+    # Alert checking
+    'check-alerts': {
+        'task': 'data.tasks.check_alerts',
+        'schedule': 30.0,  # Every 30 seconds
+    },
+    
+    # Subscription management
+    'check-expiring-subscriptions': {
+        'task': 'data.tasks.check_expiring_subscriptions',
+        'schedule': crontab(hour=9, minute=0),  # Daily at 9 AM
+    },
+}
+
+# Celery Beat schedule configured above
+# Total periodic tasks: 3
+
+
+@app.task(bind=True)
+def debug_task(self):
+    """Debug task for testing Celery"""
+    print('Request: {0!r}'.format(self.request))
+
     # Alert checking
     'check-alerts': {
         'task': 'data.tasks.check_alerts',
