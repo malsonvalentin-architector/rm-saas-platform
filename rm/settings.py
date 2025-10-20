@@ -65,8 +65,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     
+    'django_celery_beat',
+    
     'crispy_forms',
-    # 'django_celery_beat',  # Disabled - using hardcoded schedule
+    
     # "view_breadcrumbs",
 
     # 'django_plotly_dash.apps.DjangoPlotlyDashConfig',
