@@ -1,20 +1,20 @@
-# Используем GitHub Container Registry - обходим Docker Hub outage
-FROM ghcr.io/alphagov/python:3.10-alpine3.18
+# Используем Quay.io registry (Red Hat) - стабильная альтернатива Docker Hub
+FROM quay.io/jupyter/base-notebook:python-3.10
 
-# Устанавливаем системные зависимости для Python packages
-RUN apk add --no-cache \
+# Переключаемся на root для установки системных пакетов
+USER root
+
+# Устанавливаем системные зависимости
+RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-client \
-    postgresql-dev \
+    libpq-dev \
     gcc \
-    musl-dev \
-    linux-headers \
     g++ \
     make \
-    freetype-dev \
+    pkg-config \
+    libfreetype6-dev \
     libpng-dev \
-    openblas-dev \
-    lapack-dev \
-    gfortran
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -34,5 +34,11 @@ RUN python manage.py collectstatic --noinput || true
 
 # Делаем start_web.sh исполняемым
 RUN chmod +x /app/start_web.sh
+
+# Устанавливаем права доступа
+RUN chown -R 1000:1000 /app
+
+# Возвращаемся к non-root user
+USER 1000
 
 EXPOSE 8000
