@@ -1,18 +1,26 @@
-FROM python:3.10-slim-bullseye
+# Используем GitHub Container Registry - обходим Docker Hub outage
+FROM ghcr.io/alphagov/python:3.10-alpine3.18
 
-# Установка системных зависимостей
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Устанавливаем системные зависимости для Python packages
+RUN apk add --no-cache \
     postgresql-client \
-    libpq-dev \
+    postgresql-dev \
     gcc \
+    musl-dev \
+    linux-headers \
     g++ \
     make \
-    && rm -rf /var/lib/apt/lists/*
+    freetype-dev \
+    libpng-dev \
+    openblas-dev \
+    lapack-dev \
+    gfortran
 
 WORKDIR /app
 
 # Копируем requirements и устанавливаем зависимости
 COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Копируем приложение
@@ -21,13 +29,10 @@ COPY . /app/
 # Создаём необходимые директории
 RUN mkdir -p /app/staticfiles /app/media
 
-# Собираем статику (игнорируем ошибки для первого build)
+# Собираем статику
 RUN python manage.py collectstatic --noinput || true
 
 # Делаем start_web.sh исполняемым
 RUN chmod +x /app/start_web.sh
 
-# Expose port (Railway автоматически назначает)
 EXPOSE 8000
-
-# Railway будет использовать Procfile для команд запуска
