@@ -62,9 +62,9 @@ def poll_carel_controllers():
     """
     # Получаем все активные системы от активных компаний
     active_systems = System.objects.filter(
-        obj__company__is_active=True,
+        obj__company__enabled=True,
         obj__company__subscription_status='active',
-        is_active=True
+        enabled=True
     )
     
     polled_count = 0
@@ -117,8 +117,8 @@ def check_alerts():
     Запускается каждую минуту
     """
     active_rules = AlertRule.objects.filter(
-        is_active=True,
-        company__is_active=True,
+        enabled=True,
+        company__enabled=True,
         company__subscription_status='active'
     )
     
