@@ -1,8 +1,6 @@
-# Используем Quay.io registry (Red Hat) - стабильная альтернатива Docker Hub
-FROM quay.io/jupyter/base-notebook:python-3.10
-
-# Переключаемся на root для установки системных пакетов
-USER root
+# Используем точный SHA256 который Railway уже имеет в кэше
+# Это избегает обращения к Docker Hub
+FROM docker.io/library/python@sha256:f1fb49e4d5501ac93d0ca519fb7ee6250842245aba8612926a46a0832a1ed089
 
 # Устанавливаем системные зависимости
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -34,11 +32,5 @@ RUN python manage.py collectstatic --noinput || true
 
 # Делаем start_web.sh исполняемым
 RUN chmod +x /app/start_web.sh
-
-# Устанавливаем права доступа
-RUN chown -R 1000:1000 /app
-
-# Возвращаемся к non-root user
-USER 1000
 
 EXPOSE 8000
