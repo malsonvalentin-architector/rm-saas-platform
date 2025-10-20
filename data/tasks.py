@@ -64,7 +64,7 @@ def poll_carel_controllers():
     active_systems = System.objects.filter(
         obj__company__is_active=True,
         obj__company__subscription_status='active',
-        enabled=True
+        is_active=True
     )
     
     polled_count = 0
