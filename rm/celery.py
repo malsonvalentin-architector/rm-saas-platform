@@ -43,8 +43,8 @@ app.conf.beat_schedule = {
     },
 }
 
-print("✅ Celery Beat configured successfully!")
-print(f"📊 Total periodic tasks: {len(app.conf.beat_schedule)}")
+# Celery Beat schedule configured above
+# Total periodic tasks: 3
 
 
 @app.task(bind=True)

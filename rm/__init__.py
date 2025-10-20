@@ -1,3 +1,3 @@
-from .celery import app as celery_app
-
-__all__ = ('celery_app',)
+# This makes 'rm' a Python package
+# Celery workers will import the app via: celery -A rm ...
+# Web server (Daphne) will import via: rm.asgi:application
