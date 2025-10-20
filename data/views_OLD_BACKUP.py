@@ -1,6 +1,6 @@
 
 from django.shortcuts import redirect, get_object_or_404, render
-from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse_lazy
 from .owner import OwnerListView, OwnerDetailView, OwnerCreateView, OwnerUpdateView, OwnerDeleteView
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView, DetailView
 from django.http import JsonResponse
