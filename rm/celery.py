@@ -19,8 +19,8 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 # ===== Исправление Deprecation Warning =====
 app.conf.broker_connection_retry_on_startup = True
 
-# ===== Использование Redis для хранения расписания Beat (вместо файла) =====
-app.conf.beat_scheduler = 'django_celery_beat.schedulers:DatabaseScheduler'
+# ===== Файловый scheduler (НЕ используем БД) =====
+# app.conf.beat_scheduler = 'django_celery_beat.schedulers:DatabaseScheduler'
 # ==================================================
 
 # Load task modules from all registered Django apps.
