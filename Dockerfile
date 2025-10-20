@@ -31,6 +31,6 @@ RUN chmod +x /app/start_web.sh || true
 
 EXPOSE 8000
 
-# Default command for web service
-# Railway will override this with Procfile when deploying specific services
+# Default command - will be overridden by Railway Procfile for each service
+# But if Procfile is not used, this ensures web service starts
 CMD ["bash", "start_web.sh"]
