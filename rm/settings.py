@@ -37,6 +37,14 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
 ]
 
+# CSRF Trusted Origins for Django 4.x (required for cross-origin requests)
+CSRF_TRUSTED_ORIGINS = [
+    'https://promonitor.kz',
+    'https://www.promonitor.kz',
+    'https://*.railway.app',
+]
+
+
 
 # Application definition
 
