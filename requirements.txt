@@ -37,3 +37,4 @@ matplotlib==3.8.2
 
 # API
 requests==2.31.0
+django-celery-beat==2.5.0
