@@ -58,7 +58,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     
     'crispy_forms',
-    'django_celery_beat',
+    # 'django_celery_beat',  # Disabled - using hardcoded schedule
     # "view_breadcrumbs",
 
     # 'django_plotly_dash.apps.DjangoPlotlyDashConfig',
@@ -173,7 +173,7 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Almaty'
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+# CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 # CELERY_BEAT_SCHEDULE = {
 #     'task-number-one': {
