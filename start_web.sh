@@ -30,25 +30,36 @@ python manage.py migrate --noinput
 echo "✅ Migrations completed"
 echo ""
 
-# Step 2: Create Superuser (NEW!)
+# Step 2: Create/Update Superuser (FIXED FOR CUSTOM USER MODEL!)
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "STEP 2/5: Creating Superuser"
+echo "STEP 2/5: Creating/Updating Superuser"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 python manage.py shell -c "
 from django.contrib.auth import get_user_model;
 User = get_user_model();
-username = 'admin';
 email = 'admin@promonitor.kz';
 password = 'ProMonitor2025!';
-if not User.objects.filter(username=username).exists():
-    User.objects.create_superuser(username, email, password);
-    print('✅ Superuser created successfully!');
-    print('   Username: admin');
-    print('   Email: admin@promonitor.kz');
-    print('   Password: ProMonitor2025!');
-else:
-    print('⚠️  Superuser already exists (skipping)');
-" 2>&1 || echo "⚠️  Superuser creation warning (may already exist)"
+
+# Удаляем старого пользователя если существует (по EMAIL, не username!)
+User.objects.filter(email=email).delete();
+
+# Создаём нового суперпользователя
+user = User.objects.create_superuser(
+    email=email,
+    password=password,
+    first_name='Admin',
+    last_name='ProMonitor',
+    role='admin'
+);
+print('✅ Superuser created/updated successfully!');
+print('╔════════════════════════════════════════════════════════════╗');
+print('║              ADMIN CREDENTIALS                             ║');
+print('╠════════════════════════════════════════════════════════════╣');
+print('║  URL:      https://promonitor.kz/admin/                    ║');
+print('║  Email:    admin@promonitor.kz                             ║');
+print('║  Password: ProMonitor2025!                                 ║');
+print('╚════════════════════════════════════════════════════════════╝');
+" 2>&1 || echo "⚠️  Superuser operation warning"
 echo ""
 
 # Step 3: Static files
