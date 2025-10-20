@@ -65,8 +65,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     
-    'django_celery_beat',
-    
     'crispy_forms',
     
     # "view_breadcrumbs",
