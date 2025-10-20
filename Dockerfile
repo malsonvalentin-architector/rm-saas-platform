@@ -30,3 +30,7 @@ RUN mkdir -p /app/staticfiles /app/media
 RUN chmod +x /app/start_web.sh || true
 
 EXPOSE 8000
+
+# Default command for web service
+# Railway will override this with Procfile when deploying specific services
+CMD ["bash", "start_web.sh"]
