@@ -58,25 +58,3 @@ app.conf.beat_schedule = {
 def debug_task(self):
     """Debug task for testing Celery"""
     print('Request: {0!r}'.format(self.request))
-
-    # Alert checking
-    'check-alerts': {
-        'task': 'data.tasks.check_alerts',
-        'schedule': 30.0,  # Every 30 seconds
-    },
-    
-    # Subscription management
-    'check-expiring-subscriptions': {
-        'task': 'data.tasks.check_expiring_subscriptions',
-        'schedule': crontab(hour=9, minute=0),  # Daily at 9 AM
-    },
-}
-
-# Celery Beat schedule configured above
-# Total periodic tasks: 3
-
-
-@app.task(bind=True)
-def debug_task(self):
-    """Debug task for testing Celery"""
-    print('Request: {0!r}'.format(self.request))
