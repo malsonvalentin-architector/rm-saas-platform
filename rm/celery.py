@@ -6,6 +6,7 @@ from __future__ import absolute_import, unicode_literals
 import os
 from celery import Celery
 from celery.schedules import crontab
+from kombu import Exchange, Queue
 
 # Set default Django settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'rm.settings')
@@ -19,8 +20,9 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 # ===== Исправление Deprecation Warning =====
 app.conf.broker_connection_retry_on_startup = True
 
-# ===== Файловый scheduler (НЕ используем БД) =====
-# app.conf.beat_scheduler = 'django_celery_beat.schedulers:DatabaseScheduler'
+# ===== Использование Redis для хранения расписания Beat =====
+app.conf.beat_scheduler = 'redbeat.RedBeatScheduler'
+app.conf.redbeat_redis_url = app.conf.broker_url
 # ==================================================
 
 # Load task modules from all registered Django apps.
