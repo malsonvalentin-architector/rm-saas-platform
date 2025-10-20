@@ -32,7 +32,7 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = [
     'promonitor.kz',
     'www.promonitor.kz',
-    'web-production-19bde.up.railway.app',  # Railway subdomain
+    '.railway.app',  # All Railway domains
     'localhost',
     '127.0.0.1',
 ]
