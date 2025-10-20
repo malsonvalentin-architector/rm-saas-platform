@@ -10,7 +10,7 @@ app_name='data'
 urlpatterns = [
     re_path(r'^accounts/', include('django.contrib.auth.urls')),
 
-    path(''), views.UserListView.as_view(), name='user_profile_list'),
+    path('', views.UserListView.as_view(), name='user_profile_list'),
     re_path(r'^create$', views.UserCreateView.as_view(), name='user_create'),
     re_path(r'^users/(?P<pk>\d+)$', views.UserDetailView.as_view(), name='user_detail'),
     re_path(r'^users/(?P<pk>\d+)/delete$', views.UserDeleteView.as_view(), name='user_delete'),
