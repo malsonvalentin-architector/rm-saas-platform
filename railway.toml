@@ -4,5 +4,3 @@ dockerfilePath = "Dockerfile"
 
 [deploy]
 startCommand = "bash start_web.sh"
-restartPolicyType = "on-failure"
-restartPolicyMaxRetries = 3
