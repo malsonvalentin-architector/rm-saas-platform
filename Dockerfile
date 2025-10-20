@@ -1,33 +1,33 @@
-FROM python:3.6-slim
+FROM python:3.10-slim-bullseye
 
 # Установка системных зависимостей
-RUN apt-get update && apt-get install -y \
-    gcc \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-client \
+    libpq-dev \
+    gcc \
+    g++ \
+    make \
     && rm -rf /var/lib/apt/lists/*
 
-# Рабочая директория
 WORKDIR /app
 
-# Копирование requirements и установка зависимостей
+# Копируем requirements и устанавливаем зависимости
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копирование всего проекта
-COPY . .
+# Копируем приложение
+COPY . /app/
 
-# Создание директорий для статики и медиа
+# Создаём необходимые директории
 RUN mkdir -p /app/staticfiles /app/media
 
-# Сборка статических файлов
+# Собираем статику (игнорируем ошибки для первого build)
 RUN python manage.py collectstatic --noinput || true
 
-# Открытие порта
+# Делаем start_web.sh исполняемым
+RUN chmod +x /app/start_web.sh
+
+# Expose port (Railway автоматически назначает)
 EXPOSE 8000
 
-# Скрипт запуска
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-
-ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["gunicorn", "rm.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+# Railway будет использовать Procfile для команд запуска
