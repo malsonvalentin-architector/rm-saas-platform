@@ -29,8 +29,16 @@ RUN mkdir -p /app/staticfiles /app/media
 # Делаем скрипты исполняемыми
 RUN chmod +x /app/start_web.sh || true
 
+# ===== НОВОЕ: Создаем непривилегированного пользователя =====
+RUN groupadd -r celeryuser && useradd -r -g celeryuser celeryuser
+
+# Даем права на папки
+RUN chown -R celeryuser:celeryuser /app
+
+# Переключаемся на непривилегированного пользователя
+USER celeryuser
+# =============================================================
+
 EXPOSE 8000
 
-# Default command - will be overridden by Railway Procfile for each service
-# But if Procfile is not used, this ensures web service starts
 CMD ["bash", "start_web.sh"]
