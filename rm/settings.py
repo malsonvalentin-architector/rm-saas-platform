@@ -101,6 +101,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Phase 4.1: Multi-Tenant Middleware
+    'data.middleware.CompanyAccessMiddleware',
+    'data.middleware.RoleBasedRedirectMiddleware',
 ]
 
 ROOT_URLCONF = 'rm.urls'
@@ -117,6 +120,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 # "django.template.context_processors.request", # <- This context processor is required
+                # Phase 4.1: Role Context Processors
+                'data.context_processors.user_context',
+                'data.context_processors.role_display',
             ],
         },
     },
