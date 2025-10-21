@@ -7,7 +7,7 @@ Deletes ALL old objects and loads 10 new quality demo objects
 """
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
-from data.models import Obj, System, Atribute, Data
+from data.models import Obj, System, Atributes, Data
 
 
 class Command(BaseCommand):
@@ -29,9 +29,9 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING(f"⚠️ Data: {e}"))
 
         try:
-            attr_count = Atribute.objects.count()
-            Atribute.objects.all().delete()
-            self.stdout.write(f"✅ Deleted {attr_count} Atribute records")
+            attr_count = Atributes.objects.count()
+            Atributes.objects.all().delete()
+            self.stdout.write(f"✅ Deleted {attr_count} Atributes records")
         except Exception as e:
             self.stdout.write(self.style.WARNING(f"⚠️ Atribute: {e}"))
 
@@ -63,7 +63,7 @@ class Command(BaseCommand):
             self.stdout.write(f"\n📊 Results:")
             self.stdout.write(f"   Objects: {Obj.objects.count()}")
             self.stdout.write(f"   Systems: {System.objects.count()}")
-            self.stdout.write(f"   Sensors: {Atribute.objects.count()}")
+            self.stdout.write(f"   Sensors: {Atributes.objects.count()}")
             self.stdout.write(f"   Data points: {Data.objects.count()}")
             self.stdout.write(f"\n🌐 Check: https://www.promonitor.kz/dashboard/")
             
