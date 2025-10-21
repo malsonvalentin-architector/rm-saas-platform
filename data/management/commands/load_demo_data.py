@@ -180,7 +180,7 @@ class Command(BaseCommand):
                         )
                 
                 # Создаём несколько правил тревог для критичных датчиков
-                critical_attrs = [attr for attr in system.atributes_set.all() 
+                critical_attrs = [attr for attr in system.atributes.all() 
                                 if 'температур' in attr.name.lower() or 'мощн' in attr.name.lower()]
                 
                 for attr in critical_attrs[:2]:  # Только для первых двух критичных

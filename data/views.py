@@ -17,9 +17,10 @@ def object_list(request):
         objects = Obj.objects.filter(company=request.user.company)
     
     # FIXED: AlertRule связан через Obj → System → Atributes → AlertRule
+    # Правильный путь: system (related_name='system') → atributes (related_name='atributes') → alertrule_set
     objects = objects.annotate(
         system_count=Count('system'),
-        alert_count=Count('system__atributes_set__alertrule', filter=Q(system__atributes_set__alertrule__enabled=True))
+        alert_count=Count('system__atributes__alertrule', filter=Q(system__atributes__alertrule__enabled=True))
     )
     
     # Filter systems and alerts by company too
@@ -50,12 +51,12 @@ def object_dashboard(request, object_id):
         obj = get_object_or_404(Obj, id=object_id, company=request.user.company)
     
     # Получаем все системы объекта
-    systems = System.objects.filter(obj=obj).prefetch_related('atributes_set')
+    systems = System.objects.filter(obj=obj).prefetch_related('atributes')
     
     # Получаем последние данные по всем датчикам
     sensors_data = []
     for system in systems:
-        for attr in system.atributes_set.all():
+        for attr in system.atributes.all():
             latest = Data.objects.filter(name=attr).order_by('-date').first()
             if latest:
                 sensors_data.append({
@@ -74,7 +75,7 @@ def object_dashboard(request, object_id):
     # FIXED: AlertRule.company вместо несуществующего sys__obj
     stats = {
         'systems_count': systems.count(),
-        'sensors_count': sum(s.atributes_set.count() for s in systems),
+        'sensors_count': sum(s.atributes.count() for s in systems),
         'active_alerts': AlertRule.objects.filter(company=obj.company, enabled=True).count(),
     }
     
@@ -166,7 +167,7 @@ def realtime_data(request, object_id):
     # Получаем последние данные всех датчиков
     sensors = []
     for system in obj.system_set.all():
-        for attr in system.atributes_set.all():
+        for attr in system.atributes.all():
             latest = Data.objects.filter(name=attr).order_by('-date').first()
             if latest:
                 sensors.append({
