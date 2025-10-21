@@ -7,7 +7,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.html import format_html
 from .models import (
-    User_profile, Company, SubscriptionPlan, Subscription, Invoice,
+    User_profile, Company, SubscriptionPlan, Subscription, AddonModule, Payment,
     Obj, System, Atributes, Data, AlertRule
 )
 from .forms import UserCreationForm, UserChangeForm
@@ -78,14 +78,14 @@ class CompanyAdmin(admin.ModelAdmin):
 @admin.register(SubscriptionPlan)
 class SubscriptionPlanAdmin(admin.ModelAdmin):
     list_display = ('name', 'price_monthly', 'price_yearly', 'max_objects', 
-                   'max_systems', 'max_users', 'is_active', 'is_public')
-    list_filter = ('is_active', 'is_public')
+                   'max_systems', 'max_users', 'is_active', 'is_featured')
+    list_filter = ('is_active', 'is_featured')
     search_fields = ('name', 'slug', 'description')
     prepopulated_fields = {'slug': ('name',)}
     
     fieldsets = (
         ('Основное', {
-            'fields': ('name', 'slug', 'description', 'is_active', 'is_public', 'sort_order')
+            'fields': ('name', 'slug', 'description', 'is_active', 'is_featured', 'sort_order')
         }),
         ('Цены', {
             'fields': ('price_monthly', 'price_yearly')
@@ -94,30 +94,38 @@ class SubscriptionPlanAdmin(admin.ModelAdmin):
             'fields': ('max_objects', 'max_systems', 'max_users', 'max_data_retention_days')
         }),
         ('Возможности', {
-            'fields': ('has_api_access', 'has_telegram_notifications', 'has_email_notifications',
-                      'has_custom_reports', 'has_white_label', 'has_priority_support')
+            'fields': ('has_api_access', 'has_custom_reports', 'has_white_label', 
+                      'has_priority_support', 'has_sla')
         }),
     )
 
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = ('company', 'plan', 'start_date', 'end_date', 'is_paid', 
-                   'auto_renew', 'billing_period')
-    list_filter = ('is_paid', 'auto_renew', 'billing_period', 'start_date')
+    list_display = ('company', 'plan', 'status', 'total_price', 'billing_period', 
+                   'paid_until', 'current_period_end')
+    list_filter = ('status', 'billing_period')
     search_fields = ('company__name', 'plan__name')
-    readonly_fields = ('created_at', 'updated_at')
-    date_hierarchy = 'start_date'
+    readonly_fields = ('base_price', 'addons_price', 'total_price', 'created_at', 'updated_at')
+    date_hierarchy = 'current_period_start'
+    filter_horizontal = ('addon_modules',)
     
     fieldsets = (
         ('Основное', {
-            'fields': ('company', 'plan')
+            'fields': ('company', 'plan', 'status')
         }),
-        ('Период', {
-            'fields': ('start_date', 'end_date', 'billing_period')
+        ('Модули', {
+            'fields': ('addon_modules',)
         }),
-        ('Оплата', {
-            'fields': ('is_paid', 'auto_renew', 'cancelled_at')
+        ('Цены', {
+            'fields': ('billing_period', 'base_price', 'addons_price', 'total_price')
+        }),
+        ('Период подписки', {
+            'fields': ('trial_ends_at', 'current_period_start', 'current_period_end', 
+                      'paid_until', 'cancelled_at')
+        }),
+        ('Заметки', {
+            'fields': ('notes',)
         }),
         ('Системные', {
             'fields': ('created_at', 'updated_at'),
@@ -126,30 +134,41 @@ class SubscriptionAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(Invoice)
-class InvoiceAdmin(admin.ModelAdmin):
-    list_display = ('invoice_number', 'company', 'amount', 'currency', 
-                   'status', 'due_date', 'paid_at')
-    list_filter = ('status', 'currency', 'due_date')
-    search_fields = ('invoice_number', 'company__name')
-    readonly_fields = ('invoice_number', 'created_at', 'updated_at')
-    date_hierarchy = 'created_at'
+@admin.register(AddonModule)
+class AddonModuleAdmin(admin.ModelAdmin):
+    list_display = ('name', 'module_type', 'tier', 'price_monthly', 'is_active', 'is_coming_soon')
+    list_filter = ('module_type', 'tier', 'is_active', 'is_coming_soon')
+    search_fields = ('name', 'description')
     
     fieldsets = (
         ('Основное', {
-            'fields': ('invoice_number', 'company', 'subscription', 'status')
+            'fields': ('module_type', 'tier', 'name', 'description', 'price_monthly')
         }),
-        ('Сумма', {
-            'fields': ('amount', 'currency')
-        }),
-        ('Даты', {
-            'fields': ('due_date', 'paid_at', 'created_at', 'updated_at')
-        }),
-        ('Дополнительно', {
-            'fields': ('description', 'notes', 'payment_method'),
+        ('Характеристики AI Assistant', {
+            'fields': ('ai_requests_limit',),
             'classes': ('collapse',)
         }),
+        ('Характеристики Predictive Analytics', {
+            'fields': ('prediction_accuracy', 'prediction_days'),
+            'classes': ('collapse',)
+        }),
+        ('Характеристики Autonomous Optimization', {
+            'fields': ('energy_saving_min', 'energy_saving_max', 'automation_level'),
+            'classes': ('collapse',)
+        }),
+        ('Статус', {
+            'fields': ('is_active', 'is_coming_soon', 'sort_order')
+        }),
     )
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ('subscription', 'amount', 'status', 'payment_method', 'paid_at', 'created_at')
+    list_filter = ('status', 'payment_method', 'paid_at')
+    search_fields = ('subscription__company__name', 'transaction_id')
+    readonly_fields = ('created_at', 'updated_at')
+    date_hierarchy = 'created_at'
 
 
 # ============================================================================

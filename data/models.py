@@ -116,200 +116,6 @@ class Company(models.Model):
         return None
 
 
-# ============================================================================
-# МОДЕЛИ ПОДПИСОК
-# ============================================================================
-
-class SubscriptionPlan(models.Model):
-    """Тарифный план"""
-    
-    name = models.CharField(max_length=100, verbose_name="Название")
-    slug = models.SlugField(unique=True, verbose_name="Код")
-    description = models.TextField(blank=True, verbose_name="Описание")
-    
-    # Цена
-    price_monthly = models.DecimalField(
-        max_digits=10, 
-        decimal_places=2,
-        verbose_name="Цена в месяц (USD)"
-    )
-    price_yearly = models.DecimalField(
-        max_digits=10, 
-        decimal_places=2,
-        verbose_name="Цена в год (USD)"
-    )
-    
-    # Лимиты
-    max_objects = models.IntegerField(default=5, verbose_name="Макс. объектов")
-    max_systems = models.IntegerField(default=10, verbose_name="Макс. систем")
-    max_users = models.IntegerField(default=5, verbose_name="Макс. пользователей")
-    max_data_retention_days = models.IntegerField(default=30, verbose_name="Хранение данных (дней)")
-    
-    # Возможности
-    has_api_access = models.BooleanField(default=False, verbose_name="Доступ к API")
-    has_telegram_notifications = models.BooleanField(default=False, verbose_name="Telegram уведомления")
-    has_email_notifications = models.BooleanField(default=True, verbose_name="Email уведомления")
-    has_custom_reports = models.BooleanField(default=False, verbose_name="Кастомные отчеты")
-    has_white_label = models.BooleanField(default=False, verbose_name="White-label")
-    has_priority_support = models.BooleanField(default=False, verbose_name="Приоритетная поддержка")
-    
-    # Системные поля
-    is_active = models.BooleanField(default=True, verbose_name="Активен")
-    is_public = models.BooleanField(default=True, verbose_name="Показывать на сайте")
-    sort_order = models.IntegerField(default=0, verbose_name="Порядок сортировки")
-    
-    class Meta:
-        verbose_name = "Тарифный план"
-        verbose_name_plural = "Тарифные планы"
-        ordering = ['sort_order', 'price_monthly']
-    
-    def __str__(self):
-        return f"{self.name} (${self.price_monthly}/мес)"
-    
-    def get_yearly_savings(self):
-        """Экономия при годовой оплате"""
-        monthly_total = self.price_monthly * 12
-        return monthly_total - self.price_yearly
-
-
-class Subscription(models.Model):
-    """Подписка компании"""
-    
-    company = models.OneToOneField(
-        Company, 
-        on_delete=models.CASCADE,
-        verbose_name="Компания"
-    )
-    plan = models.ForeignKey(
-        SubscriptionPlan, 
-        on_delete=models.PROTECT,
-        verbose_name="Тарифный план"
-    )
-    
-    # Период
-    start_date = models.DateField(verbose_name="Дата начала")
-    end_date = models.DateField(verbose_name="Дата окончания")
-    billing_period = models.CharField(
-        max_length=20,
-        choices=[
-            ('monthly', 'Ежемесячно'),
-            ('yearly', 'Ежегодно'),
-        ],
-        default='monthly',
-        verbose_name="Период оплаты"
-    )
-    
-    # Оплата
-    is_paid = models.BooleanField(default=False, verbose_name="Оплачена")
-    auto_renew = models.BooleanField(default=True, verbose_name="Автопродление")
-    
-    # Системные поля
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Создана")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Обновлена")
-    cancelled_at = models.DateTimeField(null=True, blank=True, verbose_name="Отменена")
-    
-    class Meta:
-        verbose_name = "Подписка"
-        verbose_name_plural = "Подписки"
-        ordering = ['-created_at']
-    
-    def __str__(self):
-        return f"{self.company.name} - {self.plan.name}"
-    
-    def is_active(self):
-        """Активна ли подписка"""
-        return (
-            self.is_paid and 
-            self.start_date <= timezone.now().date() <= self.end_date and
-            not self.cancelled_at
-        )
-    
-    def days_until_expiration(self):
-        """Дней до истечения"""
-        delta = self.end_date - timezone.now().date()
-        return delta.days if delta.days > 0 else 0
-
-
-class Invoice(models.Model):
-    """Счет на оплату"""
-    
-    company = models.ForeignKey(
-        Company, 
-        on_delete=models.CASCADE,
-        verbose_name="Компания"
-    )
-    subscription = models.ForeignKey(
-        Subscription, 
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        verbose_name="Подписка"
-    )
-    
-    # Номер счета (генерируется автоматически)
-    invoice_number = models.CharField(max_length=50, unique=True, verbose_name="Номер счета")
-    
-    # Сумма
-    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Сумма")
-    currency = models.CharField(max_length=3, default='USD', verbose_name="Валюта")
-    
-    # Статус
-    status = models.CharField(
-        max_length=20,
-        choices=[
-            ('draft', 'Черновик'),
-            ('pending', 'Ожидает оплаты'),
-            ('paid', 'Оплачен'),
-            ('cancelled', 'Отменен'),
-            ('failed', 'Ошибка оплаты'),
-            ('refunded', 'Возврат'),
-        ],
-        default='pending',
-        verbose_name="Статус"
-    )
-    
-    # Даты
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Создан")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Обновлен")
-    paid_at = models.DateTimeField(null=True, blank=True, verbose_name="Оплачен")
-    due_date = models.DateField(verbose_name="Срок оплаты")
-    
-    # Дополнительно
-    description = models.TextField(blank=True, verbose_name="Описание")
-    notes = models.TextField(blank=True, verbose_name="Заметки")
-    payment_method = models.CharField(max_length=50, blank=True, verbose_name="Способ оплаты")
-    
-    class Meta:
-        verbose_name = "Счет"
-        verbose_name_plural = "Счета"
-        ordering = ['-created_at']
-        indexes = [
-            models.Index(fields=['status', 'due_date']),
-            models.Index(fields=['company', 'status']),
-        ]
-    
-    def __str__(self):
-        return f"Счет {self.invoice_number} - {self.company.name}"
-    
-    def save(self, *args, **kwargs):
-        # Автоматическая генерация номера счета
-        if not self.invoice_number:
-            last_invoice = Invoice.objects.order_by('-id').first()
-            if last_invoice and last_invoice.invoice_number:
-                try:
-                    last_number = int(last_invoice.invoice_number.split('-')[1])
-                    self.invoice_number = f"INV-{last_number + 1:06d}"
-                except:
-                    self.invoice_number = f"INV-{self.id:06d}" if self.id else "INV-000001"
-            else:
-                self.invoice_number = "INV-000001"
-        super().save(*args, **kwargs)
-
-
-# ============================================================================
-# ОБНОВЛЕННЫЕ МОДЕЛИ С ПРИВЯЗКОЙ К КОМПАНИИ
-# ============================================================================
-
 class User_profile(AbstractUser):
     """Пользователь с поддержкой Multi-Tenancy"""
     
@@ -601,3 +407,464 @@ class AlertRule(models.Model):
         }
         return conditions.get(self.condition, False)
 
+
+
+
+"""
+МОДЕЛИ ДЛЯ СИСТЕМЫ ПОДПИСОК (Subscription System)
+Гибридная модель: Базовые тарифы + Дополнительные модули
+"""
+
+from django.db import models
+from django.utils import timezone
+from decimal import Decimal
+
+
+# ============================================================================
+# ТАРИФНЫЕ ПЛАНЫ (Subscription Plans)
+# ============================================================================
+
+class SubscriptionPlan(models.Model):
+    """
+    Базовые тарифные планы (обязательные)
+    $99/месяц (BASIC) | $299/месяц (PROFESSIONAL) | $799/месяц (ENTERPRISE)
+    """
+    
+    # Идентификация
+    name = models.CharField(max_length=100, verbose_name="Название тарифа")
+    slug = models.SlugField(unique=True, verbose_name="Slug")
+    description = models.TextField(blank=True, verbose_name="Описание")
+    
+    # Цены (в долларах США)
+    price_monthly = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        verbose_name="Цена в месяц ($)"
+    )
+    price_yearly = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name="Цена в год ($)",
+        help_text="При годовой оплате (обычно со скидкой 20%)"
+    )
+    
+    # Лимиты
+    max_objects = models.IntegerField(
+        default=3,
+        verbose_name="Максимум объектов",
+        help_text="Количество объектов мониторинга"
+    )
+    max_systems = models.IntegerField(
+        default=10,
+        verbose_name="Максимум систем",
+        help_text="Количество систем (холодильных установок и т.д.)"
+    )
+    max_users = models.IntegerField(
+        default=5,
+        verbose_name="Максимум пользователей",
+        help_text="Количество пользователей в компании"
+    )
+    max_data_retention_days = models.IntegerField(
+        default=30,
+        verbose_name="Хранение данных (дней)",
+        help_text="Сколько дней хранится история"
+    )
+    
+    # Возможности базового тарифа
+    has_api_access = models.BooleanField(
+        default=False,
+        verbose_name="API доступ"
+    )
+    has_custom_reports = models.BooleanField(
+        default=False,
+        verbose_name="Кастомные отчёты"
+    )
+    has_white_label = models.BooleanField(
+        default=False,
+        verbose_name="White-label брендинг"
+    )
+    has_priority_support = models.BooleanField(
+        default=False,
+        verbose_name="Приоритетная поддержка"
+    )
+    has_sla = models.BooleanField(
+        default=False,
+        verbose_name="SLA 99.9%"
+    )
+    
+    # Системные поля
+    is_active = models.BooleanField(default=True, verbose_name="Активен")
+    is_featured = models.BooleanField(default=False, verbose_name="Рекомендуемый")
+    sort_order = models.IntegerField(default=0, verbose_name="Порядок сортировки")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Тарифный план"
+        verbose_name_plural = "Тарифные планы"
+        ordering = ['sort_order', 'price_monthly']
+    
+    def __str__(self):
+        return f"{self.name} (${self.price_monthly}/мес)"
+    
+    def get_yearly_discount_percent(self):
+        """Процент скидки при годовой оплате"""
+        if not self.price_yearly:
+            return 0
+        monthly_total = self.price_monthly * 12
+        discount = monthly_total - self.price_yearly
+        return round((discount / monthly_total) * 100)
+
+
+# ============================================================================
+# ДОПОЛНИТЕЛЬНЫЕ МОДУЛИ (Add-on Modules)
+# ============================================================================
+
+class AddonModule(models.Model):
+    """
+    Дополнительные модули (опциональные):
+    - AI Chat Assistant
+    - Predictive Analytics  
+    - Autonomous Optimization
+    """
+    
+    MODULE_TYPES = [
+        ('ai_assistant', '🤖 AI Chat Assistant'),
+        ('predictive', '🔮 Predictive Analytics'),
+        ('optimization', '⚡ Autonomous Optimization'),
+    ]
+    
+    TIER_CHOICES = [
+        ('starter', 'Starter'),
+        ('basic', 'Basic'),
+        ('professional', 'Professional'),
+        ('pro', 'Pro'),
+        ('enterprise', 'Enterprise'),
+    ]
+    
+    # Идентификация
+    module_type = models.CharField(
+        max_length=20,
+        choices=MODULE_TYPES,
+        verbose_name="Тип модуля"
+    )
+    tier = models.CharField(
+        max_length=20,
+        choices=TIER_CHOICES,
+        verbose_name="Уровень"
+    )
+    name = models.CharField(max_length=100, verbose_name="Название")
+    description = models.TextField(blank=True, verbose_name="Описание")
+    
+    # Цена (в долларах США)
+    price_monthly = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Цена в месяц ($)"
+    )
+    
+    # Характеристики модуля (зависят от типа)
+    # Для AI Assistant
+    ai_requests_limit = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Лимит AI запросов/месяц",
+        help_text="NULL = безлимит"
+    )
+    
+    # Для Predictive Analytics
+    prediction_accuracy = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Точность предсказаний (%)"
+    )
+    prediction_days = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Горизонт прогноза (дней)"
+    )
+    
+    # Для Autonomous Optimization
+    energy_saving_min = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Минимальная экономия (%)"
+    )
+    energy_saving_max = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Максимальная экономия (%)"
+    )
+    automation_level = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="Уровень автоматизации",
+        help_text="Recommendations / Semi-autonomous / Fully autonomous"
+    )
+    
+    # Системные поля
+    is_active = models.BooleanField(default=True, verbose_name="Активен")
+    is_coming_soon = models.BooleanField(default=False, verbose_name="Coming Soon")
+    sort_order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Дополнительный модуль"
+        verbose_name_plural = "Дополнительные модули"
+        ordering = ['module_type', 'sort_order']
+        unique_together = ['module_type', 'tier']
+    
+    def __str__(self):
+        return f"{self.get_module_type_display()} - {self.tier.upper()} (${self.price_monthly}/мес)"
+
+
+# ============================================================================
+# ПОДПИСКА КОМПАНИИ (Company Subscription)
+# ============================================================================
+
+class Subscription(models.Model):
+    """
+    Активная подписка компании
+    = Базовый тариф + Дополнительные модули
+    """
+    
+    BILLING_PERIODS = [
+        ('monthly', 'Ежемесячно'),
+        ('yearly', 'Ежегодно'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('trial', 'Пробный период'),
+        ('active', 'Активна'),
+        ('past_due', 'Просрочен платёж'),
+        ('cancelled', 'Отменена'),
+        ('expired', 'Истекла'),
+    ]
+    
+    # Связи
+    company = models.OneToOneField(
+        'Company',
+        on_delete=models.CASCADE,
+        related_name='subscription',
+        verbose_name="Компания"
+    )
+    plan = models.ForeignKey(
+        SubscriptionPlan,
+        on_delete=models.PROTECT,
+        verbose_name="Тарифный план"
+    )
+    
+    # Дополнительные модули (Many-to-Many)
+    addon_modules = models.ManyToManyField(
+        AddonModule,
+        blank=True,
+        verbose_name="Дополнительные модули"
+    )
+    
+    # Биллинг
+    billing_period = models.CharField(
+        max_length=20,
+        choices=BILLING_PERIODS,
+        default='monthly',
+        verbose_name="Период оплаты"
+    )
+    
+    # Цены (рассчитываются автоматически)
+    base_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Базовая цена ($)",
+        help_text="Цена базового тарифа"
+    )
+    addons_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        verbose_name="Цена модулей ($)",
+        help_text="Сумма всех дополнительных модулей"
+    )
+    total_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Итоговая цена ($)",
+        help_text="Базовая цена + модули"
+    )
+    
+    # Статус и даты
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='trial',
+        verbose_name="Статус"
+    )
+    
+    trial_ends_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Окончание trial"
+    )
+    current_period_start = models.DateTimeField(
+        verbose_name="Начало периода"
+    )
+    current_period_end = models.DateTimeField(
+        verbose_name="Конец периода"
+    )
+    paid_until = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Оплачено до",
+        help_text="Админ устанавливает вручную"
+    )
+    
+    # Системные поля
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
+    cancelled_at = models.DateTimeField(null=True, blank=True, verbose_name="Дата отмены")
+    notes = models.TextField(blank=True, verbose_name="Заметки админа")
+    
+    class Meta:
+        verbose_name = "Подписка"
+        verbose_name_plural = "Подписки"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.company.name} - {self.plan.name} (${self.total_price}/мес)"
+    
+    def is_active(self):
+        """Проверка активна ли подписка"""
+        if self.status == 'trial':
+            return timezone.now() < self.trial_ends_at if self.trial_ends_at else False
+        
+        if self.status != 'active':
+            return False
+        
+        if self.paid_until:
+            return timezone.now() < self.paid_until
+        
+        return timezone.now() < self.current_period_end
+    
+    def calculate_prices(self):
+        """Пересчёт итоговой цены"""
+        # Базовая цена
+        if self.billing_period == 'yearly' and self.plan.price_yearly:
+            self.base_price = self.plan.price_yearly / 12  # В месячный эквивалент
+        else:
+            self.base_price = self.plan.price_monthly
+        
+        # Цена модулей
+        self.addons_price = sum(
+            addon.price_monthly for addon in self.addon_modules.all()
+        )
+        
+        # Итого
+        self.total_price = self.base_price + self.addons_price
+    
+    def save(self, *args, **kwargs):
+        """Автоматический пересчёт при сохранении"""
+        if self.pk:  # Если объект уже существует
+            self.calculate_prices()
+        super().save(*args, **kwargs)
+    
+    def days_until_expiry(self):
+        """Сколько дней до окончания подписки"""
+        target_date = self.paid_until or self.current_period_end
+        if not target_date:
+            return None
+        delta = target_date - timezone.now()
+        return delta.days if delta.days > 0 else 0
+    
+    def get_usage_stats(self):
+        """Статистика использования лимитов"""
+        from django.db.models import Count
+        
+        objects_count = self.company.obj_set.count()
+        systems_count = self.company.get_systems_count()
+        users_count = self.company.user_set.count()
+        
+        return {
+            'objects': {
+                'used': objects_count,
+                'limit': self.plan.max_objects,
+                'percent': round((objects_count / self.plan.max_objects) * 100) if self.plan.max_objects else 0
+            },
+            'systems': {
+                'used': systems_count,
+                'limit': self.plan.max_systems,
+                'percent': round((systems_count / self.plan.max_systems) * 100) if self.plan.max_systems else 0
+            },
+            'users': {
+                'used': users_count,
+                'limit': self.plan.max_users,
+                'percent': round((users_count / self.plan.max_users) * 100) if self.plan.max_users else 0
+            }
+        }
+
+
+# ============================================================================
+# ИСТОРИЯ ПЛАТЕЖЕЙ (для будущего)
+# ============================================================================
+
+class Payment(models.Model):
+    """История платежей (пока админ ставит вручную)"""
+    
+    PAYMENT_STATUS = [
+        ('pending', 'Ожидает оплаты'),
+        ('completed', 'Оплачен'),
+        ('failed', 'Ошибка'),
+        ('refunded', 'Возврат'),
+    ]
+    
+    subscription = models.ForeignKey(
+        Subscription,
+        on_delete=models.CASCADE,
+        related_name='payments',
+        verbose_name="Подписка"
+    )
+    
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Сумма ($)"
+    )
+    
+    status = models.CharField(
+        max_length=20,
+        choices=PAYMENT_STATUS,
+        default='pending',
+        verbose_name="Статус"
+    )
+    
+    payment_method = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="Способ оплаты",
+        help_text="Kaspi, Банковский перевод, и т.д."
+    )
+    
+    transaction_id = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="ID транзакции"
+    )
+    
+    paid_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Дата оплаты"
+    )
+    
+    notes = models.TextField(blank=True, verbose_name="Примечания")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Платёж"
+        verbose_name_plural = "Платежи"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"${self.amount} - {self.subscription.company.name} ({self.get_status_display()})"
