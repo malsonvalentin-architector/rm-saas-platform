@@ -70,7 +70,6 @@ class Command(BaseCommand):
             obj = Obj.objects.create(
                 user=user,
                 obj=obj_data['name'],
-                description=obj_data['address'],
                 description=obj_data['description']
             )
             created_objects.append(obj)

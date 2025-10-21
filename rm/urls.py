@@ -10,11 +10,14 @@ urlpatterns = [
     # Django Admin
     path('admin/', admin.site.urls),
     
+    # Django Authentication (login, logout)
+    path('accounts/', include('django.contrib.auth.urls')),
+    
     # Home Dashboard
     path('', include('home.urls', namespace='home')),
     
-    # Data & Objects
-    path('data/', include('data.urls', namespace='data')),
+    # Data & Objects (mapped to /objects/ directly)
+    path('', include('data.urls', namespace='data')),
     
     # Telegram Integration
     path('telegram/', include('teleg.urls', namespace='teleg')),
