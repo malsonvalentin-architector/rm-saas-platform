@@ -26,10 +26,33 @@ def object_create(request):
                 name=name,
                 address=address,
                 company=request.user.company,  # Assign to user's company
-                # Additional fields if exist in model
             )
             
-            messages.success(request, f'Объект "{name}" успешно создан!')
+            # Auto-create default systems for new object
+            default_systems = [
+                'HVAC (Климат-контроль)',
+                'Электроснабжение',
+                'Пожарная сигнализация',
+            ]
+            
+            from .models import System, Atributes
+            for sys_name in default_systems:
+                system = System.objects.create(name=sys_name, obj=obj)
+                
+                # Create default sensors for each system
+                if 'HVAC' in sys_name:
+                    Atributes.objects.create(name='Температура', sys=system, uom='°C', write=False)
+                    Atributes.objects.create(name='Влажность', sys=system, uom='%', write=False)
+                    Atributes.objects.create(name='Мощность', sys=system, uom='кВт', write=False)
+                elif 'Электро' in sys_name:
+                    Atributes.objects.create(name='Напряжение', sys=system, uom='В', write=False)
+                    Atributes.objects.create(name='Ток', sys=system, uom='А', write=False)
+                    Atributes.objects.create(name='Мощность', sys=system, uom='кВт', write=False)
+                elif 'Пожар' in sys_name:
+                    Atributes.objects.create(name='Датчик дыма', sys=system, uom='', write=False)
+                    Atributes.objects.create(name='Температура', sys=system, uom='°C', write=False)
+            
+            messages.success(request, f'Объект "{name}" успешно создан с {len(default_systems)} системами!')
             return redirect('data:object_dashboard', object_id=obj.id)
             
         except Exception as e:

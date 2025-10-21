@@ -65,16 +65,16 @@ python manage.py force_fix_users 2>&1 || echo "⚠️  Force fix warning"
 echo ""
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "STEP 2.6/6: Loading Demo Data"
+echo "STEP 2.6/6: Loading Quality Demo Data (10 objects)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-if python manage.py load_demo_data --user admin@promonitor.kz 2>&1; then
-    echo "✅ Demo data loaded successfully!"
+if python manage.py load_quality_demo --user admin@promonitor.kz 2>&1; then
+    echo "✅ Quality demo data loaded successfully!"
     echo "📊 Created:"
-    echo "   • 3 objects (Data Center, Office, Production)"
-    echo "   • 15+ controller systems"
-    echo "   • 40+ sensors (temp, humidity, pressure, power)"
-    echo "   • 11,520 readings (last 24 hours)"
-    echo "   • 10+ alert rules"
+    echo "   • 10 realistic objects with full monitoring"
+    echo "   • 35+ systems (HVAC, electrical, fire safety, etc)"
+    echo "   • 150+ sensors with realistic parameters"
+    echo "   • 43,200+ data points (24h history, 5min intervals)"
+    echo "   • 300+ alert rules for critical parameters"
 else
     echo "⚠️  Demo data loading skipped (may already exist)"
 fi
