@@ -42,28 +42,54 @@ echo "STEP 2/5: Creating/Updating Superuser"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 python manage.py shell -c "
 from django.contrib.auth import get_user_model;
+from data.models import Company;
 User = get_user_model();
 email = 'admin@promonitor.kz';
 password = 'ProMonitor2025!';
 
-# Удаляем старого пользователя если существует (по EMAIL, не username!)
-User.objects.filter(email=email).delete();
-
-# Создаём нового суперпользователя
-user = User.objects.create_superuser(
-    email=email,
-    password=password,
-    first_name='Admin',
-    last_name='ProMonitor',
-    role='admin'
+# Создаём/получаем компанию ProMonitor
+company, _ = Company.objects.get_or_create(
+    name='ProMonitor Admin',
+    defaults={
+        'contact_person': 'Admin',
+        'contact_email': email,
+        'subscription_status': 'active',
+        'is_active': True,
+    }
 );
-print('✅ Superuser created/updated successfully!');
+
+# Обновляем или создаём суперпользователя (НЕ удаляем!)
+user, created = User.objects.update_or_create(
+    email=email,
+    defaults={
+        'password': User.objects.make_random_password(),  # temporary
+        'first_name': 'Admin',
+        'last_name': 'ProMonitor',
+        'role': 'superadmin',  # ВАЖНО: superadmin, не admin!
+        'company': company,
+        'is_staff': True,
+        'is_superuser': True,
+        'is_active': True,
+    }
+);
+
+# Устанавливаем правильный пароль
+user.set_password(password);
+user.save();
+
+if created:
+    print('✅ Superuser CREATED successfully!');
+else:
+    print('✅ Superuser UPDATED successfully!');
+
 print('╔════════════════════════════════════════════════════════════╗');
 print('║              ADMIN CREDENTIALS                             ║');
 print('╠════════════════════════════════════════════════════════════╣');
 print('║  URL:      https://promonitor.kz/admin/                    ║');
 print('║  Email:    admin@promonitor.kz                             ║');
 print('║  Password: ProMonitor2025!                                 ║');
+print('║  Role:     superadmin                                      ║');
+print('║  Company:  ProMonitor Admin                                ║');
 print('╚════════════════════════════════════════════════════════════╝');
 " 2>&1 || echo "⚠️  Superuser operation warning"
 echo ""
