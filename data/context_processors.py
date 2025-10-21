@@ -1,6 +1,7 @@
 """
 Phase 4.1: Context Processors
 """
+from .permissions import get_user_permissions
 
 
 def user_context(request):
@@ -13,6 +14,9 @@ def user_context(request):
         user_role = getattr(request.user, 'role', None)
         user_company = getattr(request.user, 'company', None)
         
+        # Get full permissions dict
+        perms = get_user_permissions(request.user)
+        
         return {
             'user_role': user_role,
             'user_company': user_company,
@@ -20,10 +24,15 @@ def user_context(request):
             'is_admin': user_role in ['superadmin', 'admin'],
             'is_manager': user_role in ['superadmin', 'admin', 'manager'],
             'is_client': user_role == 'client',
-            'can_manage_objects': getattr(request.user, 'can_manage_objects', lambda: False)(),
-            'can_view_billing': getattr(request.user, 'can_view_billing', lambda: False)(),
-            'can_manage_subscription': getattr(request.user, 'can_manage_subscription', lambda: False)(),
-            'can_manage_users': getattr(request.user, 'can_manage_users', lambda: False)(),
+            # Add all permissions from get_user_permissions
+            'user_permissions': perms,
+            'can_view': perms.get('can_view', False),
+            'can_create': perms.get('can_create', False),
+            'can_edit': perms.get('can_edit', False),
+            'can_delete': perms.get('can_delete', False),
+            'is_read_only': perms.get('is_read_only', True),
+            'can_manage_users': perms.get('can_manage_users', False),
+            'can_manage_companies': perms.get('can_manage_companies', False),
         }
     except Exception:
         # Fallback if any error occurs

@@ -13,15 +13,15 @@ urlpatterns = [
     # Django Authentication (login, logout)
     path('accounts/', include('django.contrib.auth.urls')),
     
-    # Data & Objects URLs
-    # IMPORTANT: Data URLs must be first to avoid conflicts with home '/' and 'dashboard/'
-    path('objects/', include('data.urls', namespace='data')),
+    # Home Dashboard - MUST BE FIRST to handle '/' and 'dashboard/'
+    path('', include('home.urls', namespace='home')),
+    
+    # Data & Objects - paths already include 'objects/' prefix
+    # This will create: /objects/, /objects/<id>/, /sensors/<id>/history/
+    path('', include('data.urls', namespace='data')),
     
     # Telegram Integration
     path('telegram/', include('teleg.urls', namespace='teleg')),
-    
-    # Home Dashboard (must be LAST to catch root URLs)
-    path('', include('home.urls', namespace='home')),
 ]
 
 # Static/Media files в режиме DEBUG

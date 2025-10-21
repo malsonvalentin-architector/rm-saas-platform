@@ -3,10 +3,12 @@ Home URLs
 """
 from django.urls import path
 from . import views
+from .logout_views import custom_logout
 
 app_name = 'home'
 
 urlpatterns = [
     path('', views.index, name='index'),
     path('dashboard/', views.dashboard, name='dashboard'),
+    path('logout/', custom_logout, name='logout'),
 ]

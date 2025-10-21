@@ -215,6 +215,9 @@ LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
+# Redirect after admin logout (prevents /admin/ redirect issue)
+ADMIN_LOGOUT_REDIRECT_URL = '/accounts/login/'
+
 AUTH_USER_MODEL = 'data.User_profile'
 AUTH_PROFILE_MODULE='data.User_profile'
 
