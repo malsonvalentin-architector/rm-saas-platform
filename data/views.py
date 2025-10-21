@@ -12,14 +12,14 @@ def object_list(request):  # ✅ ИСПРАВЛЕНО: было view, тепер
     """Список всех объектов пользователя"""
     objects = Obj.objects.filter(user=request.user).annotate(
         system_count=Count('system'),
-        alert_count=Count('system__alertrule', filter=Q(system__alertrule__is_active=True))
+        alert_count=Count('sys__alertrule', filter=Q(sys__alertrule__enabled=True))
     )
     
     context = {
         'objects': objects,
         'total_objects': objects.count(),
         'total_systems': System.objects.filter(obj__user=request.user).count(),
-        'total_alerts': AlertRule.objects.filter(sys__obj__user=request.user, is_active=True).count(),
+        'total_alerts': AlertRule.objects.filter(sys__obj__user=request.user, enabled=True).count(),
     }
     
     return render(request, 'data/object_list.html', context)
@@ -55,7 +55,7 @@ def object_dashboard(request, object_id):
     stats = {
         'systems_count': systems.count(),
         'sensors_count': sum(s.atributes_set.count() for s in systems),
-        'active_alerts': AlertRule.objects.filter(sys__obj=obj, is_active=True).count(),
+        'active_alerts': AlertRule.objects.filter(sys__obj=obj, enabled=True).count(),
     }
     
     # Средние показатели по типам датчиков
@@ -83,7 +83,7 @@ def object_dashboard(request, object_id):
     # Активные тревоги
     alerts = AlertRule.objects.filter(
         sys__obj=obj,
-        is_active=True
+        enabled=True
     ).select_related('sys')[:10]
     
     context = {
@@ -177,5 +177,5 @@ def realtime_data(request, object_id):
             'humidity': round(avg_hum, 1),
             'power': round(avg_pow, 1),
         },
-        'alerts_count': AlertRule.objects.filter(sys__obj=obj, is_active=True).count(),
+        'alerts_count': AlertRule.objects.filter(sys__obj=obj, enabled=True).count(),
     })

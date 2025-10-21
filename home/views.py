@@ -30,7 +30,7 @@ def dashboard(request):
     # Активные тревоги (за последние 24 часа)
     last_24h = timezone.now() - timedelta(hours=24)
     active_alerts = AlertRule.objects.filter(
-        is_active=True,
+        enabled=True,
         name__sys__obj__in=objects
     ).count()
     
@@ -75,7 +75,7 @@ def dashboard(request):
     
     # Последние тревоги
     recent_alerts = AlertRule.objects.filter(
-        is_active=True,
+        enabled=True,
         name__sys__obj__in=objects
     ).select_related('name__system', 'name__sys__obj')[:10]
     
