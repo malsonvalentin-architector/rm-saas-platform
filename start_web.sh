@@ -62,9 +62,26 @@ print('╚═══════════════════════�
 " 2>&1 || echo "⚠️  Superuser operation warning"
 echo ""
 
+# Step 2.5: Load Demo Data (ONE-TIME ONLY)
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "STEP 2.5/6: Loading Demo Data"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+if python manage.py load_demo_data --user admin@promonitor.kz 2>&1; then
+    echo "✅ Demo data loaded successfully!"
+    echo "📊 Created:"
+    echo "   • 3 objects (Data Center, Office, Production)"
+    echo "   • 15+ controller systems"
+    echo "   • 40+ sensors (temp, humidity, pressure, power)"
+    echo "   • 11,520 readings (last 24 hours)"
+    echo "   • 10+ alert rules"
+else
+    echo "⚠️  Demo data loading skipped (may already exist)"
+fi
+echo ""
+
 # Step 3: Static files
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "STEP 3/5: Collecting Static Files"
+echo "STEP 3/6: Collecting Static Files"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 python manage.py collectstatic --noinput --clear 2>&1 || echo "⚠️  collectstatic warning (non-critical)"
 echo "✅ Static files ready"
@@ -72,14 +89,14 @@ echo ""
 
 # Step 4: Verify ASGI
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "STEP 4/5: Verifying ASGI Application"
+echo "STEP 4/6: Verifying ASGI Application"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 python -c "from rm.asgi import application; print('✅ ASGI application OK')"
 echo ""
 
 # Step 5: Start Daphne
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "STEP 5/5: Starting Daphne ASGI Server"
+echo "STEP 5/6: Starting Daphne ASGI Server"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🚀 Daphne starting on 0.0.0.0:$PORT"
 echo ""
