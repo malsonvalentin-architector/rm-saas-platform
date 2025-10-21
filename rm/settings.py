@@ -45,11 +45,13 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # CSRF Cookie Settings
-CSRF_COOKIE_SECURE = not DEBUG  # True in production
+# Temporarily disable CSRF_COOKIE_SECURE for debugging
+CSRF_COOKIE_SECURE = False  # TODO: Re-enable after fixing (was: not DEBUG)
 CSRF_COOKIE_HTTPONLY = False  # Allow JS to read if needed
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_DOMAIN = None  # Auto-detect from request
+CSRF_COOKIE_AGE = 31449600  # 1 year
 
 # Session Settings
 SESSION_COOKIE_SECURE = not DEBUG  # True in production
