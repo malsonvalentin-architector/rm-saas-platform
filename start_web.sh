@@ -106,13 +106,9 @@ echo ""
 
 # Step 2.5: Load Demo Data (ONE-TIME ONLY)
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "STEP 2.5/6: EMERGENCY FIX - Test Users"
+echo "STEP 2.5/6: FORCE FIX - Test Users (Guaranteed)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-if python manage.py fix_test_users_now 2>&1; then
-    echo "✅ Test users EMERGENCY fix completed!"
-else
-    echo "⚠️  Test users fix warning (may already exist)"
-fi
+python manage.py force_fix_users 2>&1 || echo "⚠️  Force fix warning"
 echo ""
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
