@@ -25,7 +25,7 @@ def dashboard(request):
     
     # Статистика
     total_objects = objects.count()
-    total_systems = System.objects.filter(object__in=objects).count()
+    total_systems = System.objects.filter(obj__in=objects).count()
     
     # Активные тревоги (за последние 24 часа)
     last_24h = timezone.now() - timedelta(hours=24)
