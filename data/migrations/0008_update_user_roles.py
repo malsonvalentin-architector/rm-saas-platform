@@ -29,7 +29,7 @@ def reverse_migrate_roles(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('data', '0007_subscriptionplan_subscriptionusage_and_more'),
+        ('data', '0007_subscription_system_v2'),
     ]
 
     operations = [
