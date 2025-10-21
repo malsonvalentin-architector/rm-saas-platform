@@ -376,7 +376,7 @@ function showSensorDetail(sensorId) {
     panel.classList.add('active');
     
     // Загружаем историю датчика
-    fetch(`/data/sensors/${sensorId}/history/?hours=24`)
+    fetch(`/sensors/${sensorId}/history/?hours=24`)
         .then(response => response.json())
         .then(data => {
             document.getElementById('sensorName').textContent = data.sensor_name;
@@ -428,7 +428,7 @@ function closeSensorDetail() {
 
 // Автообновление данных каждые 30 секунд
 setInterval(() => {
-    fetch(`/data/objects/{{ object.id }}/realtime/`)
+    fetch(`{% url 'data:realtime_data' object.id %}`)
         .then(response => response.json())
         .then(data => {
             // Обновляем значения на маркерах
