@@ -56,7 +56,7 @@ def object_dashboard(request, object_id):
     # Получаем последние данные по всем датчикам
     sensors_data = []
     for system in systems:
-        for attr in system.atributes.all():
+        for attr in system.atributes_set.all():
             latest = Data.objects.filter(name=attr).order_by('-date').first()
             if latest:
                 sensors_data.append({
@@ -167,7 +167,7 @@ def realtime_data(request, object_id):
     # Получаем последние данные всех датчиков
     sensors = []
     for system in obj.system_set.all():
-        for attr in system.atributes.all():
+        for attr in system.atributes_set.all():
             latest = Data.objects.filter(name=attr).order_by('-date').first()
             if latest:
                 sensors.append({
