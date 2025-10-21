@@ -8,18 +8,32 @@ from .models import Obj, System, Atributes, Data, AlertRule
 
 
 @login_required
-def object_list(request):  # ✅ ИСПРАВЛЕНО: было view, теперь request
-    """Список всех объектов пользователя"""
-    objects = Obj.objects.filter(user=request.user).annotate(
+def object_list(request):
+    """Список всех объектов компании пользователя"""
+    # Phase 4.1: Filter by company instead of user
+    if request.user.role == 'superadmin':
+        objects = Obj.objects.all()
+    else:
+        objects = Obj.objects.filter(company=request.user.company)
+    
+    objects = objects.annotate(
         system_count=Count('system'),
-        alert_count=Count('sys__alertrule', filter=Q(sys__alertrule__enabled=True))
+        alert_count=Count('system__alertrule', filter=Q(system__alertrule__enabled=True))
     )
+    
+    # Filter systems and alerts by company too
+    if request.user.role == 'superadmin':
+        total_systems = System.objects.count()
+        total_alerts = AlertRule.objects.filter(enabled=True).count()
+    else:
+        total_systems = System.objects.filter(obj__company=request.user.company).count()
+        total_alerts = AlertRule.objects.filter(company=request.user.company, enabled=True).count()
     
     context = {
         'objects': objects,
         'total_objects': objects.count(),
-        'total_systems': System.objects.filter(obj__user=request.user).count(),
-        'total_alerts': AlertRule.objects.filter(sys__obj__user=request.user, enabled=True).count(),
+        'total_systems': total_systems,
+        'total_alerts': total_alerts,
     }
     
     return render(request, 'data/object_list.html', context)
@@ -28,7 +42,11 @@ def object_list(request):  # ✅ ИСПРАВЛЕНО: было view, тепер
 @login_required
 def object_dashboard(request, object_id):
     """Детальный дашборд объекта с планом этажа"""
-    obj = get_object_or_404(Obj, id=object_id, user=request.user)
+    # Phase 4.1: Check company access
+    if request.user.role == 'superadmin':
+        obj = get_object_or_404(Obj, id=object_id)
+    else:
+        obj = get_object_or_404(Obj, id=object_id, company=request.user.company)
     
     # Получаем все системы объекта
     systems = System.objects.filter(obj=obj).prefetch_related('atributes_set')

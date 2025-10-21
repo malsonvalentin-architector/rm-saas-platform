@@ -103,7 +103,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Phase 4.1: Multi-Tenant Middleware
     'data.middleware.CompanyAccessMiddleware',
-    'data.middleware.RoleBasedRedirectMiddleware',
+    # 'data.middleware.RoleBasedRedirectMiddleware',  # Temporarily disabled
 ]
 
 ROOT_URLCONF = 'rm.urls'
