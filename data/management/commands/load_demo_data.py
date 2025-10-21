@@ -123,8 +123,9 @@ class Command(BaseCommand):
             
             for sys_config in obj_systems:
                 system = System.objects.create(
-                    object=obj,
+                    obj=obj,
                     name=sys_config['name'],
+                    ipaddr='192.168.1.100',  # Default IP
                     description=f'{sys_config["name"]} для {obj.obj}'
                 )
                 

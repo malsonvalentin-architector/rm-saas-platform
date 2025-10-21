@@ -100,5 +100,6 @@ def index(request):
     if request.user.is_authenticated:
         return dashboard(request)
     else:
-        from django.shortcuts import redirect
-        return redirect('login')
+        from django.http import HttpResponseRedirect
+        from django.urls import reverse
+        return HttpResponseRedirect(reverse('login'))
