@@ -10,7 +10,7 @@ from django.db.models import Max
 from datetime import timedelta
 import random
 
-from data.models import Obj, System, Atributes, Data, AlertRule
+from data.models import Obj, System, Atributes, Data, AlertRule, Company
 
 User = get_user_model()
 
@@ -39,6 +39,18 @@ class Command(BaseCommand):
         except User.DoesNotExist:
             self.stdout.write(self.style.ERROR(f'Пользователь {user_email} не найден!'))
             return
+        
+        # Создаём компанию для пользователя, если её нет
+        if not user.company:
+            company = Company.objects.create(
+                name='Demo Company',
+                email=user_email,
+                phone='+7 (700) 123-45-67',
+                address='г. Алматы, ул. Демо 1'
+            )
+            user.company = company
+            user.save()
+            self.stdout.write(self.style.SUCCESS(f'  ✓ Создана компания: {company.name}'))
         
         if options['clear']:
             self.stdout.write(self.style.WARNING('Очистка существующих данных...'))
