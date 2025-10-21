@@ -4,7 +4,7 @@ Management command для создания Django Groups для каждой р�
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
-from data.models import Company, Obj, System, Atributes, SubscriptionPlan, User_profile
+from data.models import Company, Obj, System, Atributes, AlertRule, Subscription, User_profile
 
 
 class Command(BaseCommand):
@@ -16,22 +16,22 @@ class Command(BaseCommand):
         role_permissions = {
             'superadmin': {
                 'description': 'Full system access - all permissions',
-                'models': [User_profile, Company, Obj, System, Atributes, SubscriptionPlan],
+                'models': [User_profile, Company, Obj, System, Atributes, AlertRule, Subscription],
                 'permissions': ['add', 'change', 'delete', 'view'],
             },
             'admin': {
                 'description': 'Company admin - manage own company',
-                'models': [Obj, System, Atributes, User_profile],
+                'models': [Obj, System, Atributes, AlertRule, User_profile],
                 'permissions': ['add', 'change', 'delete', 'view'],
             },
             'manager': {
                 'description': 'Manager - manage objects and sensors',
-                'models': [Obj, System, Atributes],
+                'models': [Obj, System, Atributes, AlertRule],
                 'permissions': ['add', 'change', 'view'],
             },
             'client': {
                 'description': 'Client - read-only access',
-                'models': [Obj, System, Atributes],
+                'models': [Obj, System, Atributes, AlertRule],
                 'permissions': ['view'],
             },
         }

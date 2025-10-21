@@ -16,9 +16,10 @@ def object_list(request):
     else:
         objects = Obj.objects.filter(company=request.user.company)
     
+    # FIXED: AlertRule связан через Obj → System → Atributes → AlertRule
     objects = objects.annotate(
         system_count=Count('system'),
-        alert_count=Count('system__alertrule', filter=Q(system__alertrule__enabled=True))
+        alert_count=Count('system__atributes_set__alertrule', filter=Q(system__atributes_set__alertrule__enabled=True))
     )
     
     # Filter systems and alerts by company too
@@ -70,10 +71,11 @@ def object_dashboard(request, object_id):
                 })
     
     # Статистика по объекту
+    # FIXED: AlertRule.company вместо несуществующего sys__obj
     stats = {
         'systems_count': systems.count(),
         'sensors_count': sum(s.atributes_set.count() for s in systems),
-        'active_alerts': AlertRule.objects.filter(sys__obj=obj, enabled=True).count(),
+        'active_alerts': AlertRule.objects.filter(company=obj.company, enabled=True).count(),
     }
     
     # Средние показатели по типам датчиков
@@ -99,10 +101,11 @@ def object_dashboard(request, object_id):
     ).aggregate(Avg('value'))['value__avg'] or 0
     
     # Активные тревоги
+    # FIXED: AlertRule.company вместо несуществующего sys__obj
     alerts = AlertRule.objects.filter(
-        sys__obj=obj,
+        company=obj.company,
         enabled=True
-    ).select_related('sys')[:10]
+    ).select_related('attribute')[:10]
     
     context = {
         'object': obj,
@@ -122,7 +125,11 @@ def object_dashboard(request, object_id):
 @login_required
 def sensor_history(request, sensor_id):
     """История показаний датчика для графика"""
-    attribute = get_object_or_404(Atributes, id=sensor_id, sys__obj__user=request.user)
+    # FIXED: Phase 4.1 использует company вместо устаревшего user
+    if request.user.role == 'superadmin':
+        attribute = get_object_or_404(Atributes, id=sensor_id)
+    else:
+        attribute = get_object_or_404(Atributes, id=sensor_id, sys__obj__company=request.user.company)
     
     # Период из параметров (по умолчанию 24 часа)
     hours = int(request.GET.get('hours', 24))
@@ -150,7 +157,11 @@ def sensor_history(request, sensor_id):
 @login_required
 def realtime_data(request, object_id):
     """Реалтайм данные для обновления дашборда"""
-    obj = get_object_or_404(Obj, id=object_id, user=request.user)
+    # FIXED: Phase 4.1 использует company вместо устаревшего user
+    if request.user.role == 'superadmin':
+        obj = get_object_or_404(Obj, id=object_id)
+    else:
+        obj = get_object_or_404(Obj, id=object_id, company=request.user.company)
     
     # Получаем последние данные всех датчиков
     sensors = []
@@ -188,6 +199,7 @@ def realtime_data(request, object_id):
         date__gte=last_hour
     ).aggregate(Avg('value'))['value__avg'] or 0
     
+    # FIXED: AlertRule.company вместо несуществующего sys__obj
     return JsonResponse({
         'sensors': sensors,
         'stats': {
@@ -195,5 +207,5 @@ def realtime_data(request, object_id):
             'humidity': round(avg_hum, 1),
             'power': round(avg_pow, 1),
         },
-        'alerts_count': AlertRule.objects.filter(sys__obj=obj, enabled=True).count(),
+        'alerts_count': AlertRule.objects.filter(company=obj.company, enabled=True).count(),
     })
