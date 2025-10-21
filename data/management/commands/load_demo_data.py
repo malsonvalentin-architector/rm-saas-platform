@@ -158,13 +158,13 @@ class Command(BaseCommand):
                         value = max(attr_config['min_val'], min(attr_config['max_val'], value))
                         
                         Data.objects.create(
-                            attribute=attribute,
+                            name=attribute,
                             value=round(value, 2),
                             date=timestamp
                         )
                 
                 # Создаём несколько правил тревог для критичных датчиков
-                critical_attrs = [attr for attr in system.attribute_set.all() 
+                critical_attrs = [attr for attr in system.atributes_set.all() 
                                 if 'температур' in attr.name.lower() or 'мощн' in attr.name.lower()]
                 
                 for attr in critical_attrs[:2]:  # Только для первых двух критичных
@@ -174,7 +174,7 @@ class Command(BaseCommand):
                             attribute=attr,
                             name=f'Превышение {attr.name}',
                             condition='greater_than',
-                            threshold=attr.data_set.all().aggregate(
+                            threshold=Data.objects.filter(name=attr).aggregate(
                                 max_val=timezone.models.Max('value')
                             )['max_val'] * 0.9,  # 90% от максимального значения
                             is_active=random.random() > 0.7,  # 30% активных алертов

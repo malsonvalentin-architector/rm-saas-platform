@@ -44,6 +44,17 @@ CSRF_TRUSTED_ORIGINS = [
     'https://*.railway.app',
 ]
 
+# CSRF Cookie Settings
+CSRF_COOKIE_SECURE = not DEBUG  # True in production
+CSRF_COOKIE_HTTPONLY = False  # Allow JS to read if needed
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_USE_SESSIONS = False
+
+# Session Settings
+SESSION_COOKIE_SECURE = not DEBUG  # True in production
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+
 
 
 # Application definition
