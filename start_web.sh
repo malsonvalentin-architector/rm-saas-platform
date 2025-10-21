@@ -30,6 +30,12 @@ python manage.py migrate --noinput
 echo "✅ Migrations completed"
 echo ""
 
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "STEP 1.5/5: Fixing SubscriptionPlan Schema"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+python manage.py fix_subscription_schema 2>&1 || echo "⚠️  Schema fix warning (may already be fixed)"
+echo ""
+
 # Step 2: Create/Update Superuser (FIXED FOR CUSTOM USER MODEL!)
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "STEP 2/5: Creating/Updating Superuser"
