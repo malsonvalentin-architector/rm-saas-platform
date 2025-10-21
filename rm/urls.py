@@ -5,6 +5,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic.base import RedirectView
 
 urlpatterns = [
     # Django Admin
@@ -13,21 +14,26 @@ urlpatterns = [
     # Django Authentication (login, logout)
     path('accounts/', include('django.contrib.auth.urls')),
     
-    # Home Dashboard - MUST BE FIRST to handle '/' and 'dashboard/'
-    path('', include('home.urls', namespace='home')),
-    
-    # Data & Objects - paths already include 'objects/' prefix
-    # This will create: /objects/, /objects/<id>/, /sensors/<id>/history/
-    path('', include('data.urls', namespace='data')),
+    # Redirect /login/ to /accounts/login/ for convenience (MUST be before home.urls)
+    path('login/', RedirectView.as_view(url='/accounts/login/', permanent=False), name='login_redirect'),
     
     # Telegram Integration
     path('telegram/', include('teleg.urls', namespace='teleg')),
+    
+    # Data & Objects (BEFORE home to avoid conflicts)
+    path('', include('data.urls', namespace='data')),
+    
+    # Home Dashboard - handles '/', 'dashboard/', 'logout/'
+    path('', include('home.urls', namespace='home')),
 ]
 
 # Static/Media files в режиме DEBUG
+# NOTE: WhiteNoise handles static files in production
+# Only serve media files in DEBUG mode
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    # Don't serve STATIC_URL in DEBUG - WhiteNoise handles it
+    # urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # Кастомизация Admin панели
 admin.site.site_header = "ProMonitor Administration"
