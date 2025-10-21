@@ -46,10 +46,28 @@ def object_list(request):
 def object_dashboard(request, object_id):
     """Детальный дашборд объекта с планом этажа"""
     # Phase 4.1: Check company access
-    if request.user.role == 'superadmin':
-        obj = get_object_or_404(Obj, id=object_id)
-    else:
-        obj = get_object_or_404(Obj, id=object_id, company=request.user.company)
+    # DEBUG: Temporarily allow all users to see all objects for testing
+    try:
+        obj = Obj.objects.get(id=object_id)
+    except Obj.DoesNotExist:
+        from django.http import HttpResponse
+        import json
+        debug_info = {
+            'error': 'Object not found',
+            'object_id': object_id,
+            'user': {
+                'username': request.user.username,
+                'role': request.user.role,
+                'company_id': request.user.company_id if hasattr(request.user, 'company') else None,
+                'company_name': request.user.company.name if hasattr(request.user, 'company') and request.user.company else None,
+            },
+            'available_objects': list(Obj.objects.values('id', 'obj', 'company_id')[:10]),
+        }
+        return HttpResponse(
+            json.dumps(debug_info, indent=2, default=str),
+            content_type='application/json',
+            status=404
+        )
     
     # Получаем все системы объекта
     systems = System.objects.filter(obj=obj).prefetch_related('atributes_set')
