@@ -51,7 +51,7 @@ def object_dashboard(request, object_id):
         obj = get_object_or_404(Obj, id=object_id, company=request.user.company)
     
     # Получаем все системы объекта
-    systems = System.objects.filter(obj=obj).prefetch_related('atributes')
+    systems = System.objects.filter(obj=obj).prefetch_related('atributes_set')
     
     # Получаем последние данные по всем датчикам
     sensors_data = []
