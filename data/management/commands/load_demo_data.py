@@ -137,6 +137,8 @@ class Command(BaseCommand):
                         sys=system,
                         name=attr_config['name'],
                         uom=attr_config.get('unit', ''),
+                        modbus_carel=True,  # CAREL controller
+                        register=1000 + total_sensors,  # Unique Modbus register
                     )
                     
                     total_sensors += 1
