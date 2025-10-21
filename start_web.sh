@@ -106,7 +106,17 @@ echo ""
 
 # Step 2.5: Load Demo Data (ONE-TIME ONLY)
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "STEP 2.5/6: Loading Demo Data"
+echo "STEP 2.5/6: Setting Up Test Users"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+if python manage.py setup_test_users 2>&1; then
+    echo "✅ Test users setup completed!"
+else
+    echo "⚠️  Test users setup warning (may already exist)"
+fi
+echo ""
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "STEP 2.6/6: Loading Demo Data"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 if python manage.py load_demo_data --user admin@promonitor.kz 2>&1; then
     echo "✅ Demo data loaded successfully!"
