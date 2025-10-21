@@ -75,7 +75,7 @@ def object_dashboard(request, object_id):
     # FIXED: AlertRule.company вместо несуществующего sys__obj
     stats = {
         'systems_count': systems.count(),
-        'sensors_count': sum(s.atributes.count() for s in systems),
+        'sensors_count': sum(s.atributes_set.count() for s in systems),
         'active_alerts': AlertRule.objects.filter(company=obj.company, enabled=True).count(),
     }
     
