@@ -37,7 +37,7 @@ def dashboard(request):
     # Средние показатели датчиков за последние 24 часа
     recent_data = Data.objects.filter(
         date__gte=last_24h,
-        attribute__sys__obj__in=objects
+        name__sys__obj__in=objects
     )
     
     # Температура
@@ -63,9 +63,9 @@ def dashboard(request):
         
         avg_value = Data.objects.filter(
             date__gte=hour_start,
-            timestamp__lt=hour_end,
+            date__lt=hour_end,
             name__name__icontains='мощн',
-            attribute__sys__obj__in=objects
+            name__sys__obj__in=objects
         ).aggregate(Avg('value'))['value__avg']
         
         energy_chart_data.append({
@@ -77,7 +77,7 @@ def dashboard(request):
     recent_alerts = AlertRule.objects.filter(
         enabled=True,
         attribute__sys__obj__in=objects
-    ).select_related('attribute__system', 'attribute__sys__obj')[:10]
+    ).select_related('attribute', 'attribute__sys', 'attribute__sys__obj')[:10]
     
     context = {
         'total_objects': total_objects,

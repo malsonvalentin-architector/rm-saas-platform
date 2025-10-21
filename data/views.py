@@ -63,19 +63,19 @@ def object_dashboard(request, object_id):
     last_24h = now - timedelta(hours=24)
     
     avg_temperature = Data.objects.filter(
-        attribute__sys__obj=obj,
+        name__sys__obj=obj,
         name__name__icontains='температур',
         date__gte=last_24h
     ).aggregate(Avg('value'))['value__avg'] or 0
     
     avg_humidity = Data.objects.filter(
-        attribute__sys__obj=obj,
+        name__sys__obj=obj,
         name__name__icontains='влажн',
         date__gte=last_24h
     ).aggregate(Avg('value'))['value__avg'] or 0
     
     avg_power = Data.objects.filter(
-        attribute__sys__obj=obj,
+        name__sys__obj=obj,
         name__name__icontains='мощн',
         date__gte=last_24h
     ).aggregate(Avg('value'))['value__avg'] or 0
@@ -115,10 +115,10 @@ def sensor_history(request, sensor_id):
     data_points = Data.objects.filter(
         name=attribute,
         date__gte=start_time
-    ).order_by('date').values('timestamp', 'value')
+    ).order_by('date').values('date', 'value')
     
     # Форматируем для Chart.js
-    labels = [d['timestamp'].strftime('%H:%M') for d in data_points]
+    labels = [d['date'].strftime('%H:%M') for d in data_points]
     values = [float(d['value']) for d in data_points]
     
     return JsonResponse({
@@ -153,19 +153,19 @@ def realtime_data(request, object_id):
     last_hour = now - timedelta(hours=1)
     
     avg_temp = Data.objects.filter(
-        attribute__sys__obj=obj,
+        name__sys__obj=obj,
         name__name__icontains='температур',
         date__gte=last_hour
     ).aggregate(Avg('value'))['value__avg'] or 0
     
     avg_hum = Data.objects.filter(
-        attribute__sys__obj=obj,
+        name__sys__obj=obj,
         name__name__icontains='влажн',
         date__gte=last_hour
     ).aggregate(Avg('value'))['value__avg'] or 0
     
     avg_pow = Data.objects.filter(
-        attribute__sys__obj=obj,
+        name__sys__obj=obj,
         name__name__icontains='мощн',
         date__gte=last_hour
     ).aggregate(Avg('value'))['value__avg'] or 0
