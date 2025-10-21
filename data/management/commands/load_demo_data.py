@@ -171,15 +171,15 @@ class Command(BaseCommand):
                 for attr in critical_attrs[:2]:  # Только для первых двух критичных
                     if random.random() > 0.5:  # 50% вероятность создания алерта
                         AlertRule.objects.create(
-                            sys=system,
+                            company=user.company,
                             attribute=attr,
                             name=f'Превышение {attr.name}',
-                            condition='greater_than',
+                            condition='>',
                             threshold=Data.objects.filter(name=attr).aggregate(
                                 max_val=Max('value')
                             )['max_val'] * 0.9,  # 90% от максимального значения
-                            is_active=random.random() > 0.7,  # 30% активных алертов
-                            severity='warning' if random.random() > 0.5 else 'critical'
+                            enabled=random.random() > 0.7,  # 30% активных алертов
+                            severity='critical' if random.random() > 0.5 else 'high'
                         )
         
         self.stdout.write(self.style.SUCCESS(f'\n✅ Демо-данные успешно загружены!'))
