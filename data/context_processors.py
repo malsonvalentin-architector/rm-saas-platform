@@ -1,45 +1,63 @@
-﻿"""
+"""
 Phase 4.1: Context Processors
 """
 
 
 def user_context(request):
+    """Add user role and permissions to template context"""
     if not request.user.is_authenticated:
         return {}
     
-    return {
-        'user_role': request.user.role,
-        'user_company': request.user.company,
-        'is_superadmin': request.user.role == 'superadmin',
-        'is_admin': request.user.role in ['superadmin', 'admin'],
-        'is_manager': request.user.role in ['superadmin', 'admin', 'manager'],
-        'is_client': request.user.role == 'client',
-        'can_manage_objects': request.user.can_manage_objects(),
-        'can_view_billing': request.user.can_view_billing(),
-        'can_manage_subscription': request.user.can_manage_subscription(),
-        'can_manage_users': request.user.can_manage_users(),
-    }
+    try:
+        # Safely get role (fallback to None if not exists)
+        user_role = getattr(request.user, 'role', None)
+        user_company = getattr(request.user, 'company', None)
+        
+        return {
+            'user_role': user_role,
+            'user_company': user_company,
+            'is_superadmin': user_role == 'superadmin',
+            'is_admin': user_role in ['superadmin', 'admin'],
+            'is_manager': user_role in ['superadmin', 'admin', 'manager'],
+            'is_client': user_role == 'client',
+            'can_manage_objects': getattr(request.user, 'can_manage_objects', lambda: False)(),
+            'can_view_billing': getattr(request.user, 'can_view_billing', lambda: False)(),
+            'can_manage_subscription': getattr(request.user, 'can_manage_subscription', lambda: False)(),
+            'can_manage_users': getattr(request.user, 'can_manage_users', lambda: False)(),
+        }
+    except Exception:
+        # Fallback if any error occurs
+        return {}
 
 
 def role_display(request):
+    """Add role display name and color to template context"""
     if not request.user.is_authenticated:
         return {}
     
-    role_names = {
-        'superadmin': 'Superadministrator',
-        'admin': 'Company Administrator',
-        'manager': 'Manager',
-        'client': 'Client',
-    }
-    
-    role_colors = {
-        'superadmin': 'danger',
-        'admin': 'primary',
-        'manager': 'warning',
-        'client': 'success',
-    }
-    
-    return {
-        'role_display_name': role_names.get(request.user.role, request.user.role),
-        'role_badge_color': role_colors.get(request.user.role, 'secondary'),
-    }
+    try:
+        user_role = getattr(request.user, 'role', None)
+        
+        role_names = {
+            'superadmin': 'Superadministrator',
+            'admin': 'Company Administrator',
+            'manager': 'Manager',
+            'client': 'Client',
+        }
+        
+        role_colors = {
+            'superadmin': 'danger',
+            'admin': 'primary',
+            'manager': 'warning',
+            'client': 'success',
+        }
+        
+        return {
+            'role_display_name': role_names.get(user_role, user_role or 'User'),
+            'role_badge_color': role_colors.get(user_role, 'secondary'),
+        }
+    except Exception:
+        return {
+            'role_display_name': 'User',
+            'role_badge_color': 'secondary',
+        }

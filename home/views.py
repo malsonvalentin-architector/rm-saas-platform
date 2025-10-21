@@ -17,8 +17,8 @@ def dashboard(request):
     """
     user = request.user
     
-    # Получаем объекты пользователя
-    if user.role == 'admin':
+    # Получаем объекты пользователя (Phase 4.1: Multi-Tenant)
+    if user.role == 'superadmin':
         objects = Obj.objects.all()
     else:
         objects = Obj.objects.filter(company=user.company)
