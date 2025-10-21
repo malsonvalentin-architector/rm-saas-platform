@@ -44,9 +44,12 @@ class Command(BaseCommand):
         if not user.company:
             company = Company.objects.create(
                 name='Demo Company',
-                email=user_email,
-                phone='+7 (700) 123-45-67',
-                address='г. Алматы, ул. Демо 1'
+                contact_person='Demo Admin',
+                contact_email=user_email,
+                contact_phone='+77001234567',
+                address='г. Алматы, ул. Демо 1',
+                city='Алматы',
+                country='Казахстан'
             )
             user.company = company
             user.save()

@@ -68,6 +68,16 @@ print('╚═══════════════════════�
 " 2>&1 || echo "⚠️  Superuser operation warning"
 echo ""
 
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "STEP 2.3/6: Loading Subscription Plans"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+if python manage.py load_subscription_plans 2>&1; then
+    echo "✅ Subscription plans loaded!"
+else
+    echo "⚠️  Subscription plans already exist"
+fi
+echo ""
+
 # Step 2.5: Load Demo Data (ONE-TIME ONLY)
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "STEP 2.5/6: Loading Demo Data"
