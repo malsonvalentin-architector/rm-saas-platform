@@ -73,7 +73,7 @@ class Command(BaseCommand):
                 description=obj_data['description']
             )
             created_objects.append(obj)
-            self.stdout.write(self.style.SUCCESS(f'  ✓ Создан объект: {obj.name}'))
+            self.stdout.write(self.style.SUCCESS(f'  ✓ Создан объект: {obj.obj}'))
         
         # Создаём системы и датчики для каждого объекта
         systems_config = [
@@ -125,7 +125,7 @@ class Command(BaseCommand):
                 system = System.objects.create(
                     object=obj,
                     name=sys_config['name'],
-                    description=f'{sys_config["name"]} для {obj.name}'
+                    description=f'{sys_config["name"]} для {obj.obj}'
                 )
                 
                 self.stdout.write(f'    ✓ Создана система: {system.name}')
