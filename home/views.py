@@ -31,28 +31,28 @@ def dashboard(request):
     last_24h = timezone.now() - timedelta(hours=24)
     active_alerts = AlertRule.objects.filter(
         is_active=True,
-        name__system__obj__in=objects
+        name__sys__obj__in=objects
     ).count()
     
     # Средние показатели датчиков за последние 24 часа
     recent_data = Data.objects.filter(
         date__gte=last_24h,
-        name__system__obj__in=objects
+        name__sys__obj__in=objects
     )
     
     # Температура
     avg_temperature = recent_data.filter(
-        name__attribute_type='temperature'
+        name__name__icontains='температур'
     ).aggregate(Avg('value'))['value__avg'] or 23
     
     # Влажность
     avg_humidity = recent_data.filter(
-        name__attribute_type='humidity'
+        name__name__icontains='влажн'
     ).aggregate(Avg('value'))['value__avg'] or 55
     
     # Мощность/энергия
     avg_power = recent_data.filter(
-        name__attribute_type__in=['power', 'energy']
+        name__name__icontains='мощн'
     ).aggregate(Avg('value'))['value__avg'] or 145
     
     # График энергопотребления за 24 часа (почасовая статистика)
@@ -64,8 +64,8 @@ def dashboard(request):
         avg_value = Data.objects.filter(
             date__gte=hour_start,
             timestamp__lt=hour_end,
-            name__attribute_type__in=['power', 'energy'],
-            name__system__obj__in=objects
+            name__name__icontains='мощн',
+            name__sys__obj__in=objects
         ).aggregate(Avg('value'))['value__avg']
         
         energy_chart_data.append({
@@ -76,8 +76,8 @@ def dashboard(request):
     # Последние тревоги
     recent_alerts = AlertRule.objects.filter(
         is_active=True,
-        name__system__obj__in=objects
-    ).select_related('attribute', 'name__system', 'name__system__obj')[:10]
+        name__sys__obj__in=objects
+    ).select_related('name__system', 'name__sys__obj')[:10]
     
     context = {
         'total_objects': total_objects,

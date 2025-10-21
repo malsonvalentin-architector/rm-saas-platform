@@ -19,7 +19,7 @@ def object_list(request):  # ✅ ИСПРАВЛЕНО: было view, тепер
         'objects': objects,
         'total_objects': objects.count(),
         'total_systems': System.objects.filter(obj__user=request.user).count(),
-        'total_alerts': AlertRule.objects.filter(system__obj__user=request.user, is_active=True).count(),
+        'total_alerts': AlertRule.objects.filter(sys__obj__user=request.user, is_active=True).count(),
     }
     
     return render(request, 'data/object_list.html', context)
@@ -55,7 +55,7 @@ def object_dashboard(request, object_id):
     stats = {
         'systems_count': systems.count(),
         'sensors_count': sum(s.atributes_set.count() for s in systems),
-        'active_alerts': AlertRule.objects.filter(system__obj=obj, is_active=True).count(),
+        'active_alerts': AlertRule.objects.filter(sys__obj=obj, is_active=True).count(),
     }
     
     # Средние показатели по типам датчиков
@@ -63,28 +63,28 @@ def object_dashboard(request, object_id):
     last_24h = now - timedelta(hours=24)
     
     avg_temperature = Data.objects.filter(
-        name__system__obj=obj,
+        name__sys__obj=obj,
         name__name__icontains='температур',
         date__gte=last_24h
     ).aggregate(Avg('value'))['value__avg'] or 0
     
     avg_humidity = Data.objects.filter(
-        name__system__obj=obj,
+        name__sys__obj=obj,
         name__name__icontains='влажн',
         date__gte=last_24h
     ).aggregate(Avg('value'))['value__avg'] or 0
     
     avg_power = Data.objects.filter(
-        name__system__obj=obj,
+        name__sys__obj=obj,
         name__name__icontains='мощн',
         date__gte=last_24h
     ).aggregate(Avg('value'))['value__avg'] or 0
     
     # Активные тревоги
     alerts = AlertRule.objects.filter(
-        system__obj=obj,
+        sys__obj=obj,
         is_active=True
-    ).select_related('system', 'attribute')[:10]
+    ).select_related('sys')[:10]
     
     context = {
         'object': obj,
@@ -104,7 +104,7 @@ def object_dashboard(request, object_id):
 @login_required
 def sensor_history(request, sensor_id):
     """История показаний датчика для графика"""
-    attribute = get_object_or_404(Atributes, id=sensor_id, system__obj__user=request.user)
+    attribute = get_object_or_404(Atributes, id=sensor_id, sys__obj__user=request.user)
     
     # Период из параметров (по умолчанию 24 часа)
     hours = int(request.GET.get('hours', 24))
@@ -113,7 +113,7 @@ def sensor_history(request, sensor_id):
     
     # Получаем данные
     data_points = Data.objects.filter(
-        attribute=attribute,
+        name=attribute,
         date__gte=start_time
     ).order_by('date').values('timestamp', 'value')
     
@@ -153,19 +153,19 @@ def realtime_data(request, object_id):
     last_hour = now - timedelta(hours=1)
     
     avg_temp = Data.objects.filter(
-        name__system__obj=obj,
+        name__sys__obj=obj,
         name__name__icontains='температур',
         date__gte=last_hour
     ).aggregate(Avg('value'))['value__avg'] or 0
     
     avg_hum = Data.objects.filter(
-        name__system__obj=obj,
+        name__sys__obj=obj,
         name__name__icontains='влажн',
         date__gte=last_hour
     ).aggregate(Avg('value'))['value__avg'] or 0
     
     avg_pow = Data.objects.filter(
-        name__system__obj=obj,
+        name__sys__obj=obj,
         name__name__icontains='мощн',
         date__gte=last_hour
     ).aggregate(Avg('value'))['value__avg'] or 0
@@ -177,5 +177,5 @@ def realtime_data(request, object_id):
             'humidity': round(avg_hum, 1),
             'power': round(avg_pow, 1),
         },
-        'alerts_count': AlertRule.objects.filter(system__obj=obj, is_active=True).count(),
+        'alerts_count': AlertRule.objects.filter(sys__obj=obj, is_active=True).count(),
     })

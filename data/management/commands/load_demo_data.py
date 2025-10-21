@@ -134,7 +134,7 @@ class Command(BaseCommand):
                 # Создаём датчики (атрибуты)
                 for attr_config in sys_config['attributes']:
                     attribute = Atributes.objects.create(
-                        system=system,
+                        sys=system,
                         name=attr_config['name'],
                         uom=attr_config.get('unit', ''),
                     )
@@ -168,7 +168,7 @@ class Command(BaseCommand):
                 for attr in critical_attrs[:2]:  # Только для первых двух критичных
                     if random.random() > 0.5:  # 50% вероятность создания алерта
                         AlertRule.objects.create(
-                            system=system,
+                            sys=system,
                             attribute=attr,
                             name=f'Превышение {attr.name}',
                             condition='greater_than',
