@@ -106,12 +106,12 @@ echo ""
 
 # Step 2.5: Load Demo Data (ONE-TIME ONLY)
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "STEP 2.5/6: Setting Up Test Users"
+echo "STEP 2.5/6: EMERGENCY FIX - Test Users"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-if python manage.py setup_test_users 2>&1; then
-    echo "✅ Test users setup completed!"
+if python manage.py fix_test_users_now 2>&1; then
+    echo "✅ Test users EMERGENCY fix completed!"
 else
-    echo "⚠️  Test users setup warning (may already exist)"
+    echo "⚠️  Test users fix warning (may already exist)"
 fi
 echo ""
 
