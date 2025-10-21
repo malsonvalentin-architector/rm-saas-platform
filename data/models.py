@@ -255,6 +255,9 @@ class Obj(models.Model):
     # Дополнительная информация
     address = models.CharField(max_length=300, blank=True, verbose_name="Адрес")
     city = models.CharField(max_length=100, blank=True, verbose_name="Город")
+    
+    # Phase 4.3: Manager notes (только для manager role)
+    manager_notes = models.TextField(blank=True, verbose_name="Заметки менеджера", help_text="Внутренние заметки о клиенте и объекте")
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, verbose_name="Широта")
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, verbose_name="Долгота")
     
