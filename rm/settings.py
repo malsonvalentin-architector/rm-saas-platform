@@ -188,8 +188,8 @@ CELERY_TIMEZONE = 'Asia/Almaty'
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/dashboard/'
+LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 AUTH_USER_MODEL = 'data.User_profile'
 AUTH_PROFILE_MODULE='data.User_profile'

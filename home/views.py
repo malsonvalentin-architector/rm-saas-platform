@@ -93,9 +93,12 @@ def dashboard(request):
     return render(request, 'home/dashboard.html', context)
 
 
-@login_required
 def index(request):
     """
-    Главная страница - перенаправляет на дашборд
+    Главная страница - если авторизован → дашборд, иначе → логин
     """
-    return dashboard(request)
+    if request.user.is_authenticated:
+        return dashboard(request)
+    else:
+        from django.shortcuts import redirect
+        return redirect('login')
