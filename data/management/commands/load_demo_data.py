@@ -9,7 +9,7 @@ from django.utils import timezone
 from datetime import timedelta
 import random
 
-from data.models import Object, System, Attribute, Data, AlertRule
+from data.models import Obj, System, Atributes, Data, AlertRule
 
 User = get_user_model()
 
@@ -41,7 +41,7 @@ class Command(BaseCommand):
         
         if options['clear']:
             self.stdout.write(self.style.WARNING('Очистка существующих данных...'))
-            Object.objects.filter(user=user).delete()
+            Obj.objects.filter(user=user).delete()
             self.stdout.write(self.style.SUCCESS('✓ Данные очищены'))
         
         self.stdout.write(self.style.SUCCESS(f'Загрузка демо-данных для {user_email}...'))
@@ -67,10 +67,10 @@ class Command(BaseCommand):
         
         created_objects = []
         for obj_data in objects_data:
-            obj = Object.objects.create(
+            obj = Obj.objects.create(
                 user=user,
-                name=obj_data['name'],
-                address=obj_data['address'],
+                obj=obj_data['name'],
+                description=obj_data['address'],
                 description=obj_data['description']
             )
             created_objects.append(obj)
@@ -133,13 +133,10 @@ class Command(BaseCommand):
                 
                 # Создаём датчики (атрибуты)
                 for attr_config in sys_config['attributes']:
-                    attribute = Attribute.objects.create(
+                    attribute = Atributes.objects.create(
                         system=system,
                         name=attr_config['name'],
-                        unit=attr_config.get('unit', ''),
-                        room=attr_config.get('room', 'Общая зона'),
-                        x_position=attr_config.get('x', random.randint(20, 80)),
-                        y_position=attr_config.get('y', random.randint(20, 80))
+                        uom=attr_config.get('unit', ''),
                     )
                     
                     total_sensors += 1
@@ -161,7 +158,7 @@ class Command(BaseCommand):
                         Data.objects.create(
                             attribute=attribute,
                             value=round(value, 2),
-                            timestamp=timestamp
+                            date=timestamp
                         )
                 
                 # Создаём несколько правил тревог для критичных датчиков
@@ -186,6 +183,6 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f'  • Объектов: {len(created_objects)}'))
         self.stdout.write(self.style.SUCCESS(f'  • Систем: {System.objects.filter(object__user=user).count()}'))
         self.stdout.write(self.style.SUCCESS(f'  • Датчиков: {total_sensors}'))
-        self.stdout.write(self.style.SUCCESS(f'  • Показаний: {Data.objects.filter(attribute__system__object__user=user).count()}'))
-        self.stdout.write(self.style.SUCCESS(f'  • Тревог: {AlertRule.objects.filter(system__object__user=user).count()}'))
+        self.stdout.write(self.style.SUCCESS(f'  • Показаний: {Data.objects.filter(attribute__system__obj__user=user).count()}'))
+        self.stdout.write(self.style.SUCCESS(f'  • Тревог: {AlertRule.objects.filter(system__obj__user=user).count()}'))
         self.stdout.write(self.style.SUCCESS(f'\nТеперь откройте http://your-domain.com/dashboard/ чтобы увидеть интерфейс! 🚀'))
