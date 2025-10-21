@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Системы объекта "{{ object.obj }}" - ProMonitor{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/promonitor.css' %}">
+<style>
+    .system-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 24px;
+        padding: 20px;
+    }
+    
+    .system-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .system-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    .system-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+    
+    .system-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+    
+    .system-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        margin-right: 16px;
+    }
+    
+    .system-title {
+        flex: 1;
+    }
+    
+    .system-title h4 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: #2c3e50;
+    }
+    
+    .system-title .ip-address {
+        font-size: 12px;
+        color: #7f8c8d;
+        font-family: 'Courier New', monospace;
+    }
+    
+    .status-badge {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-badge.online {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-badge.offline {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .status-badge.inactive {
+        background: #e2e3e5;
+        color: #383d41;
+    }
+    
+    .system-description {
+        font-size: 13px;
+        color: #7f8c8d;
+        margin-bottom: 16px;
+        line-height: 1.5;
+    }
+    
+    .system-stats {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+        padding-top: 16px;
+        border-top: 1px solid #ecf0f1;
+    }
+    
+    .stat-item {
+        flex: 1;
+        text-align: center;
+    }
+    
+    .stat-item .value {
+        font-size: 22px;
+        font-weight: 700;
+        color: #f093fb;
+    }
+    
+    .stat-item .label {
+        font-size: 11px;
+        color: #7f8c8d;
+        margin-top: 4px;
+    }
+    
+    .system-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 16px;
+    }
+    
+    .system-actions .btn {
+        flex: 1;
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+    
+    .add-system-card {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        min-height: 250px;
+        cursor: pointer;
+    }
+    
+    .add-system-card:hover {
+        transform: translateY(-8px) scale(1.02);
+    }
+    
+    .add-system-card i {
+        font-size: 48px;
+        margin-bottom: 16px;
+    }
+    
+    .add-system-card h4 {
+        font-size: 18px;
+        font-weight: 600;
+    }
+    
+    .breadcrumb-custom {
+        background: white;
+        padding: 16px 24px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        margin-bottom: 24px;
+    }
+    
+    .breadcrumb-custom a {
+        color: #667eea;
+        text-decoration: none;
+    }
+    
+    .breadcrumb-custom a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Хлебные крошки -->
+    <div class="breadcrumb-custom">
+        <a href="{% url 'data:object_list' %}"><i class="fas fa-home me-1"></i>Объекты</a>
+        <span class="mx-2">/</span>
+        <a href="{% url 'data:object_dashboard' object.id %}">{{ object.obj }}</a>
+        <span class="mx-2">/</span>
+        <span>Системы</span>
+    </div>
+    
+    <!-- Заголовок страницы -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="mb-1">Системы объекта "{{ object.obj }}"</h2>
+            <p class="text-muted">
+                <i class="fas fa-map-marker-alt me-1"></i>{{ object.address }}
+            </p>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if can_create %}
+            <a href="{% url 'data:system_create' object.id %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Добавить систему
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Сетка систем -->
+    <div class="system-grid">
+        {% for system in systems %}
+        <div class="system-card">
+            <!-- Статус badge -->
+            {% if not system.is_active %}
+                <div class="status-badge inactive">
+                    <i class="fas fa-power-off"></i> Отключена
+                </div>
+            {% elif system.is_online %}
+                <div class="status-badge online">
+                    <i class="fas fa-circle"></i> Online
+                </div>
+            {% else %}
+                <div class="status-badge offline">
+                    <i class="fas fa-circle"></i> Offline
+                </div>
+            {% endif %}
+            
+            <!-- Заголовок системы -->
+            <div class="system-header">
+                <div class="system-icon">
+                    <i class="fas fa-sitemap"></i>
+                </div>
+                <div class="system-title">
+                    <h4>{{ system.name }}</h4>
+                    <div class="ip-address">
+                        <i class="fas fa-network-wired me-1"></i>{{ system.ipaddr }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Описание -->
+            {% if system.description %}
+            <div class="system-description">
+                {{ system.description|truncatewords:20 }}
+            </div>
+            {% endif %}
+            
+            <!-- Статистика -->
+            <div class="system-stats">
+                <div class="stat-item">
+                    <div class="value">{{ system.atributes_set.count }}</div>
+                    <div class="label">Датчиков</div>
+                </div>
+                <div class="stat-item">
+                    <div class="value">{{ system.period.total_seconds|floatformat:0 }}с</div>
+                    <div class="label">Опрос</div>
+                </div>
+                <div class="stat-item">
+                    <div class="value">
+                        {% if system.last_poll_time %}
+                            {{ system.last_poll_time|timesince }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </div>
+                    <div class="label">Последний опрос</div>
+                </div>
+            </div>
+            
+            <!-- Действия -->
+            <div class="system-actions">
+                <a href="{% url 'data:object_dashboard' object.id %}#system-{{ system.id }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-eye"></i> Датчики
+                </a>
+                {% if can_create %}
+                <a href="{% url 'data:system_edit' system.id %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-edit"></i> Изменить
+                </a>
+                <a href="{% url 'data:system_delete' system.id %}" class="btn btn-sm btn-outline-danger">
+                    <i class="fas fa-trash"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-sitemap fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">Нет систем</h4>
+            <p class="text-muted">Добавьте первую систему для начала мониторинга</p>
+            {% if can_create %}
+            <a href="{% url 'data:system_create' object.id %}" class="btn btn-primary mt-3">
+                <i class="fas fa-plus me-2"></i>Добавить систему
+            </a>
+            {% endif %}
+        </div>
+        {% endfor %}
+        
+        <!-- Карточка добавления -->
+        {% if systems and can_create %}
+        <div class="system-card add-system-card" onclick="window.location.href='{% url 'data:system_create' object.id %}'">
+            <i class="fas fa-plus-circle"></i>
+            <h4>Добавить новую систему</h4>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Автообновление статуса систем каждые 30 секунд
+setInterval(() => {
+    location.reload();
+}, 30000);
+</script>
+{% endblock %}

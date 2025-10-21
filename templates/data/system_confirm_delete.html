@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Удалить систему "{{ system.name }}" - ProMonitor{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/promonitor.css' %}">
+<style>
+    .delete-container {
+        max-width: 600px;
+        margin: 80px auto;
+        padding: 20px;
+    }
+    
+    .delete-card {
+        background: white;
+        border-radius: 16px;
+        padding: 40px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        border-top: 6px solid #e74c3c;
+    }
+    
+    .delete-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        animation: pulse 2s infinite;
+    }
+    
+    .delete-icon i {
+        font-size: 40px;
+        color: white;
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+    }
+    
+    .delete-title {
+        text-align: center;
+        font-size: 24px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 16px;
+    }
+    
+    .delete-warning {
+        text-align: center;
+        color: #7f8c8d;
+        margin-bottom: 32px;
+        line-height: 1.6;
+    }
+    
+    .system-info {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #ecf0f1;
+    }
+    
+    .info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .info-value {
+        color: #7f8c8d;
+    }
+    
+    .danger-alert {
+        background: #fee;
+        border: 2px solid #e74c3c;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: start;
+        gap: 16px;
+    }
+    
+    .danger-alert i {
+        font-size: 24px;
+        color: #e74c3c;
+        margin-top: 2px;
+    }
+    
+    .danger-alert-content {
+        flex: 1;
+    }
+    
+    .danger-alert-title {
+        font-weight: 600;
+        color: #c0392b;
+        margin-bottom: 8px;
+    }
+    
+    .danger-alert-text {
+        font-size: 14px;
+        color: #721c24;
+    }
+    
+    .delete-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 32px;
+    }
+    
+    .btn {
+        flex: 1;
+        padding: 14px 24px;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        border: none;
+    }
+    
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(231, 76, 60, 0.3);
+    }
+    
+    .btn-secondary {
+        background: #95a5a6;
+    }
+    
+    .btn-secondary:hover {
+        background: #7f8c8d;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="delete-container">
+    <div class="delete-card">
+        <!-- Иконка предупреждения -->
+        <div class="delete-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        
+        <!-- Заголовок -->
+        <h2 class="delete-title">Удалить систему?</h2>
+        <p class="delete-warning">
+            Вы собираетесь удалить систему <strong>"{{ system.name }}"</strong>.
+            <br>Это действие необратимо!
+        </p>
+        
+        <!-- Информация о системе -->
+        <div class="system-info">
+            <div class="info-item">
+                <span class="info-label">Система:</span>
+                <span class="info-value">{{ system.name }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Объект:</span>
+                <span class="info-value">{{ system.obj.obj }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">IP адрес:</span>
+                <span class="info-value">{{ system.ipaddr }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Датчиков:</span>
+                <span class="info-value"><strong>{{ sensors_count }}</strong></span>
+            </div>
+        </div>
+        
+        <!-- Предупреждение о последствиях -->
+        <div class="danger-alert">
+            <i class="fas fa-exclamation-circle"></i>
+            <div class="danger-alert-content">
+                <div class="danger-alert-title">Внимание! Cascade удаление</div>
+                <div class="danger-alert-text">
+                    При удалении системы будут автоматически удалены:
+                    <ul class="mb-0 mt-2">
+                        <li><strong>{{ sensors_count }}</strong> датчик(ов)</li>
+                        <li>Все исторические данные с датчиков</li>
+                        <li>Все настройки тревог (алертов)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Форма подтверждения -->
+        <form method="post">
+            {% csrf_token %}
+            <div class="delete-actions">
+                <a href="{% url 'data:system_list' system.obj.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Отмена
+                </a>
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash me-2"></i>Удалить навсегда
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

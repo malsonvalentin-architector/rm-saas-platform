@@ -116,3 +116,139 @@ def object_delete(request, object_id):
     return render(request, 'data/object_confirm_delete.html', {
         'object': obj
     })
+
+
+# =============================================================================
+# SYSTEMS CRUD (Phase 4.2)
+# =============================================================================
+
+@login_required
+@role_required('superadmin', 'admin', 'manager', 'client')
+def system_list(request, object_id):
+    """List all systems for an object"""
+    # Check access
+    if request.user.role == 'superadmin':
+        obj = get_object_or_404(Obj, id=object_id)
+    else:
+        obj = get_object_or_404(Obj, id=object_id, company=request.user.company)
+    
+    # Get all systems with sensor counts
+    from .models import System
+    systems = System.objects.filter(obj=obj).prefetch_related('atributes_set')
+    
+    return render(request, 'data/system_list.html', {
+        'object': obj,
+        'systems': systems,
+        'can_create': request.user.role in ['superadmin', 'admin', 'manager'],
+    })
+
+
+@login_required
+@role_required('superadmin', 'admin', 'manager')
+def system_create(request, object_id):
+    """Create new system for an object"""
+    # Check access to parent object
+    if request.user.role == 'superadmin':
+        obj = get_object_or_404(Obj, id=object_id)
+    else:
+        obj = get_object_or_404(Obj, id=object_id, company=request.user.company)
+    
+    if request.method == 'POST':
+        try:
+            from .models import System
+            from datetime import timedelta
+            
+            # Get form data
+            name = request.POST.get('name')
+            description = request.POST.get('description', '')
+            ipaddr = request.POST.get('ipaddr', '192.168.1.1')
+            period_seconds = int(request.POST.get('period_seconds', 5))
+            is_active = request.POST.get('is_active') == 'on'
+            
+            # Create system
+            system = System.objects.create(
+                name=name,
+                description=description,
+                ipaddr=ipaddr,
+                obj=obj,
+                period=timedelta(seconds=period_seconds),
+                is_active=is_active,
+            )
+            
+            messages.success(request, f'Система "{name}" успешно создана!')
+            return redirect('data:system_list', object_id=obj.id)
+            
+        except Exception as e:
+            messages.error(request, f'Ошибка при создании системы: {e}')
+    
+    return render(request, 'data/system_form.html', {
+        'object': obj,
+        'action': 'create',
+        'title': f'Добавить систему для "{obj.obj}"'
+    })
+
+
+@login_required
+@role_required('superadmin', 'admin', 'manager')
+def system_edit(request, system_id):
+    """Edit existing system"""
+    from .models import System
+    
+    # Check access
+    if request.user.role == 'superadmin':
+        system = get_object_or_404(System, id=system_id)
+    else:
+        system = get_object_or_404(System, id=system_id, obj__company=request.user.company)
+    
+    if request.method == 'POST':
+        try:
+            from datetime import timedelta
+            
+            # Update fields
+            system.name = request.POST.get('name', system.name)
+            system.description = request.POST.get('description', system.description)
+            system.ipaddr = request.POST.get('ipaddr', system.ipaddr)
+            period_seconds = int(request.POST.get('period_seconds', 5))
+            system.period = timedelta(seconds=period_seconds)
+            system.is_active = request.POST.get('is_active') == 'on'
+            system.save()
+            
+            messages.success(request, f'Система "{system.name}" обновлена!')
+            return redirect('data:system_list', object_id=system.obj.id)
+            
+        except Exception as e:
+            messages.error(request, f'Ошибка при обновлении: {e}')
+    
+    return render(request, 'data/system_form.html', {
+        'object': system.obj,
+        'system': system,
+        'action': 'edit',
+        'title': f'Редактировать систему: {system.name}',
+        'period_seconds': int(system.period.total_seconds()),
+    })
+
+
+@login_required
+@role_required('superadmin', 'admin')
+def system_delete(request, system_id):
+    """Delete system (admin only)"""
+    from .models import System
+    
+    # Check access
+    if request.user.role == 'superadmin':
+        system = get_object_or_404(System, id=system_id)
+    else:
+        system = get_object_or_404(System, id=system_id, obj__company=request.user.company)
+    
+    if request.method == 'POST':
+        obj_id = system.obj.id
+        name = system.name
+        sensors_count = system.atributes_set.count()
+        system.delete()
+        messages.success(request, f'Система "{name}" и {sensors_count} датчиков удалены!')
+        return redirect('data:system_list', object_id=obj_id)
+    
+    return render(request, 'data/system_confirm_delete.html', {
+        'system': system,
+        'sensors_count': system.atributes_set.count(),
+    })

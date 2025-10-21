@@ -14,6 +14,12 @@ urlpatterns = [
     path('objects/<int:object_id>/edit/', views_crud.object_edit, name='object_edit'),
     path('objects/<int:object_id>/delete/', views_crud.object_delete, name='object_delete'),
     
+    # Systems CRUD (Phase 4.2)
+    path('objects/<int:object_id>/systems/', views_crud.system_list, name='system_list'),
+    path('objects/<int:object_id>/systems/create/', views_crud.system_create, name='system_create'),
+    path('systems/<int:system_id>/edit/', views_crud.system_edit, name='system_edit'),
+    path('systems/<int:system_id>/delete/', views_crud.system_delete, name='system_delete'),
+    
     # Sensors and realtime
     path('sensors/<int:sensor_id>/history/', views.sensor_history, name='sensor_history'),
     path('objects/<int:object_id>/realtime/', views.realtime_data, name='realtime_data'),
