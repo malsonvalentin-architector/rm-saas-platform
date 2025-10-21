@@ -67,7 +67,7 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "STEP 2.6/6: FORCE RESET - 10 Quality Objects (Guaranteed)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-if python force_reset_now.py 2>&1; then
+if python manage.py force_reset_data 2>&1; then
     echo "✅ FORCE RESET COMPLETE!"
     echo "📊 Fresh data loaded:"
     echo "   • 10 quality objects (offices, warehouses, shops)"
