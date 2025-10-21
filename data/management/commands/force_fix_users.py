@@ -23,11 +23,11 @@ class Command(BaseCommand):
         demo_company, created = Company.objects.get_or_create(
             name='ProMonitor Demo',
             defaults={
+                'contact_person': 'Demo Admin',
                 'address': 'Demo Address, Almaty, Kazakhstan',
                 'contact_email': 'demo@promonitor.kz',
                 'contact_phone': '+7 (777) 000-00-00',
                 'subscription_status': 'active',
-                'subscription_end_date': timezone.now().date() + timedelta(days=365),
                 'is_active': True
             }
         )

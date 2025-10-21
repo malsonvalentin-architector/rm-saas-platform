@@ -24,7 +24,6 @@ class Command(BaseCommand):
                 'contact_person': 'Admin',
                 'contact_email': 'admin@promonitor.kz',
                 'subscription_status': 'active',
-                'subscription_end_date': timezone.now().date() + timedelta(days=3650),  # 10 years
                 'is_active': True,
             }
         )
