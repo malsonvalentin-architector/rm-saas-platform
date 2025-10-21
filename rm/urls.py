@@ -1,28 +1,31 @@
-"""rm URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.2/topics/http/urls/
 """
-from django.urls import path, include
+URL Configuration for ProMonitor
+"""
 from django.contrib import admin
-from django.views.generic import TemplateView
-from django.contrib.auth import views as auth_views
-from home.views import RegisterView
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
-    # Admin panels
+    # Django Admin
     path('admin/', admin.site.urls),
-    path('superadmin/', include('superadmin.urls')),
     
-    # Main apps
-    path('data/', include('data.urls')),
+    # Home Dashboard
+    path('', include('home.urls', namespace='home')),
     
-    # Auth
-    path('login/', auth_views.LoginView.as_view(), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-    path('accounts/register/', RegisterView.as_view(), name='register'),
-    path('accounts/', include('django.contrib.auth.urls')),
+    # Data & Objects
+    path('data/', include('data.urls', namespace='data')),
     
-    # Home
-    path('', TemplateView.as_view(template_name='home/main.html'), name='home'),
+    # Telegram Integration
+    path('telegram/', include('teleg.urls', namespace='teleg')),
 ]
+
+# Static/Media files в режиме DEBUG
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# Кастомизация Admin панели
+admin.site.site_header = "ProMonitor Administration"
+admin.site.site_title = "ProMonitor Admin"
+admin.site.index_title = "Система мониторинга ProMonitor"

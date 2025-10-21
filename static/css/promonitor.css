@@ -1,0 +1,330 @@
+/*
+ProMonitor CSS - Дизайн под логотип (синий #0078D4 + оранжевый #FF8C42)
+С переключателем тем: тёмная (AI-футуристичная) / светлая (корпоративная)
+*/
+
+:root {
+    /* Цвета логотипа ProMonitor */
+    --brand-blue: #0078D4;
+    --brand-orange: #FF8C42;
+    --brand-dark-blue: #005A9E;
+    --brand-light-orange: #FF9E5C;
+}
+
+/* ============ СВЕТЛАЯ ТЕМА (по умолчанию) ============ */
+:root {
+    /* Фоны */
+    --bg-primary: #F5F7FA;
+    --bg-secondary: #FFFFFF;
+    --bg-tertiary: #E8EDF5;
+    --bg-card: #FFFFFF;
+    --bg-hover: #F0F4F8;
+    
+    /* Текст */
+    --text-primary: #1E2A38;
+    --text-secondary: #6B7C93;
+    --text-muted: #95A5A6;
+    
+    /* Градиенты */
+    --primary-gradient: linear-gradient(135deg, #0078D4 0%, #005A9E 100%);
+    --accent-gradient: linear-gradient(135deg, #FF8C42 0%, #D9711A 100%);
+    --card-gradient: linear-gradient(135deg, rgba(0, 120, 212, 0.05) 0%, rgba(255, 140, 66, 0.05) 100%);
+    
+    /* Тени */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --shadow-glow: 0 4px 16px rgba(0, 120, 212, 0.2);
+    
+    /* Границы */
+    --border-color: #E1E8ED;
+    --border-radius: 12px;
+}
+
+/* ============ ТЁМНАЯ ТЕМА (AI-футуристичная, корпоративная) ============ */
+[data-theme="dark"] {
+    /* Фоны */
+    --bg-primary: #0A1628;
+    --bg-secondary: #142642;
+    --bg-tertiary: #1E3A5F;
+    --bg-card: #142642;
+    --bg-hover: #1E3A5F;
+    
+    /* Текст */
+    --text-primary: #E8EDF5;
+    --text-secondary: #A0AEC0;
+    --text-muted: #718096;
+    
+    /* Тени */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 4px 16px rgba(0, 120, 212, 0.4);
+    
+    /* Границы */
+    --border-color: #2D4A6F;
+}
+
+/* ============ ОСНОВНЫЕ СТИЛИ ============ */
+body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Статистические карточки */
+.stat-card {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.stat-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 28px;
+    flex-shrink: 0;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Gauge карточки */
+.gauge-card {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+}
+
+.gauge-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.gauge-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.gauge-container {
+    position: relative;
+    width: 100%;
+}
+
+.gauge-container svg {
+    width: 100%;
+    height: auto;
+}
+
+.gauge-bg {
+    stroke: var(--border-color);
+}
+
+.gauge-value {
+    font-size: 24px;
+    font-weight: 700;
+    fill: var(--text-primary);
+}
+
+/* График карточка */
+.chart-card {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+}
+
+.chart-card h5 {
+    color: var(--text-primary);
+    margin-bottom: 20px;
+}
+
+/* Список тревог */
+.alerts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.alert-item {
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-left: 4px solid;
+    transition: all 0.3s ease;
+}
+
+.alert-item:hover {
+    transform: translateX(4px);
+    box-shadow: var(--shadow-md);
+}
+
+.alert-item.alert-critical {
+    border-left-color: #E74C3C;
+    background: linear-gradient(90deg, rgba(231, 76, 60, 0.1) 0%, var(--bg-card) 100%);
+}
+
+.alert-item.alert-warning {
+    border-left-color: #F39C12;
+    background: linear-gradient(90deg, rgba(243, 156, 18, 0.1) 0%, var(--bg-card) 100%);
+}
+
+.alert-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.alert-critical .alert-icon {
+    background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);
+    color: white;
+}
+
+.alert-warning .alert-icon {
+    background: linear-gradient(135deg, #F39C12 0%, #D68910 100%);
+    color: white;
+}
+
+.alert-content {
+    flex: 1;
+}
+
+.alert-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.alert-description {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.alert-time {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+/* Переключатель тем */
+.theme-toggle {
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: 50px;
+    padding: 8px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    font-size: 20px;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-glow);
+    border-color: var(--brand-blue);
+}
+
+.theme-toggle .icon {
+    transition: transform 0.3s ease;
+}
+
+.theme-toggle:hover .icon {
+    transform: rotate(20deg);
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stat-card, .gauge-card, .chart-card {
+    animation: fadeIn 0.5s ease;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 28px;
+    }
+    
+    .gauge-title {
+        font-size: 14px;
+    }
+}
+
+/* Утилиты для градиентов логотипа */
+.gradient-blue {
+    background: var(--primary-gradient);
+}
+
+.gradient-orange {
+    background: var(--accent-gradient);
+}
+
+.text-brand-blue {
+    color: var(--brand-blue);
+}
+
+.text-brand-orange {
+    color: var(--brand-orange);
+}

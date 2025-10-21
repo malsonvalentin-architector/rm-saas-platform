@@ -1,0 +1,453 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ object.name }} - ProMonitor{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/promonitor.css' %}">
+<style>
+    .floor-plan-container {
+        position: relative;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        background: #f8f9fa;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .floor-plan-image {
+        width: 100%;
+        display: block;
+    }
+    
+    .floor-plan-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .sensor-marker {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        transform: translate(-50%, -50%);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .sensor-marker:hover {
+        transform: translate(-50%, -50%) scale(1.2);
+        z-index: 10;
+    }
+    
+    .sensor-marker .marker-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        animation: pulse 2s infinite;
+    }
+    
+    .sensor-marker .marker-label {
+        position: absolute;
+        top: 60px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.3s;
+        pointer-events: none;
+    }
+    
+    .sensor-marker:hover .marker-label {
+        opacity: 1;
+    }
+    
+    .sensor-marker.temperature .marker-icon {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    .sensor-marker.humidity .marker-icon {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+    
+    .sensor-marker.power .marker-icon {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        50% {
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.8);
+        }
+    }
+    
+    .sensor-detail-panel {
+        position: fixed;
+        right: -400px;
+        top: 0;
+        width: 400px;
+        height: 100vh;
+        background: white;
+        box-shadow: -4px 0 12px rgba(0,0,0,0.1);
+        transition: right 0.3s ease;
+        z-index: 1000;
+        overflow-y: auto;
+        padding: 30px;
+    }
+    
+    .sensor-detail-panel.active {
+        right: 0;
+    }
+    
+    .close-panel {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        cursor: pointer;
+        font-size: 24px;
+        color: #666;
+    }
+    
+    .sensor-chart-container {
+        margin-top: 30px;
+        height: 300px;
+    }
+    
+    .room-label {
+        font-size: 18px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home:dashboard' %}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'data:object_list' %}">Объекты</a></li>
+            <li class="breadcrumb-item active">{{ object.name }}</li>
+        </ol>
+    </nav>
+    
+    <!-- Заголовок объекта -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-1">{{ object.name }}</h2>
+            <p class="text-muted">{{ object.address }}</p>
+        </div>
+    </div>
+    
+    <!-- Статистика объекта -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-sitemap"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ stats.systems_count }}</div>
+                    <div class="stat-label">Систем</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <i class="fas fa-microchip"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ stats.sensors_count }}</div>
+                    <div class="stat-label">Датчиков</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ stats.sensors_count|add:"-3" }}</div>
+                    <div class="stat-label">Активных</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ stats.active_alerts }}</div>
+                    <div class="stat-label">Тревог</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Средние показатели -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="gauge-card">
+                <h5 class="gauge-title">Средняя температура</h5>
+                <div class="gauge-container">
+                    <svg viewBox="0 0 200 120">
+                        <path class="gauge-bg" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e0e0e0" stroke-width="20"/>
+                        <path class="gauge-fill temp-gauge" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#f5576c" stroke-width="20" stroke-dasharray="251.2" stroke-dashoffset="188.4"/>
+                        <text x="100" y="80" text-anchor="middle" class="gauge-value">{{ avg_temperature }}°C</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="gauge-card">
+                <h5 class="gauge-title">Средняя влажность</h5>
+                <div class="gauge-container">
+                    <svg viewBox="0 0 200 120">
+                        <path class="gauge-bg" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e0e0e0" stroke-width="20"/>
+                        <path class="gauge-fill hum-gauge" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#00f2fe" stroke-width="20" stroke-dasharray="251.2" stroke-dashoffset="113"/>
+                        <text x="100" y="80" text-anchor="middle" class="gauge-value">{{ avg_humidity }}%</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="gauge-card">
+                <h5 class="gauge-title">Средняя мощность</h5>
+                <div class="gauge-container">
+                    <svg viewBox="0 0 200 120">
+                        <path class="gauge-bg" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e0e0e0" stroke-width="20"/>
+                        <path class="gauge-fill pow-gauge" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#fee140" stroke-width="20" stroke-dasharray="251.2" stroke-dashoffset="125.6"/>
+                        <text x="100" y="80" text-anchor="middle" class="gauge-value">{{ avg_power }} кВт</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Интерактивный план этажа -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-map-marked-alt me-2"></i>Интерактивный план этажа</h5>
+                </div>
+                <div class="card-body">
+                    <div class="floor-plan-container" id="floorPlanContainer">
+                        {% if floor_plan_url %}
+                            <img src="{{ floor_plan_url }}" alt="План этажа" class="floor-plan-image">
+                        {% else %}
+                            <!-- Дефолтный план этажа -->
+                            <svg viewBox="0 0 1200 600" class="floor-plan-image">
+                                <!-- Комната 1: Серверная -->
+                                <rect x="50" y="50" width="300" height="250" fill="#e8f5e9" stroke="#4caf50" stroke-width="3"/>
+                                <text x="200" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#4caf50">Серверная</text>
+                                
+                                <!-- Комната 2: Офис -->
+                                <rect x="400" y="50" width="350" height="250" fill="#e3f2fd" stroke="#2196f3" stroke-width="3"/>
+                                <text x="575" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#2196f3">Офис</text>
+                                
+                                <!-- Комната 3: Склад -->
+                                <rect x="800" y="50" width="350" height="250" fill="#fff3e0" stroke="#ff9800" stroke-width="3"/>
+                                <text x="975" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#ff9800">Склад</text>
+                                
+                                <!-- Комната 4: Коридор -->
+                                <rect x="50" y="350" width="1100" height="200" fill="#f3e5f5" stroke="#9c27b0" stroke-width="3"/>
+                                <text x="600" y="330" text-anchor="middle" font-size="18" font-weight="bold" fill="#9c27b0">Коридор</text>
+                            </svg>
+                        {% endif %}
+                        
+                        <!-- Маркеры датчиков -->
+                        <div class="floor-plan-overlay">
+                            {% for sensor in sensors_data %}
+                            <div class="sensor-marker {% if 'температур' in sensor.name %}temperature{% elif 'влажн' in sensor.name %}humidity{% elif 'мощн' in sensor.name %}power{% endif %}" 
+                                 style="left: {{ sensor.x_position }}%; top: {{ sensor.y_position }}%;"
+                                 data-sensor-id="{{ sensor.id }}"
+                                 data-sensor-name="{{ sensor.name }}"
+                                 data-sensor-value="{{ sensor.value }}"
+                                 data-sensor-unit="{{ sensor.unit }}"
+                                 onclick="showSensorDetail({{ sensor.id }})">
+                                <div class="marker-icon">
+                                    {% if 'температур' in sensor.name %}
+                                        <i class="fas fa-thermometer-half"></i>
+                                    {% elif 'влажн' in sensor.name %}
+                                        <i class="fas fa-tint"></i>
+                                    {% elif 'мощн' in sensor.name %}
+                                        <i class="fas fa-bolt"></i>
+                                    {% else %}
+                                        <i class="fas fa-microchip"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="marker-label">
+                                    <div class="room-label">{{ sensor.room }}</div>
+                                    <strong>{{ sensor.name }}</strong><br>
+                                    <span style="font-size: 16px; color: #4caf50;">{{ sensor.value }} {{ sensor.unit }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Список активных тревог -->
+    {% if alerts %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Активные тревоги</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alerts-list">
+                        {% for alert in alerts %}
+                        <div class="alert-item {% if alert.severity == 'critical' %}alert-critical{% else %}alert-warning{% endif %}">
+                            <div class="alert-icon">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <div class="alert-content">
+                                <div class="alert-title">{{ alert.name }}</div>
+                                <div class="alert-description">
+                                    {{ alert.system.name }} - {{ alert.attribute.name }}
+                                </div>
+                            </div>
+                            <div class="alert-time">
+                                {{ alert.created_at|timesince }} назад
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Панель детальной информации датчика -->
+<div class="sensor-detail-panel" id="sensorDetailPanel">
+    <span class="close-panel" onclick="closeSensorDetail()">&times;</span>
+    <h4 id="sensorName">Датчик</h4>
+    <p class="text-muted" id="sensorSystem">Система</p>
+    
+    <div class="mt-4">
+        <h5>Текущее значение</h5>
+        <h2 class="text-primary" id="sensorValue">-- --</h2>
+    </div>
+    
+    <div class="sensor-chart-container">
+        <canvas id="sensorHistoryChart"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script src="{% static 'js/dashboard.js' %}"></script>
+<script>
+let sensorHistoryChart = null;
+
+function showSensorDetail(sensorId) {
+    const panel = document.getElementById('sensorDetailPanel');
+    panel.classList.add('active');
+    
+    // Загружаем историю датчика
+    fetch(`/data/sensors/${sensorId}/history/?hours=24`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('sensorName').textContent = data.sensor_name;
+            document.getElementById('sensorValue').textContent = 
+                `${data.values[data.values.length - 1]} ${data.unit}`;
+            
+            // Создаём график
+            const ctx = document.getElementById('sensorHistoryChart').getContext('2d');
+            
+            if (sensorHistoryChart) {
+                sensorHistoryChart.destroy();
+            }
+            
+            sensorHistoryChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: data.sensor_name,
+                        data: data.values,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        });
+}
+
+function closeSensorDetail() {
+    document.getElementById('sensorDetailPanel').classList.remove('active');
+}
+
+// Автообновление данных каждые 30 секунд
+setInterval(() => {
+    fetch(`/data/objects/{{ object.id }}/realtime/`)
+        .then(response => response.json())
+        .then(data => {
+            // Обновляем значения на маркерах
+            data.sensors.forEach(sensor => {
+                const marker = document.querySelector(`[data-sensor-id="${sensor.id}"]`);
+                if (marker) {
+                    marker.setAttribute('data-sensor-value', sensor.value);
+                    const label = marker.querySelector('.marker-label span');
+                    if (label) {
+                        label.textContent = `${sensor.value} ${sensor.unit}`;
+                    }
+                }
+            });
+            
+            // Обновляем gauge индикаторы
+            updateGauge('.temp-gauge', data.stats.temperature, 0, 50);
+            updateGauge('.hum-gauge', data.stats.humidity, 0, 100);
+            updateGauge('.pow-gauge', data.stats.power, 0, 300);
+        });
+}, 30000);
+</script>
+{% endblock %}

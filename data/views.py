@@ -1,435 +1,181 @@
-"""
-VIEWS V2 - С ПОДДЕРЖКОЙ MULTI-TENANCY
-Обновленная версия всех views с автоматической фильтрацией по компании
-"""
-
-from django.shortcuts import redirect, get_object_or_404, render
-from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView, DeleteView, ListView, DetailView
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.views import View
-from django.contrib import messages
-from django.core.exceptions import PermissionDenied
-
-# НОВОЕ: Используем обновленные классы с multi-tenancy
-from .owner_v2 import (
-    OwnerListView, OwnerDetailView, OwnerCreateView, 
-    OwnerUpdateView, OwnerDeleteView
-)
-from .mixins import CompanyFilterMixin, CompanyRequiredMixin, SubscriptionRequiredMixin
-
-from .forms import CreateUserForm, CreateObjForm, CreateSystemForm, CreateAtribForm, CreateDataForm, WriteDataForm
-from .models import User_profile, Obj, System, Atributes, Data, Company
-from .utils.carel_req import get_carel_one_value, get_carel_all_values_json, set_carel_value
-import json
-# from view_breadcrumbs import UpdateBreadcrumbMixin
+from django.db.models import Avg, Max, Min, Count, Q
+from django.utils import timezone
+from datetime import timedelta
+from .models import Object, System, Attribute, Data, AlertRule
 
 
-# ============================================================================
-# USER VIEWS (обновлены для multi-tenancy)
-# ============================================================================
-
-class UserListView(OwnerListView):
-    """Список пользователей компании"""
-    model = User_profile
+@login_required
+def object_list(request):  # ✅ ИСПРАВЛЕНО: было view, теперь request
+    """Список всех объектов пользователя"""
+    objects = Object.objects.filter(user=request.user).annotate(
+        system_count=Count('system'),
+        alert_count=Count('system__alertrule', filter=Q(system__alertrule__is_active=True))
+    )
     
-    def get_queryset(self):
-        """Показываем только пользователей своей компании"""
-        queryset = super().get_queryset()
-        if self.request.user.is_superuser:
-            return queryset  # Суперадмин видит всех
-        return queryset.filter(company=self.request.user.company)
+    context = {
+        'objects': objects,
+        'total_objects': objects.count(),
+        'total_systems': System.objects.filter(object__user=request.user).count(),
+        'total_alerts': AlertRule.objects.filter(system__object__user=request.user, is_active=True).count(),
+    }
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # ИСПРАВЛЕНО: Объекты компании, а не пользователя
-        if self.request.user.company:
-            context["objects"] = Obj.objects.filter(company=self.request.user.company)
-        else:
-            context["objects"] = Obj.objects.none()
-        return context
+    return render(request, 'data/object_list.html', context)
 
 
-class UserDetailView(OwnerDetailView):
-    """Детальная информация о пользователе"""
-    model = User_profile
+@login_required
+def object_dashboard(request, object_id):
+    """Детальный дашборд объекта с планом этажа"""
+    obj = get_object_or_404(Object, id=object_id, user=request.user)
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user = self.object
-        # ИСПРАВЛЕНО: Объекты компании пользователя
-        if user.company:
-            context["objects"] = Obj.objects.filter(company=user.company)
-        else:
-            context["objects"] = Obj.objects.none()
-        return context
-
-
-class UserCreateView(CompanyRequiredMixin, CreateView):
-    """Создание нового пользователя в компании"""
-    model = User_profile
-    form_class = CreateUserForm
+    # Получаем все системы объекта
+    systems = System.objects.filter(object=obj).prefetch_related('attribute_set')
     
-    def form_valid(self, form):
-        # Автоматически устанавливаем компанию
-        form.instance.company = self.request.user.company
-        # По умолчанию роль - оператор
-        if not form.instance.role:
-            form.instance.role = 'operator'
-        return super().form_valid(form)
+    # Получаем последние данные по всем датчикам
+    sensors_data = []
+    for system in systems:
+        for attr in system.attribute_set.all():
+            latest = Data.objects.filter(attribute=attr).order_by('-timestamp').first()
+            if latest:
+                sensors_data.append({
+                    'id': attr.id,
+                    'name': attr.name,
+                    'system': system.name,
+                    'value': latest.value,
+                    'unit': attr.unit or '',
+                    'timestamp': latest.timestamp,
+                    'x_position': attr.x_position or 50,  # Позиция на плане (%)
+                    'y_position': attr.y_position or 50,
+                    'room': attr.room or 'Общая зона',
+                })
     
-    def get_success_url(self):
-        # После создания пользователя - на список пользователей
-        return reverse_lazy('data:user_profile_list')
-
-
-class UserDeleteView(OwnerDeleteView):
-    """Удаление пользователя (только своей компании)"""
-    model = User_profile
-    success_url = reverse_lazy('data:user_profile_list')
-
-
-class UserUpdateView(OwnerUpdateView):
-    """Обновление данных пользователя"""
-    model = User_profile
-    form_class = CreateUserForm
+    # Статистика по объекту
+    stats = {
+        'systems_count': systems.count(),
+        'sensors_count': sum(s.attribute_set.count() for s in systems),
+        'active_alerts': AlertRule.objects.filter(system__object=obj, is_active=True).count(),
+    }
     
-    def get_success_url(self):
-        return reverse_lazy('data:user_detail', kwargs={'pk': self.object.pk})
-
-
-# ============================================================================
-# OBJECT VIEWS (обновлены для multi-tenancy)
-# ============================================================================
-
-class ObjListView(OwnerListView):
-    """Список объектов компании"""
-    model = Obj
-
-
-class ObjCreateView(OwnerCreateView):
-    """Создание нового объекта"""
-    model = Obj
-    form_class = CreateObjForm
+    # Средние показатели по типам датчиков
+    now = timezone.now()
+    last_24h = now - timedelta(hours=24)
     
-    def form_valid(self, form):
-        # ИСПРАВЛЕНО: Устанавливаем company автоматически
-        form.instance.company = self.request.user.company
-        # Старое поле user оставляем для совместимости
-        form.instance.user = self.request.user
-        return super().form_valid(form)
+    avg_temperature = Data.objects.filter(
+        attribute__system__object=obj,
+        attribute__name__icontains='температур',
+        timestamp__gte=last_24h
+    ).aggregate(Avg('value'))['value__avg'] or 0
     
-    def get_success_url(self):
-        # После создания объекта - на создание системы
-        return reverse_lazy('data:sys_create', kwargs={'user_pk': self.object.user.pk, 'obj_pk': self.object.pk})
-
-
-class ObjDetailView(OwnerDetailView):
-    """Детальная информация об объекте"""
-    model = Obj
+    avg_humidity = Data.objects.filter(
+        attribute__system__object=obj,
+        attribute__name__icontains='влажн',
+        timestamp__gte=last_24h
+    ).aggregate(Avg('value'))['value__avg'] or 0
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["systems"] = self.object.system_set.all()
-        return context
-
-
-class ObjDeleteView(OwnerDeleteView):
-    """Удаление объекта (только своей компании)"""
-    model = Obj
-    success_url = reverse_lazy('data:user_profile_list')
-
-
-class ObjUpdateView(OwnerUpdateView):
-    """Обновление данных объекта"""
-    model = Obj
-    form_class = CreateObjForm
+    avg_power = Data.objects.filter(
+        attribute__system__object=obj,
+        attribute__name__icontains='мощн',
+        timestamp__gte=last_24h
+    ).aggregate(Avg('value'))['value__avg'] or 0
     
-    def get_success_url(self):
-        return reverse_lazy('data:obj_detail', kwargs={'user_pk': self.object.user.pk, 'pk': self.object.pk})
-
-
-# ============================================================================
-# SYSTEM VIEWS (обновлены для multi-tenancy)
-# ============================================================================
-
-class SystemCreateView(OwnerCreateView):
-    """Создание новой системы"""
-    model = System
-    form_class = CreateSystemForm
+    # Активные тревоги
+    alerts = AlertRule.objects.filter(
+        system__object=obj,
+        is_active=True
+    ).select_related('system', 'attribute')[:10]
     
-    def get_initial(self):
-        initial = super().get_initial()
-        obj = get_object_or_404(Obj, pk=self.kwargs['obj_pk'])
-        
-        # Проверяем что объект принадлежит компании пользователя
-        if not self.request.user.is_superuser:
-            if obj.company != self.request.user.company:
-                raise PermissionDenied("Доступ запрещен")
-        
-        initial['obj'] = obj
-        return initial
+    context = {
+        'object': obj,
+        'systems': systems,
+        'sensors_data': sensors_data,
+        'stats': stats,
+        'avg_temperature': round(avg_temperature, 1),
+        'avg_humidity': round(avg_humidity, 1),
+        'avg_power': round(avg_power, 1),
+        'alerts': alerts,
+        'floor_plan_url': obj.floor_plan.url if obj.floor_plan else None,
+    }
     
-    def get_success_url(self):
-        return reverse_lazy('data:atr_create', kwargs={
-            'user_pk': self.kwargs['user_pk'],
-            'sys_pk': self.object.pk,
-            'obj_pk': self.kwargs['obj_pk']
-        })
+    return render(request, 'data/object_dashboard.html', context)
 
 
-class SystemDetailView(OwnerDetailView):
-    """Детальная информация о системе"""
-    model = System
+@login_required
+def sensor_history(request, sensor_id):
+    """История показаний датчика для графика"""
+    attribute = get_object_or_404(Attribute, id=sensor_id, system__object__user=request.user)
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['object_data'] = self.object.obj
-        return context
-
-
-class SystemUpdateView(OwnerUpdateView):
-    """Обновление данных системы"""
-    model = System
-    form_class = CreateSystemForm
+    # Период из параметров (по умолчанию 24 часа)
+    hours = int(request.GET.get('hours', 24))
+    now = timezone.now()
+    start_time = now - timedelta(hours=hours)
     
-    def get_success_url(self):
-        return reverse_lazy('data:sys_detail', kwargs={
-            'user_pk': self.object.obj.user.pk,
-            'pk': self.object.pk,
-            'obj_pk': self.object.obj.pk
-        })
-
-
-class SystemDeleteView(OwnerDeleteView):
-    """Удаление системы"""
-    model = System
+    # Получаем данные
+    data_points = Data.objects.filter(
+        attribute=attribute,
+        timestamp__gte=start_time
+    ).order_by('timestamp').values('timestamp', 'value')
     
-    def get_success_url(self):
-        return reverse_lazy('data:obj_detail', kwargs={'user_pk': self.object.obj.user.pk, 'pk': self.object.obj.pk})
-
-
-# ============================================================================
-# ATTRIBUTE VIEWS (обновлены для multi-tenancy)
-# ============================================================================
-
-class AtribCreateView(OwnerCreateView):
-    """Создание нового атрибута (датчика)"""
-    model = Atributes
-    form_class = CreateAtribForm
+    # Форматируем для Chart.js
+    labels = [d['timestamp'].strftime('%H:%M') for d in data_points]
+    values = [float(d['value']) for d in data_points]
     
-    def get_initial(self):
-        initial = super().get_initial()
-        system = get_object_or_404(System, pk=self.kwargs['sys_pk'])
-        
-        # Проверяем доступ через компанию
-        if not self.request.user.is_superuser:
-            if system.obj.company != self.request.user.company:
-                raise PermissionDenied("Доступ запрещен")
-        
-        initial['sys'] = system
-        return initial
+    return JsonResponse({
+        'labels': labels,
+        'values': values,
+        'sensor_name': attribute.name,
+        'unit': attribute.unit or '',
+    })
+
+
+@login_required
+def realtime_data(request, object_id):
+    """Реалтайм данные для обновления дашборда"""
+    obj = get_object_or_404(Object, id=object_id, user=request.user)
     
-    def get_success_url(self):
-        return reverse_lazy('data:sys_detail', kwargs={
-            'user_pk': self.kwargs['user_pk'],
-            'pk': self.kwargs['sys_pk'],
-            'obj_pk': self.kwargs['obj_pk']
-        })
+    # Получаем последние данные всех датчиков
+    sensors = []
+    for system in obj.system_set.all():
+        for attr in system.attribute_set.all():
+            latest = Data.objects.filter(attribute=attr).order_by('-timestamp').first()
+            if latest:
+                sensors.append({
+                    'id': attr.id,
+                    'name': attr.name,
+                    'value': float(latest.value),
+                    'unit': attr.unit or '',
+                    'timestamp': latest.timestamp.isoformat(),
+                })
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['systems'] = get_object_or_404(System, pk=self.kwargs['sys_pk'])
-        return context
-
-
-class AtributeDetailView(CompanyRequiredMixin, DetailView):
-    """Детальная информация об атрибуте с возможностью записи"""
-    model = Atributes
+    # Обновлённая статистика
+    now = timezone.now()
+    last_hour = now - timedelta(hours=1)
     
-    def get_queryset(self):
-        """Фильтруем по компании"""
-        queryset = super().get_queryset()
-        if self.request.user.is_superuser:
-            return queryset
-        return queryset.filter(sys__obj__company=self.request.user.company)
+    avg_temp = Data.objects.filter(
+        attribute__system__object=obj,
+        attribute__name__icontains='температур',
+        timestamp__gte=last_hour
+    ).aggregate(Avg('value'))['value__avg'] or 0
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.object.write:
-            context['form'] = WriteDataForm()
-        return context
+    avg_hum = Data.objects.filter(
+        attribute__system__object=obj,
+        attribute__name__icontains='влажн',
+        timestamp__gte=last_hour
+    ).aggregate(Avg('value'))['value__avg'] or 0
     
-    def post(self, request, *args, **kwargs):
-        """Обработка записи значения в CAREL контроллер"""
-        self.object = self.get_object()
-        
-        # Проверка прав на запись
-        if not request.user.can_control_equipment():
-            messages.error(request, 'У вас нет прав на управление оборудованием')
-            return redirect(self.request.path)
-        
-        form = WriteDataForm(request.POST)
-        if form.is_valid():
-            try:
-                set_carel_value(
-                    self.object.sys.ipaddr,
-                    self.object.carel_reg,
-                    form.cleaned_data['value']
-                )
-                messages.success(request, 'Значение успешно записано')
-            except Exception as e:
-                messages.error(request, f'Ошибка записи: {str(e)}')
-            return redirect(self.request.path)
-        
-        context = self.get_context_data()
-        context['form'] = form
-        return self.render_to_response(context)
-
-
-class AtributeListView(OwnerListView):
-    """Список всех атрибутов компании"""
-    model = Atributes
-    template_name = 'data/atribute_list.html'
-
-
-class AtribUpdateView(OwnerUpdateView):
-    """Обновление данных атрибута"""
-    model = Atributes
-    form_class = CreateAtribForm
+    avg_pow = Data.objects.filter(
+        attribute__system__object=obj,
+        attribute__name__icontains='мощн',
+        timestamp__gte=last_hour
+    ).aggregate(Avg('value'))['value__avg'] or 0
     
-    def get_success_url(self):
-        return reverse_lazy('data:atr_detail', kwargs={
-            'user_pk': self.object.sys.obj.user.pk,
-            'obj_pk': self.object.sys.obj.pk,
-            'sys_pk': self.object.sys.pk,
-            'pk': self.object.pk
-        })
-
-
-class AtibuteDeleteView(OwnerDeleteView):
-    """Удаление атрибута"""
-    model = Atributes
-    
-    def get_success_url(self):
-        return reverse_lazy('data:sys_detail', kwargs={
-            'user_pk': self.object.sys.obj.user.pk,
-            'pk': self.object.sys.pk,
-            'obj_pk': self.object.sys.obj.pk
-        })
-
-
-# ============================================================================
-# DATA VIEWS (работа с данными измерений)
-# ============================================================================
-
-class CreateDataView(CompanyRequiredMixin, CreateView):
-    """Создание записи данных измерения"""
-    model = Data
-    form_class = CreateDataForm
-    
-    def get_initial(self):
-        initial = super().get_initial()
-        attribute = get_object_or_404(Atributes, pk=self.kwargs['atr_pk'])
-        
-        # Проверяем доступ
-        if not self.request.user.is_superuser:
-            if attribute.sys.obj.company != self.request.user.company:
-                raise PermissionDenied("Доступ запрещен")
-        
-        # Получаем текущее значение с контроллера
-        try:
-            values = get_carel_one_value(attribute.sys.ipaddr, attribute.carel_reg)
-            initial['value'] = values
-        except Exception as e:
-            messages.warning(self.request, f'Не удалось получить значение: {str(e)}')
-        
-        return initial
-    
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['atr_pk'] = self.kwargs['atr_pk']
-        return kwargs
-    
-    def get_success_url(self):
-        return reverse_lazy('data:atr_detail', kwargs={
-            'user_pk': self.kwargs['user_pk'],
-            'obj_pk': self.kwargs['obj_pk'],
-            'sys_pk': self.kwargs['sys_pk'],
-            'pk': self.kwargs['atr_pk']
-        })
-
-
-# ============================================================================
-# AJAX / API VIEWS (для динамических данных)
-# ============================================================================
-
-class GetCarelDataView(CompanyRequiredMixin, View):
-    """AJAX view для получения данных с CAREL контроллера"""
-    
-    def get(self, request, *args, **kwargs):
-        attribute = get_object_or_404(Atributes, pk=kwargs['atr_pk'])
-        
-        # Проверяем доступ к атрибуту
-        if not request.user.is_superuser:
-            if attribute.sys.obj.company != request.user.company:
-                return JsonResponse({'error': 'Access denied'}, status=403)
-        
-        try:
-            if kwargs.get('all_values'):
-                # Получить все значения
-                data = get_carel_all_values_json(attribute.sys.ipaddr)
-            else:
-                # Получить одно значение
-                value = get_carel_one_value(attribute.sys.ipaddr, attribute.carel_reg)
-                data = {
-                    'attribute': attribute.name,
-                    'value': value,
-                    'uom': attribute.uom,
-                }
-            
-            return JsonResponse(data, safe=False)
-        
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-
-
-class CompanyDashboardView(CompanyRequiredMixin, DetailView):
-    """Dashboard компании со всей статистикой"""
-    model = Company
-    template_name = 'data/company_dashboard.html'
-    
-    def get_object(self):
-        """Возвращаем компанию текущего пользователя"""
-        if self.request.user.is_superuser:
-            # Суперадмин может выбрать компанию
-            pk = self.kwargs.get('pk')
-            if pk:
-                return get_object_or_404(Company, pk=pk)
-        return self.request.user.company
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        company = self.object
-        
-        # Статистика
-        context['users_count'] = company.get_users_count()
-        context['objects_count'] = company.get_objects_count()
-        context['systems_count'] = company.get_systems_count()
-        
-        # Подписка
-        try:
-            context['subscription'] = company.subscription
-            context['days_left'] = company.days_until_expiration()
-        except:
-            context['subscription'] = None
-        
-        # Последние объекты
-        context['recent_objects'] = Obj.objects.filter(company=company).order_by('-created_at')[:5]
-        
-        # Последние данные
-        context['recent_data'] = Data.objects.filter(
-            name__sys__obj__company=company
-        ).order_by('-date')[:10]
-        
-        return context
+    return JsonResponse({
+        'sensors': sensors,
+        'stats': {
+            'temperature': round(avg_temp, 1),
+            'humidity': round(avg_hum, 1),
+            'power': round(avg_pow, 1),
+        },
+        'alerts_count': AlertRule.objects.filter(system__object=obj, is_active=True).count(),
+    })
