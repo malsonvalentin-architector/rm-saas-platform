@@ -26,8 +26,12 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "STEP 1/5: Database Migrations"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-python manage.py migrate --noinput
-echo "✅ Migrations completed"
+if python manage.py migrate --noinput; then
+    echo "✅ Migrations completed"
+else
+    echo "❌ FATAL: Migrations failed!"
+    exit 1
+fi
 echo ""
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -96,6 +100,8 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "STEP 5/6: Starting Daphne ASGI Server"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🚀 Daphne starting on 0.0.0.0:$PORT"
+echo "📝 All startup steps completed successfully!"
+echo "🌐 Application will be available at: https://www.promonitor.kz"
 echo ""
 
 # Start Daphne with explicit port number (not variable)
