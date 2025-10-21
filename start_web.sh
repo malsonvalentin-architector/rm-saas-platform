@@ -65,18 +65,18 @@ python manage.py force_fix_users 2>&1 || echo "⚠️  Force fix warning"
 echo ""
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "STEP 2.6/6: Resetting and Loading Quality Demo Data"
+echo "STEP 2.6/6: FORCE RESET - 10 Quality Objects (Guaranteed)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-if python manage.py reset_demo_data --user admin@promonitor.kz --confirm 2>&1; then
-    echo "✅ Demo data reset and reloaded!"
-    echo "📊 Fresh data:"
-    echo "   • 10 realistic objects with full monitoring"
-    echo "   • 35+ systems (HVAC, electrical, fire safety)"
-    echo "   • 150+ sensors with realistic parameters"
-    echo "   • 43,200+ data points (24h history, 5min)"
-    echo "   • 300+ alert rules"
+if python force_reset_now.py 2>&1; then
+    echo "✅ FORCE RESET COMPLETE!"
+    echo "📊 Fresh data loaded:"
+    echo "   • 10 quality objects (offices, warehouses, shops)"
+    echo "   • 40 systems (HVAC, Refrigeration, Lighting)"
+    echo "   • 200 sensors with realistic data"
+    echo "   • 57,600 data points (24h history, 5min intervals)"
 else
-    echo "⚠️  Demo data reset skipped (may have failed)"
+    echo "❌ FORCE RESET FAILED - CHECK LOGS!"
+    exit 1
 fi
 echo ""
 
