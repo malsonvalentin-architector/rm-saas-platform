@@ -273,7 +273,8 @@ class Obj(models.Model):
         ]
     
     def __str__(self):
-        return f'{self.obj} ({self.company.name})'
+        company_name = self.company.name if self.company else 'No Company'
+        return f'{self.obj} ({company_name})'
 
 
 class System(models.Model):
