@@ -7,7 +7,7 @@ import os
 import sys
 import django
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'home.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'rm.settings')
 django.setup()
 
 from data.models import Obj, System, Atribute, Data
