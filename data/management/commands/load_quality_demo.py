@@ -183,12 +183,12 @@ class Command(BaseCommand):
         for obj_data in objects_data:
             # Create object
             obj = Obj.objects.create(
-                name=obj_data['name'],
+                obj=obj_data['name'],
                 address=obj_data['address'],
                 company=company
             )
             total_objects += 1
-            self.stdout.write(f'  📍 {obj.name}')
+            self.stdout.write(f'  📍 {obj.obj}')
 
             # Create systems and sensors
             for sys_data in obj_data['systems']:
