@@ -36,62 +36,11 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 python manage.py fix_subscription_schema 2>&1 || echo "⚠️  Schema fix warning (may already be fixed)"
 echo ""
 
-# Step 2: Create/Update Superuser (FIXED FOR CUSTOM USER MODEL!)
+# Step 2: Setup Default Users (superadmin + admin)
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "STEP 2/5: Creating/Updating Superuser"
+echo "STEP 2/5: Setting Up Default Users"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-python manage.py shell -c "
-from django.contrib.auth import get_user_model;
-from data.models import Company;
-User = get_user_model();
-email = 'admin@promonitor.kz';
-password = 'ProMonitor2025!';
-
-# Создаём/получаем компанию ProMonitor
-company, _ = Company.objects.get_or_create(
-    name='ProMonitor Admin',
-    defaults={
-        'contact_person': 'Admin',
-        'contact_email': email,
-        'subscription_status': 'active',
-        'is_active': True,
-    }
-);
-
-# Обновляем или создаём суперпользователя (НЕ удаляем!)
-user, created = User.objects.update_or_create(
-    email=email,
-    defaults={
-        'password': User.objects.make_random_password(),  # temporary
-        'first_name': 'Admin',
-        'last_name': 'ProMonitor',
-        'role': 'superadmin',  # ВАЖНО: superadmin, не admin!
-        'company': company,
-        'is_staff': True,
-        'is_superuser': True,
-        'is_active': True,
-    }
-);
-
-# Устанавливаем правильный пароль
-user.set_password(password);
-user.save();
-
-if created:
-    print('✅ Superuser CREATED successfully!');
-else:
-    print('✅ Superuser UPDATED successfully!');
-
-print('╔════════════════════════════════════════════════════════════╗');
-print('║              ADMIN CREDENTIALS                             ║');
-print('╠════════════════════════════════════════════════════════════╣');
-print('║  URL:      https://promonitor.kz/admin/                    ║');
-print('║  Email:    admin@promonitor.kz                             ║');
-print('║  Password: ProMonitor2025!                                 ║');
-print('║  Role:     superadmin                                      ║');
-print('║  Company:  ProMonitor Admin                                ║');
-print('╚════════════════════════════════════════════════════════════╝');
-" 2>&1 || echo "⚠️  Superuser operation warning"
+python manage.py setup_default_users 2>&1 || echo "⚠️  Default users setup warning"
 echo ""
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
