@@ -6,6 +6,7 @@ Management команда для загрузки демо-данных ProMonit
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from django.db.models import Max
 from datetime import timedelta
 import random
 
@@ -175,7 +176,7 @@ class Command(BaseCommand):
                             name=f'Превышение {attr.name}',
                             condition='greater_than',
                             threshold=Data.objects.filter(name=attr).aggregate(
-                                max_val=timezone.models.Max('value')
+                                max_val=Max('value')
                             )['max_val'] * 0.9,  # 90% от максимального значения
                             is_active=random.random() > 0.7,  # 30% активных алертов
                             severity='warning' if random.random() > 0.5 else 'critical'

@@ -69,6 +69,16 @@ class Migration(migrations.Migration):
             name='is_featured',
             field=models.BooleanField(default=False, verbose_name='Рекомендуемый'),
         ),
+        migrations.AddField(
+            model_name='subscriptionplan',
+            name='created_at',
+            field=models.DateTimeField(auto_now_add=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='subscriptionplan',
+            name='updated_at',
+            field=models.DateTimeField(auto_now=True, null=True),
+        ),
         migrations.AlterField(
             model_name='subscriptionplan',
             name='price_yearly',
