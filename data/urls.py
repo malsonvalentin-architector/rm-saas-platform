@@ -23,4 +23,7 @@ urlpatterns = [
     # Sensors and realtime
     path('sensors/<int:sensor_id>/history/', views.sensor_history, name='sensor_history'),
     path('objects/<int:object_id>/realtime/', views.realtime_data, name='realtime_data'),
+    
+    # DEBUG: URL patterns inspector
+    path('debug/urls/', views.debug_urls, name='debug_urls'),
 ]

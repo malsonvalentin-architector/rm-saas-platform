@@ -5,6 +5,7 @@ from django.db.models import Avg, Max, Min, Count, Q
 from django.utils import timezone
 from datetime import timedelta
 from .models import Obj, System, Atributes, Data, AlertRule
+from django.urls import get_resolver
 
 
 @login_required
@@ -210,3 +211,35 @@ def realtime_data(request, object_id):
         },
         'alerts_count': AlertRule.objects.filter(company=obj.company, enabled=True).count(),
     })
+
+
+@login_required
+def debug_urls(request):
+    """DEBUG: Show all registered URL patterns"""
+    if not request.user.is_staff:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    
+    resolver = get_resolver()
+    url_patterns = []
+    
+    def extract_patterns(patterns, prefix=''):
+        for pattern in patterns:
+            if hasattr(pattern, 'url_patterns'):
+                # It's an included URLconf
+                extract_patterns(pattern.url_patterns, prefix + str(pattern.pattern))
+            else:
+                # It's a regular pattern
+                url_patterns.append({
+                    'pattern': prefix + str(pattern.pattern),
+                    'name': pattern.name if hasattr(pattern, 'name') else None,
+                    'view': str(pattern.callback) if hasattr(pattern, 'callback') else None,
+                })
+    
+    extract_patterns(resolver.url_patterns)
+    
+    return JsonResponse({
+        'total_patterns': len(url_patterns),
+        'patterns': url_patterns,
+        'object_dashboard_exists': any('object_dashboard' in str(p) for p in url_patterns),
+        'objects_detail_exists': any('objects/<int' in str(p) for p in url_patterns),
+    }, json_dumps_params={'indent': 2})
