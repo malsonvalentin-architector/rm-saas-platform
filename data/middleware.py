@@ -37,7 +37,7 @@ class RoleBasedRedirectMiddleware(MiddlewareMixin):
         'superadmin': '/dashboard/',
         'admin': '/dashboard/',
         'manager': '/objects/',
-        'client': '/portal/',
+        'client': '/objects/',  # Client uses same page but read-only
     }
     
     def process_request(self, request):
