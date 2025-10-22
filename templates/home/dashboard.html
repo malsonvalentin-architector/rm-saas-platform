@@ -20,7 +20,7 @@
                 <a class="nav-link" href="{% url 'home:dashboard' %}"><i class="fas fa-home"></i> Главная</a>
                 <a class="nav-link" href="{% url 'data:object_list' %}"><i class="fas fa-building"></i> Объекты</a>
                 <a class="nav-link" href="{% url 'data:all_systems' %}"><i class="fas fa-cogs"></i> Системы</a>
-                <a class="nav-link position-relative" href="#">
+                <a class="nav-link position-relative" href="{% url 'data:alerts_list' %}">
                     <i class="fas fa-bell"></i> Тревоги
                     {% if active_alerts > 0 %}
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">

@@ -1,0 +1,653 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Тревоги - ProMonitor.kz{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Карточки статистики */
+    .stats-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+    
+    .stats-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 0.75rem;
+    }
+    
+    .stats-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        color: #1a1a1a;
+    }
+    
+    .stats-label {
+        font-size: 0.875rem;
+        color: #666;
+        font-weight: 500;
+    }
+    
+    /* Бейджи серьёзности */
+    .severity-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+    
+    .severity-low {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+    
+    .severity-medium {
+        background: #fff3e0;
+        color: #f57c00;
+    }
+    
+    .severity-high {
+        background: #ffe0b2;
+        color: #e65100;
+    }
+    
+    .severity-critical {
+        background: #ffebee;
+        color: #c62828;
+        animation: pulse-critical 2s infinite;
+    }
+    
+    @keyframes pulse-critical {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    
+    /* Статусы тревог */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+    }
+    
+    .status-active {
+        background: #ffebee;
+        color: #c62828;
+    }
+    
+    .status-acknowledged {
+        background: #fff3e0;
+        color: #f57c00;
+    }
+    
+    .status-resolved {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+    
+    .status-snoozed {
+        background: #f3e5f5;
+        color: #7b1fa2;
+    }
+    
+    /* Таблица тревог */
+    .alerts-table {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+    
+    .alerts-table table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .alerts-table thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .alerts-table thead th {
+        color: white;
+        font-weight: 600;
+        text-align: left;
+        padding: 1rem;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .alerts-table tbody tr {
+        border-bottom: 1px solid #f0f0f0;
+        transition: background 0.2s ease;
+    }
+    
+    .alerts-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+    
+    .alerts-table tbody td {
+        padding: 1rem;
+        color: #333;
+        font-size: 0.9375rem;
+    }
+    
+    /* Критические тревоги - выделение */
+    .alert-row-critical {
+        background: #ffebee !important;
+        border-left: 4px solid #c62828;
+    }
+    
+    /* Кнопки действий */
+    .action-btn {
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+    
+    .btn-acknowledge {
+        background: #fff3e0;
+        color: #f57c00;
+    }
+    
+    .btn-acknowledge:hover {
+        background: #ffe0b2;
+    }
+    
+    .btn-resolve {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+    
+    .btn-resolve:hover {
+        background: #c8e6c9;
+    }
+    
+    .btn-snooze {
+        background: #f3e5f5;
+        color: #7b1fa2;
+    }
+    
+    .btn-snooze:hover {
+        background: #e1bee7;
+    }
+    
+    .btn-comment {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+    
+    .btn-comment:hover {
+        background: #bbdefb;
+    }
+    
+    /* Фильтры */
+    .filters-container {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        margin-bottom: 1.5rem;
+    }
+    
+    .filter-group {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+    
+    .filter-item {
+        flex: 1;
+        min-width: 180px;
+    }
+    
+    .filter-item label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 0.5rem;
+    }
+    
+    .filter-item select,
+    .filter-item input[type="text"] {
+        width: 100%;
+        padding: 0.625rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.9375rem;
+        transition: border-color 0.2s ease;
+    }
+    
+    .filter-item select:focus,
+    .filter-item input[type="text"]:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+    
+    /* Модальное окно */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        backdrop-filter: blur(4px);
+    }
+    
+    .modal-content {
+        background: white;
+        margin: 5% auto;
+        padding: 2rem;
+        border-radius: 12px;
+        max-width: 500px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+    
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1a1a1a;
+    }
+    
+    .close-modal {
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #999;
+        transition: color 0.2s ease;
+    }
+    
+    .close-modal:hover {
+        color: #333;
+    }
+    
+    /* Временные метки */
+    .time-info {
+        font-size: 0.8125rem;
+        color: #666;
+    }
+    
+    /* Пустое состояние */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+    }
+    
+    .empty-state-text {
+        font-size: 1.125rem;
+        color: #666;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Заголовок -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1" style="font-weight: 700;">🚨 Тревоги</h1>
+            <p class="text-muted mb-0">Мониторинг и управление тревогами систем</p>
+        </div>
+    </div>
+    
+    <!-- Карточки статистики -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background: #ffebee;">
+                    🔴
+                </div>
+                <div class="stats-value">{{ active_count }}</div>
+                <div class="stats-label">Активные тревоги</div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background: #fff3e0;">
+                    ⚠️
+                </div>
+                <div class="stats-value">{{ acknowledged_count }}</div>
+                <div class="stats-label">Подтверждённые</div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background: #e8f5e9;">
+                    ✅
+                </div>
+                <div class="stats-value">{{ resolved_today }}</div>
+                <div class="stats-label">Решённых сегодня</div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background: #e3f2fd;">
+                    ⏱️
+                </div>
+                <div class="stats-value">{{ avg_resolution_minutes }}</div>
+                <div class="stats-label">Среднее время (мин)</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Критические тревоги (если есть) -->
+    {% if critical_alerts %}
+    <div class="alert alert-danger d-flex align-items-center mb-4" role="alert">
+        <span style="font-size: 1.5rem; margin-right: 1rem;">🔥</span>
+        <div>
+            <strong>Внимание!</strong> Обнаружены критические тревоги ({{ critical_alerts|length }}): 
+            {% for alert in critical_alerts %}
+                <strong>{{ alert.alert_rule.name }}</strong>{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Фильтры -->
+    <div class="filters-container">
+        <form method="get" action="{% url 'data:alerts_list' %}">
+            <div class="filter-group">
+                <div class="filter-item">
+                    <label for="status">Статус</label>
+                    <select name="status" id="status" onchange="this.form.submit()">
+                        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Все</option>
+                        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Активные</option>
+                        <option value="acknowledged" {% if status_filter == 'acknowledged' %}selected{% endif %}>Подтверждённые</option>
+                        <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>Решённые</option>
+                        <option value="snoozed" {% if status_filter == 'snoozed' %}selected{% endif %}>Отложенные</option>
+                    </select>
+                </div>
+                
+                <div class="filter-item">
+                    <label for="severity">Серьёзность</label>
+                    <select name="severity" id="severity" onchange="this.form.submit()">
+                        <option value="" {% if not severity_filter %}selected{% endif %}>Все</option>
+                        <option value="low" {% if severity_filter == 'low' %}selected{% endif %}>Низкая</option>
+                        <option value="medium" {% if severity_filter == 'medium' %}selected{% endif %}>Средняя</option>
+                        <option value="high" {% if severity_filter == 'high' %}selected{% endif %}>Высокая</option>
+                        <option value="critical" {% if severity_filter == 'critical' %}selected{% endif %}>Критическая</option>
+                    </select>
+                </div>
+                
+                <div class="filter-item">
+                    <label for="object_id">Объект</label>
+                    <select name="object_id" id="object_id" onchange="this.form.submit()">
+                        <option value="" {% if not object_filter %}selected{% endif %}>Все объекты</option>
+                        {% for obj in objects_list %}
+                        <option value="{{ obj.id }}" {% if object_filter == obj.id|stringformat:"s" %}selected{% endif %}>
+                            {{ obj.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filter-item">
+                    <label for="search">Поиск</label>
+                    <input type="text" name="search" id="search" placeholder="Название тревоги..." value="{{ search_query }}">
+                </div>
+                
+                <div class="filter-item" style="min-width: auto;">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.625rem;">
+                        🔍 Найти
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Таблица тревог -->
+    {% if alerts %}
+    <div class="alerts-table">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 5%;">ID</th>
+                    <th style="width: 20%;">Тревога</th>
+                    <th style="width: 15%;">Объект / Система</th>
+                    <th style="width: 10%;">Серьёзность</th>
+                    <th style="width: 10%;">Статус</th>
+                    <th style="width: 12%;">Время срабатывания</th>
+                    <th style="width: 10%;">Длительность</th>
+                    <th style="width: 18%;">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for alert in alerts %}
+                <tr {% if alert.rule.severity == 'critical' and alert.status == 'active' %}class="alert-row-critical"{% endif %}>
+                    <td><strong>#{{ alert.id }}</strong></td>
+                    
+                    <td>
+                        <div style="font-weight: 600; margin-bottom: 0.25rem;">
+                            {{ alert.rule.name }}
+                        </div>
+                        <div style="font-size: 0.8125rem; color: #666;">
+                            {{ alert.rule.attribute.name }}: {{ alert.value }} {{ alert.rule.attribute.unit }}
+                        </div>
+                    </td>
+                    
+                    <td>
+                        <div style="font-weight: 600; margin-bottom: 0.25rem;">
+                            {{ alert.rule.attribute.system.object.name }}
+                        </div>
+                        <div style="font-size: 0.8125rem; color: #666;">
+                            {{ alert.rule.attribute.system.name }}
+                        </div>
+                    </td>
+                    
+                    <td>
+                        {% if alert.rule.severity == 'low' %}
+                        <span class="severity-badge severity-low">🔵 Low</span>
+                        {% elif alert.rule.severity == 'medium' %}
+                        <span class="severity-badge severity-medium">🟡 Medium</span>
+                        {% elif alert.rule.severity == 'high' %}
+                        <span class="severity-badge severity-high">🟠 High</span>
+                        {% elif alert.rule.severity == 'critical' %}
+                        <span class="severity-badge severity-critical">🔴 Critical</span>
+                        {% endif %}
+                    </td>
+                    
+                    <td>
+                        {% if alert.status == 'active' %}
+                        <span class="status-badge status-active">Активна</span>
+                        {% elif alert.status == 'acknowledged' %}
+                        <span class="status-badge status-acknowledged">Подтверждена</span>
+                        {% elif alert.status == 'resolved' %}
+                        <span class="status-badge status-resolved">Решена</span>
+                        {% elif alert.status == 'snoozed' %}
+                        <span class="status-badge status-snoozed">Отложена</span>
+                        {% endif %}
+                    </td>
+                    
+                    <td>
+                        <div class="time-info">
+                            {{ alert.triggered_at|date:"d.m.Y" }}<br>
+                            {{ alert.triggered_at|date:"H:i" }}
+                        </div>
+                    </td>
+                    
+                    <td>
+                        <div class="time-info">
+                            {{ alert.get_duration }}
+                        </div>
+                    </td>
+                    
+                    <td>
+                        <div class="d-flex gap-1 flex-wrap">
+                            {% if alert.status == 'active' %}
+                            <a href="{% url 'data:alert_acknowledge' alert.id %}" class="action-btn btn-acknowledge" title="Подтвердить">
+                                ✓
+                            </a>
+                            {% endif %}
+                            
+                            {% if alert.status in 'active,acknowledged,snoozed' %}
+                            <a href="{% url 'data:alert_resolve' alert.id %}" class="action-btn btn-resolve" title="Решить">
+                                ✓✓
+                            </a>
+                            {% endif %}
+                            
+                            {% if alert.status in 'active,acknowledged' %}
+                            <button onclick="openSnoozeModal({{ alert.id }})" class="action-btn btn-snooze" title="Отложить">
+                                ⏰
+                            </button>
+                            {% endif %}
+                            
+                            <button onclick="openCommentModal({{ alert.id }}, '{{ alert.rule.name|escapejs }}')" class="action-btn btn-comment" title="Комментарий">
+                                💬
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">🎉</div>
+        <div class="empty-state-text">Тревог не найдено</div>
+        <p class="text-muted mt-2">Все системы работают нормально</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Модальное окно для отложения тревоги -->
+<div id="snoozeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">⏰ Отложить тревогу</h5>
+            <span class="close-modal" onclick="closeSnoozeModal()">&times;</span>
+        </div>
+        <form id="snoozeForm" method="post" action="">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="snooze_minutes" class="form-label">На сколько минут отложить?</label>
+                <select name="snooze_minutes" id="snooze_minutes" class="form-select">
+                    <option value="15">15 минут</option>
+                    <option value="30">30 минут</option>
+                    <option value="60" selected>1 час</option>
+                    <option value="120">2 часа</option>
+                    <option value="240">4 часа</option>
+                    <option value="480">8 часов</option>
+                </select>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-fill">Отложить</button>
+                <button type="button" class="btn btn-secondary" onclick="closeSnoozeModal()">Отмена</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно для комментария -->
+<div id="commentModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="commentModalTitle">💬 Добавить комментарий</h5>
+            <span class="close-modal" onclick="closeCommentModal()">&times;</span>
+        </div>
+        <form id="commentForm" method="post" action="">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="comment" class="form-label">Комментарий</label>
+                <textarea name="comment" id="comment" class="form-control" rows="4" 
+                          placeholder="Опишите проблему или действия..."></textarea>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-fill">Добавить</button>
+                <button type="button" class="btn btn-secondary" onclick="closeCommentModal()">Отмена</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Модальное окно отложения тревоги
+function openSnoozeModal(alertId) {
+    const modal = document.getElementById('snoozeModal');
+    const form = document.getElementById('snoozeForm');
+    form.action = `/alerts/${alertId}/snooze/`;
+    modal.style.display = 'block';
+}
+
+function closeSnoozeModal() {
+    document.getElementById('snoozeModal').style.display = 'none';
+}
+
+// Модальное окно комментария
+function openCommentModal(alertId, alertName) {
+    const modal = document.getElementById('commentModal');
+    const form = document.getElementById('commentForm');
+    const title = document.getElementById('commentModalTitle');
+    form.action = `/alerts/${alertId}/comment/`;
+    title.innerHTML = `💬 Комментарий к тревоге: ${alertName}`;
+    modal.style.display = 'block';
+}
+
+function closeCommentModal() {
+    document.getElementById('commentModal').style.display = 'none';
+}
+
+// Закрытие модальных окон по клику вне окна
+window.onclick = function(event) {
+    const snoozeModal = document.getElementById('snoozeModal');
+    const commentModal = document.getElementById('commentModal');
+    if (event.target == snoozeModal) {
+        closeSnoozeModal();
+    }
+    if (event.target == commentModal) {
+        closeCommentModal();
+    }
+}
+</script>
+{% endblock %}

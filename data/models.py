@@ -457,6 +457,123 @@ class AlertRule(models.Model):
         return conditions.get(self.condition, False)
 
 
+class AlertEvent(models.Model):
+    """История срабатываний тревог (Phase 4.3)"""
+    
+    rule = models.ForeignKey(AlertRule, on_delete=models.CASCADE, verbose_name="Правило", related_name='events')
+    
+    # Информация о срабатывании
+    triggered_at = models.DateTimeField(auto_now_add=True, verbose_name="Время срабатывания")
+    value = models.FloatField(verbose_name="Значение при срабатывании")
+    
+    # Статус тревоги
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('active', 'Активна'),
+            ('acknowledged', 'Подтверждена'),
+            ('resolved', 'Решена'),
+            ('snoozed', 'Отложена'),
+            ('ignored', 'Игнорирована'),
+        ],
+        default='active',
+        verbose_name="Статус"
+    )
+    
+    # Действия пользователей
+    acknowledged_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='acknowledged_alerts',
+        verbose_name="Подтверждена"
+    )
+    acknowledged_at = models.DateTimeField(null=True, blank=True, verbose_name="Время подтверждения")
+    
+    resolved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='resolved_alerts',
+        verbose_name="Решена"
+    )
+    resolved_at = models.DateTimeField(null=True, blank=True, verbose_name="Время решения")
+    
+    # Отложить тревогу
+    snooze_until = models.DateTimeField(null=True, blank=True, verbose_name="Отложена до")
+    snoozed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='snoozed_alerts',
+        verbose_name="Отложена"
+    )
+    
+    # Дополнительная информация
+    notes = models.TextField(blank=True, verbose_name="Заметки")
+    
+    class Meta:
+        verbose_name = "Событие тревоги"
+        verbose_name_plural = "События тревог"
+        ordering = ['-triggered_at']
+        indexes = [
+            models.Index(fields=['status', '-triggered_at']),
+            models.Index(fields=['rule', 'status']),
+        ]
+    
+    def __str__(self):
+        return f"{self.rule.name} - {self.get_status_display()} ({self.triggered_at.strftime('%Y-%m-%d %H:%M')})"
+    
+    def get_severity(self):
+        """Получить уровень серьёзности из правила"""
+        return self.rule.severity
+    
+    def get_duration(self):
+        """Продолжительность активности тревоги"""
+        if self.status == 'resolved' and self.resolved_at:
+            return self.resolved_at - self.triggered_at
+        return timezone.now() - self.triggered_at
+    
+    def is_snoozed(self):
+        """Проверка отложена ли тревога"""
+        if self.status == 'snoozed' and self.snooze_until:
+            return timezone.now() < self.snooze_until
+        return False
+    
+    def get_object_name(self):
+        """Название объекта через атрибут → система → объект"""
+        return self.rule.attribute.sys.obj.obj if self.rule.attribute.sys else "N/A"
+    
+    def get_system_name(self):
+        """Название системы"""
+        return self.rule.attribute.sys.name if self.rule.attribute.sys else "N/A"
+    
+    def get_sensor_name(self):
+        """Название датчика"""
+        return self.rule.attribute.name
+
+
+class AlertComment(models.Model):
+    """Комментарии к тревогам (Phase 4.3)"""
+    
+    event = models.ForeignKey(AlertEvent, on_delete=models.CASCADE, verbose_name="Тревога", related_name='comments')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Пользователь")
+    
+    text = models.TextField(verbose_name="Комментарий")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Создан")
+    
+    class Meta:
+        verbose_name = "Комментарий к тревоге"
+        verbose_name_plural = "Комментарии к тревогам"
+        ordering = ['created_at']
+    
+    def __str__(self):
+        return f"{self.user.email}: {self.text[:50]}..."
+
+
 # ============================================================================
 # МОДЕЛИ ДЛЯ СИСТЕМЫ ПОДПИСОК (Subscription System)
 # ============================================================================

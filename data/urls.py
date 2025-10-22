@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from . import views_crud
 from . import views_systems
+from . import views_alerts
 
 app_name = 'data'
 
@@ -27,6 +28,14 @@ urlpatterns = [
     # Sensors and realtime
     path('sensors/<int:sensor_id>/history/', views.sensor_history, name='sensor_history'),
     path('objects/<int:object_id>/realtime/', views.realtime_data, name='realtime_data'),
+    
+    # Alerts System (Phase 4.3)
+    path('alerts/', views_alerts.alerts_list, name='alerts_list'),
+    path('alerts/<int:alert_id>/', views_alerts.alert_detail, name='alert_detail'),
+    path('alerts/<int:alert_id>/acknowledge/', views_alerts.alert_acknowledge, name='alert_acknowledge'),
+    path('alerts/<int:alert_id>/resolve/', views_alerts.alert_resolve, name='alert_resolve'),
+    path('alerts/<int:alert_id>/snooze/', views_alerts.alert_snooze, name='alert_snooze'),
+    path('alerts/<int:alert_id>/comment/', views_alerts.alert_add_comment, name='alert_add_comment'),
     
     # DEBUG: URL patterns inspector
     path('debug/urls/', views.debug_urls, name='debug_urls'),
