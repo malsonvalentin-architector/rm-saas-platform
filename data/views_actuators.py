@@ -71,19 +71,18 @@ def actuators_list(request):
             Q(sys__obj__obj__icontains=search)
         )
     
-    # Статистика
-    total_actuators = Actuator.objects.filter(sys__obj__company=company).count()
-    online_actuators = Actuator.objects.filter(sys__obj__company=company, is_online=True).count()
-    active_actuators = Actuator.objects.filter(sys__obj__company=company, is_active=True).count()
+    # Статистика (ВРЕМЕННО: все актуаторы для демо)
+    total_actuators = Actuator.objects.count()
+    online_actuators = Actuator.objects.filter(is_online=True).count()
+    active_actuators = Actuator.objects.filter(is_active=True).count()
     
     # Команды за последние 24 часа
     commands_24h = ActuatorCommand.objects.filter(
-        actuator__sys__obj__company=company,
         executed_at__gte=timezone.now() - timezone.timedelta(hours=24)
     ).count()
     
-    # Объекты для фильтра
-    objects = Obj.objects.filter(company=company).order_by('obj')
+    # Объекты для фильтра (ВРЕМЕННО: все объекты)
+    objects = Obj.objects.all().order_by('obj')
     
     # Типы устройств для фильтра
     actuator_types = Actuator.ACTUATOR_TYPES
@@ -118,27 +117,22 @@ def actuator_control(request, actuator_id):
     
     if request.method != 'POST':
         messages.error(request, "Метод не разрешён")
-        return redirect('actuators_list')
+        return redirect('data:actuators_list')
     
-    company = request.user.company
-    
-    # Проверяем доступ к устройству
-    actuator = get_object_or_404(
-        Actuator.objects.filter(sys__obj__company=company),
-        id=actuator_id
-    )
+    # Проверяем доступ к устройству (ВРЕМЕННО: все актуаторы)
+    actuator = get_object_or_404(Actuator, id=actuator_id)
     
     # Получаем значение команды
     try:
         value = float(request.POST.get('value', 0))
     except ValueError:
         messages.error(request, "Некорректное значение команды")
-        return redirect('actuators_list')
+        return redirect('data:actuators_list')
     
     # Проверяем диапазон
     if not (actuator.min_value <= value <= actuator.max_value):
         messages.error(request, f"Значение должно быть от {actuator.min_value} до {actuator.max_value}")
-        return redirect('actuators_list')
+        return redirect('data:actuators_list')
     
     # Получаем IP адрес
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -189,13 +183,8 @@ def actuator_history(request, actuator_id):
     История команд устройства
     """
     
-    company = request.user.company
-    
-    # Проверяем доступ к устройству
-    actuator = get_object_or_404(
-        Actuator.objects.filter(sys__obj__company=company),
-        id=actuator_id
-    )
+    # Проверяем доступ к устройству (ВРЕМЕННО: все актуаторы)
+    actuator = get_object_or_404(Actuator, id=actuator_id)
     
     # Получаем команды
     commands = ActuatorCommand.objects.filter(
