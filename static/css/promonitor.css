@@ -333,12 +333,15 @@ body {
 /* Исправляет проблему: modal открывается с белой вспышкой и дёрганием */
 
 /* 0. КРИТИЧНО: Скрываем все modals по умолчанию */
-.modal {
+/* Используем максимальную специфичность чтобы переопределить Bootstrap */
+.modal,
+.modal.fade {
     display: none !important;
-    background-color: transparent;
+    background-color: transparent !important;
 }
 
-.modal.show {
+.modal.show,
+.modal.fade.show {
     display: block !important;
 }
 
