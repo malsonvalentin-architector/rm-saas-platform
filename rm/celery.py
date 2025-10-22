@@ -1,6 +1,6 @@
 """
 Celery configuration for RM SaaS platform
-Fixed: Removed non-existent tasks from beat_schedule
+Fixed: Added placeholder tasks to prevent unregistered errors
 """
 
 from __future__ import absolute_import, unicode_literals
@@ -28,31 +28,62 @@ app.conf.redbeat_redis_url = app.conf.broker_url
 app.autodiscover_tasks()
 
 # ============================================================================
-# BEAT SCHEDULE - ТОЛЬКО СУЩЕСТВУЮЩИЕ ЗАДАЧИ (Phase 4.6 Modbus Integration)
+# BEAT SCHEDULE - Все задачи (реализованные + placeholders)
 # ============================================================================
 
 app.conf.beat_schedule = {
+    # === РЕАЛИЗОВАННЫЕ ЗАДАЧИ (Phase 4.6 Modbus Integration) ===
+    
     # Modbus polling - опрос всех активных Modbus подключений
     'poll-modbus-connections': {
         'task': 'poll_modbus_connections',
         'schedule': 60.0,  # Каждую минуту
         'options': {
             'queue': 'celery',
-            'expires': 50.0,  # Задача истекает через 50 сек
+            'expires': 50.0,
         }
     },
     
-    # Cleanup old Modbus logs - очистка старых логов
+    # Cleanup old Modbus logs
     'cleanup-old-modbus-logs': {
         'task': 'cleanup_old_modbus_logs',
-        'schedule': crontab(hour=2, minute=0),  # Каждый день в 2:00 AM
+        'schedule': crontab(hour=2, minute=0),  # Ежедневно в 2:00 AM
+        'options': {
+            'queue': 'celery',
+        }
+    },
+    
+    # === PLACEHOLDER ЗАДАЧИ (TODO: реализовать логику) ===
+    
+    # Проверка алертов
+    'check-alerts': {
+        'task': 'data.tasks.check_alerts',
+        'schedule': 30.0,  # Каждые 30 секунд
+        'options': {
+            'queue': 'celery',
+        }
+    },
+    
+    # Опрос Carel контроллеров
+    'poll-carel-controllers': {
+        'task': 'data.tasks.poll_carel_controllers',
+        'schedule': 60.0,  # Каждую минуту
+        'options': {
+            'queue': 'celery',
+        }
+    },
+    
+    # Проверка истекающих подписок
+    'check-expiring-subscriptions': {
+        'task': 'data.tasks.check_expiring_subscriptions',
+        'schedule': crontab(hour=9, minute=0),  # Ежедневно в 9:00 AM
         'options': {
             'queue': 'celery',
         }
     },
 }
 
-# Total periodic tasks: 2 (ТОЛЬКО проверенные существующие задачи)
+# Total periodic tasks: 5 (2 реализованных + 3 placeholders)
 
 
 @app.task(bind=True)
