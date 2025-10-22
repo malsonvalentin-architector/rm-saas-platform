@@ -1,12 +1,12 @@
 """
 Celery configuration for RM SaaS platform
+Fixed: Removed non-existent tasks from beat_schedule
 """
 
 from __future__ import absolute_import, unicode_literals
 import os
 from celery import Celery
 from celery.schedules import crontab
-from kombu import Exchange, Queue
 
 # Set default Django settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'rm.settings')
@@ -23,40 +23,39 @@ app.conf.broker_connection_retry_on_startup = True
 # ===== Использование Redis для хранения расписания Beat =====
 app.conf.beat_scheduler = 'redbeat.RedBeatScheduler'
 app.conf.redbeat_redis_url = app.conf.broker_url
-# ==================================================
 
 # Load task modules from all registered Django apps.
 app.autodiscover_tasks()
 
 # ============================================================================
-# HARDCODED BEAT SCHEDULE (Using REAL tasks from data/tasks.py)
+# BEAT SCHEDULE - ТОЛЬКО СУЩЕСТВУЮЩИЕ ЗАДАЧИ (Phase 4.6 Modbus Integration)
 # ============================================================================
 
 app.conf.beat_schedule = {
-    # Polling Carel controllers (main polling task)
-    'poll-carel-controllers': {
-        'task': 'data.tasks.poll_carel_controllers',
-        'schedule': 60.0,  # Every minute
+    # Modbus polling - опрос всех активных Modbus подключений
+    'poll-modbus-connections': {
+        'task': 'poll_modbus_connections',
+        'schedule': 60.0,  # Каждую минуту
+        'options': {
+            'queue': 'celery',
+            'expires': 50.0,  # Задача истекает через 50 сек
+        }
     },
     
-    # Alert checking
-    'check-alerts': {
-        'task': 'data.tasks.check_alerts',
-        'schedule': 30.0,  # Every 30 seconds
-    },
-    
-    # Subscription management
-    'check-expiring-subscriptions': {
-        'task': 'data.tasks.check_expiring_subscriptions',
-        'schedule': crontab(hour=9, minute=0),  # Daily at 9 AM
+    # Cleanup old Modbus logs - очистка старых логов
+    'cleanup-old-modbus-logs': {
+        'task': 'cleanup_old_modbus_logs',
+        'schedule': crontab(hour=2, minute=0),  # Каждый день в 2:00 AM
+        'options': {
+            'queue': 'celery',
+        }
     },
 }
 
-# Celery Beat schedule configured above
-# Total periodic tasks: 3
+# Total periodic tasks: 2 (ТОЛЬКО проверенные существующие задачи)
 
 
 @app.task(bind=True)
 def debug_task(self):
     """Debug task for testing Celery"""
-    print('Request: {0!r}'.format(self.request))
+    print(f'Request: {self.request!r}')
