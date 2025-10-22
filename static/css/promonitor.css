@@ -332,6 +332,15 @@ body {
 /* ============ MODAL FIX: Предотвращение белой вспышки и прыжков ============ */
 /* Исправляет проблему: modal открывается с белой вспышкой и дёрганием */
 
+/* 0. КРИТИЧНО: Скрываем все modals по умолчанию */
+.modal {
+    display: none !important;
+}
+
+.modal.show {
+    display: block !important;
+}
+
 /* 1. Предотвращаем layout shift при открытии modal */
 body.modal-open {
     padding-right: 0 !important; /* Отключаем компенсацию scrollbar */
