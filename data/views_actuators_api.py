@@ -41,9 +41,9 @@ def actuators_live_stats(request):
             'id': cmd.id,
             'actuator_name': cmd.actuator.name,
             'object_name': cmd.actuator.sys.obj.obj,
-            'value': float(cmd.value),
+            'value': float(cmd.command_value),
             'timestamp': cmd.executed_at.isoformat(),
-            'success': cmd.success,
+            'success': cmd.status == 'success',
         })
     
     return JsonResponse({
