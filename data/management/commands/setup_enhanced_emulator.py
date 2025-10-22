@@ -3,7 +3,7 @@ Django Management Command: Setup Enhanced Emulator Integration
 Автоматически создаёт Modbus Connection и 12 Register Mappings
 """
 from django.core.management.base import BaseCommand
-from data.models import ModbusConnection, ModbusRegisterMapping
+from data.models import ModbusConnection, ModbusRegisterMap
 
 
 class Command(BaseCommand):
@@ -23,10 +23,10 @@ class Command(BaseCommand):
             defaults={
                 'host': 'localhost',
                 'port': 5020,
-                'unit_id': 1,
-                'connection_timeout': 5,
-                'polling_interval': 5,
-                'is_active': True,
+                'slave_id': 1,
+                'timeout': 5,
+                'poll_interval': 5,
+                'enabled': True,
                 'description': 'Enhanced Modbus Emulator with 800+ registers (addresses 1000-4000)'
             }
         )
@@ -37,13 +37,13 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING(f"ℹ️  Connection exists: {conn.name}"))
             conn.host = 'localhost'
             conn.port = 5020
-            conn.is_active = True
+            conn.enabled = True
             conn.save()
             self.stdout.write(self.style.SUCCESS("✅ Updated connection parameters"))
         
         self.stdout.write(f"   ID: {conn.id}")
         self.stdout.write(f"   Host: {conn.host}:{conn.port}")
-        self.stdout.write(f"   Active: {conn.is_active}\n")
+        self.stdout.write(f"   Active: {conn.enabled}\n")
         
         # === Step 2: Create 12 Register Mappings ===
         self.stdout.write(self.style.WARNING("📊 STEP 2: Creating 12 Register Mappings..."))
@@ -75,18 +75,17 @@ class Command(BaseCommand):
         updated_count = 0
         
         for addr, name, unit, desc in mappings:
-            mapping, created = ModbusRegisterMapping.objects.get_or_create(
+            mapping, created = ModbusRegisterMap.objects.get_or_create(
                 connection=conn,
-                register_address=addr,
+                register_type='holding',
+                address=addr,
                 defaults={
-                    'register_type': 'holding_register',
                     'data_type': 'float32',
                     'sensor_name': name,
-                    'unit': unit,
-                    'scaling_factor': 1.0,
+                    'scale_factor': 1.0,
                     'offset': 0.0,
-                    'is_active': True,
-                    'description': desc,
+                    'enabled': True,
+                    'description': f"{desc} ({unit})",
                 }
             )
             
@@ -95,8 +94,8 @@ class Command(BaseCommand):
                 created_count += 1
             else:
                 mapping.sensor_name = name
-                mapping.unit = unit
-                mapping.is_active = True
+                mapping.enabled = True
+                mapping.description = f"{desc} ({unit})"
                 mapping.save()
                 self.stdout.write(f"  ♻️  {name:30s} | Addr: {addr:5d} | {unit:6s}")
                 updated_count += 1
@@ -110,42 +109,42 @@ class Command(BaseCommand):
         self.stdout.write(self.style.WARNING("✅ STEP 3: Verification"))
         self.stdout.write("-" * 70)
         
-        active_conns = ModbusConnection.objects.filter(is_active=True).count()
-        active_maps = ModbusRegisterMapping.objects.filter(
+        active_conns = ModbusConnection.objects.filter(enabled=True).count()
+        active_maps = ModbusRegisterMap.objects.filter(
             connection=conn,
-            is_active=True
+            enabled=True
         ).count()
         
         self.stdout.write(f"   Active Connections: {active_conns}")
         self.stdout.write(f"   Active Mappings:    {active_maps}")
         
         # Group by type
-        temp = ModbusRegisterMapping.objects.filter(
+        temp = ModbusRegisterMap.objects.filter(
             connection=conn, 
-            register_address__gte=1000, 
-            register_address__lt=2000,
-            is_active=True
+            address__gte=1000, 
+            address__lt=2000,
+            enabled=True
         ).count()
         
-        hum = ModbusRegisterMapping.objects.filter(
+        hum = ModbusRegisterMap.objects.filter(
             connection=conn,
-            register_address__gte=2000,
-            register_address__lt=3000,
-            is_active=True
+            address__gte=2000,
+            address__lt=3000,
+            enabled=True
         ).count()
         
-        press = ModbusRegisterMapping.objects.filter(
+        press = ModbusRegisterMap.objects.filter(
             connection=conn,
-            register_address__gte=3000,
-            register_address__lt=4000,
-            is_active=True
+            address__gte=3000,
+            address__lt=4000,
+            enabled=True
         ).count()
         
-        power = ModbusRegisterMapping.objects.filter(
+        power = ModbusRegisterMap.objects.filter(
             connection=conn,
-            register_address__gte=4000,
-            register_address__lt=5000,
-            is_active=True
+            address__gte=4000,
+            address__lt=5000,
+            enabled=True
         ).count()
         
         self.stdout.write(f"\n   By type:")
