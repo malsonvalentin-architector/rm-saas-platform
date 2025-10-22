@@ -81,17 +81,24 @@ fi
 echo ""
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "STEP 2.7/6: Creating Demo Actuators (Phase 4.4/4.6)"
+echo "STEP 2.7/6: Creating Demo Actuators (Phase 4.4/4.6) - CRITICAL!"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🚀 Attempting to create demo actuators..."
 if python manage.py create_demo_actuators 2>&1; then
-    echo "✅ Demo actuators created!"
+    echo "✅ Demo actuators created successfully!"
     echo "🎮 Control devices ready:"
     echo "   • Valves, Relays, Pumps, Fans"
     echo "   • Heaters, Motors, Switches"
     echo "   • Command history populated"
 else
-    echo "⚠️  Actuators may already exist"
+    echo "❌ First attempt failed, trying alternative method..."
+    echo "🔄 Running direct Python script..."
+    python load_demo_now.py 2>&1 || echo "⚠️  All methods failed - actuators may need manual creation"
 fi
+
+# Verify actuators were created
+echo "🔍 Verifying actuator creation..."
+python manage.py shell -c "from data.models import Actuator; count = Actuator.objects.count(); print(f'✅ Found {count} actuators in database')" 2>&1 || echo "⚠️  Could not verify"
 echo ""
 
 # Step 3: Static files
