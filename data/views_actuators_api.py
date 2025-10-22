@@ -27,13 +27,13 @@ def actuators_live_stats(request):
     now = timezone.now()
     last_24h = now - timedelta(hours=24)
     commands_24h = ActuatorCommand.objects.filter(
-        timestamp__gte=last_24h
+        executed_at__gte=last_24h
     ).count()
     
     # Последние 5 команд
     recent_commands = ActuatorCommand.objects.select_related(
         'actuator', 'actuator__sys', 'actuator__sys__obj'
-    ).order_by('-timestamp')[:5]
+    ).order_by('-executed_at')[:5]
     
     recent_commands_data = []
     for cmd in recent_commands:
@@ -42,7 +42,7 @@ def actuators_live_stats(request):
             'actuator_name': cmd.actuator.name,
             'object_name': cmd.actuator.sys.obj.obj,
             'value': float(cmd.value),
-            'timestamp': cmd.timestamp.isoformat(),
+            'timestamp': cmd.executed_at.isoformat(),
             'success': cmd.success,
         })
     
@@ -70,9 +70,9 @@ def actuators_commands_timeline(request):
     
     # Группируем команды по часам
     commands_by_hour = ActuatorCommand.objects.filter(
-        timestamp__gte=last_24h
+        executed_at__gte=last_24h
     ).annotate(
-        hour=TruncHour('timestamp')
+        hour=TruncHour('executed_at')
     ).values('hour').annotate(
         count=Count('id')
     ).order_by('hour')
@@ -104,9 +104,9 @@ def actuators_activity_chart(request):
     
     # Упрощённый вариант без raw SQL - группируем по минутам
     commands_by_minute = ActuatorCommand.objects.filter(
-        timestamp__gte=last_hour
+        executed_at__gte=last_hour
     ).annotate(
-        minute=TruncMinute('timestamp')
+        minute=TruncMinute('executed_at')
     ).values('minute').annotate(
         count=Count('id')
     ).order_by('minute')
