@@ -472,16 +472,32 @@
                             {{ alert.rule.name }}
                         </div>
                         <div style="font-size: 0.8125rem; color: #666;">
-                            {{ alert.rule.attribute.name }}: {{ alert.value }} {{ alert.rule.attribute.unit }}
+                            <a href="{% url 'data:sensor_history' alert.rule.attribute.id %}" 
+                               style="color: #666; text-decoration: none;"
+                               onmouseover="this.style.color='#667eea'"
+                               onmouseout="this.style.color='#666'"
+                               title="Посмотреть историю датчика">
+                                📊 {{ alert.rule.attribute.name }}: {{ alert.value }} {{ alert.rule.attribute.uom }}
+                            </a>
                         </div>
                     </td>
                     
                     <td>
                         <div style="font-weight: 600; margin-bottom: 0.25rem;">
-                            {{ alert.rule.attribute.sys.obj.obj }}
+                            <a href="{% url 'data:object_dashboard' alert.rule.attribute.sys.obj.id %}" 
+                               style="color: #667eea; text-decoration: none; transition: color 0.2s;"
+                               onmouseover="this.style.color='#5a67d8'"
+                               onmouseout="this.style.color='#667eea'">
+                                🏢 {{ alert.rule.attribute.sys.obj.obj }}
+                            </a>
                         </div>
                         <div style="font-size: 0.8125rem; color: #666;">
-                            {{ alert.rule.attribute.sys.name }}
+                            <a href="{% url 'data:system_list' alert.rule.attribute.sys.obj.id %}" 
+                               style="color: #888; text-decoration: none;"
+                               onmouseover="this.style.color='#667eea'"
+                               onmouseout="this.style.color='#888'">
+                                ⚙️ {{ alert.rule.attribute.sys.name }}
+                            </a>
                         </div>
                     </td>
                     

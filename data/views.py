@@ -88,11 +88,15 @@ def object_dashboard(request, object_id):
                 })
     
     # Статистика по объекту
-    # FIXED: AlertRule.company вместо несуществующего sys__obj
+    # Phase 4.3: Добавлены активные тревоги
+    from data.models import AlertEvent
     stats = {
         'systems_count': systems.count(),
         'sensors_count': sum(s.atributes_set.count() for s in systems),
-        'active_alerts': AlertRule.objects.filter(company=obj.company, enabled=True).count(),
+        'active_alerts': AlertEvent.objects.filter(
+            rule__attribute__sys__obj=obj,
+            status='active'
+        ).count(),
     }
     
     # Средние показатели по типам датчиков

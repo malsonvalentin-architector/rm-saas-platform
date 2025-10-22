@@ -5,7 +5,7 @@ Phase 4.2: Global Systems Overview
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
-from .models import System, Obj, Atributes
+from .models import System, Obj, Atributes, AlertEvent
 
 
 @login_required
@@ -53,9 +53,12 @@ def all_systems_overview(request):
     online_systems = systems.filter(is_active=True).count()
     offline_systems = systems.filter(is_active=False).count()
     
-    # Count systems with alerts (systems that have sensors with alerts)
-    # TODO: Implement when AlertRule is connected
-    alert_systems = 0
+    # Phase 4.3: Count systems with active alerts
+    alert_systems = System.objects.filter(
+        atributes__alertrule__events__status='active'
+    ).distinct().count() if request.user.role != 'superadmin' else System.objects.filter(
+        atributes__alertrule__events__status='active'
+    ).distinct().count()
     
     # Total sensors across all systems
     total_sensors = sum(s.sensor_count for s in systems)
