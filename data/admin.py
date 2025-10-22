@@ -433,9 +433,9 @@ class ModbusConnectionAdmin(admin.ModelAdmin):
 
 @admin.register(ModbusRegisterMap)
 class ModbusRegisterMapAdmin(admin.ModelAdmin):
-    list_display = ['connection', 'sensor', 'register_type', 'address', 'enabled']
+    list_display = ['connection', 'sensor_name', 'register_type', 'address', 'enabled']
     list_filter = ['enabled', 'register_type', 'connection']
-    search_fields = ['sensor__name']
+    search_fields = ['sensor_name', 'connection__name']
 
 @admin.register(ModbusConnectionLog)
 class ModbusConnectionLogAdmin(admin.ModelAdmin):
