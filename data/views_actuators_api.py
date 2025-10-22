@@ -37,10 +37,18 @@ def actuators_live_stats(request):
     
     recent_commands_data = []
     for cmd in recent_commands:
+        # Безопасное получение названия объекта
+        object_name = 'N/A'
+        try:
+            if cmd.actuator and cmd.actuator.sys and cmd.actuator.sys.obj:
+                object_name = cmd.actuator.sys.obj.obj
+        except AttributeError:
+            pass
+        
         recent_commands_data.append({
             'id': cmd.id,
-            'actuator_name': cmd.actuator.name,
-            'object_name': cmd.actuator.sys.obj.obj,
+            'actuator_name': cmd.actuator.name if cmd.actuator else 'N/A',
+            'object_name': object_name,
             'value': float(cmd.command_value),
             'timestamp': cmd.executed_at.isoformat(),
             'success': cmd.status == 'success',
