@@ -23,17 +23,20 @@
     height: 8px;
     background: white;
     border-radius: 50%;
-    animation: pulse 2s ease-in-out infinite;
+    animation: pulse 1.5s ease-in-out infinite;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
 }
 
 @keyframes pulse {
     0%, 100% {
         opacity: 1;
         transform: scale(1);
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
     }
     50% {
-        opacity: 0.5;
-        transform: scale(1.2);
+        opacity: 0.3;
+        transform: scale(1.4);
+        box-shadow: 0 0 12px rgba(255, 255, 255, 1);
     }
 }
 

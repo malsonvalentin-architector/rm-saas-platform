@@ -97,36 +97,45 @@ def actuators_commands_timeline(request):
 def actuators_activity_chart(request):
     """
     Возвращает данные активности устройств за последний час
-    Группирует по 5-минутным интервалам
+    Группирует по 10-минутным интервалам
     """
     now = timezone.now()
     last_hour = now - timedelta(hours=1)
     
-    # Группируем команды по 5-минутным интервалам
-    # Django не поддерживает TruncMinute напрямую, используем raw SQL
-    from django.db import connection
-    
-    with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT 
-                DATE_TRUNC('minute', timestamp) - 
-                (EXTRACT(MINUTE FROM timestamp)::int % 5) * interval '1 minute' as interval_start,
-                COUNT(*) as count
-            FROM data_actuatorcommand
-            WHERE timestamp >= %s
-            GROUP BY interval_start
-            ORDER BY interval_start
-        """, [last_hour])
-        
-        rows = cursor.fetchall()
+    # Упрощённый вариант без raw SQL - группируем по минутам
+    commands_by_minute = ActuatorCommand.objects.filter(
+        timestamp__gte=last_hour
+    ).annotate(
+        minute=TruncMinute('timestamp')
+    ).values('minute').annotate(
+        count=Count('id')
+    ).order_by('minute')
     
     labels = []
     data = []
     
-    for row in rows:
-        interval_start, count = row
-        labels.append(interval_start.strftime('%H:%M'))
-        data.append(count)
+    # Группируем по 10 минут в Python
+    current_interval = None
+    interval_count = 0
+    
+    for item in commands_by_minute:
+        minute_time = item['minute']
+        # Округляем до 10 минут
+        interval = minute_time.replace(minute=(minute_time.minute // 10) * 10, second=0, microsecond=0)
+        
+        if current_interval != interval:
+            if current_interval is not None:
+                labels.append(current_interval.strftime('%H:%M'))
+                data.append(interval_count)
+            current_interval = interval
+            interval_count = 0
+        
+        interval_count += item['count']
+    
+    # Добавляем последний интервал
+    if current_interval is not None:
+        labels.append(current_interval.strftime('%H:%M'))
+        data.append(interval_count)
     
     return JsonResponse({
         'labels': labels,
