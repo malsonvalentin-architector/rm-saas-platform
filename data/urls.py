@@ -4,6 +4,7 @@ from . import views_crud
 from . import views_systems
 from . import views_alerts
 from . import views_actuators
+from . import views_debug
 
 app_name = 'data'
 
@@ -45,4 +46,5 @@ urlpatterns = [
     
     # DEBUG: URL patterns inspector
     path('debug/urls/', views.debug_urls, name='debug_urls'),
+    path('debug/actuators/', views_debug.debug_actuators_count, name='debug_actuators'),
 ]
