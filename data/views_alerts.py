@@ -28,12 +28,12 @@ def alerts_list(request):
     
     # Базовый queryset - все тревоги компании
     alerts = AlertEvent.objects.filter(
-        rule__attribute__system__object__company=company
+        rule__attribute__sys__obj__company=company
     ).select_related(
         'rule',
         'rule__attribute',
-        'rule__attribute__system',
-        'rule__attribute__system__object',
+        'rule__attribute__sys',
+        'rule__attribute__sys__obj',
         'acknowledged_by',
         'resolved_by'
     ).order_by('-triggered_at')
@@ -55,11 +55,11 @@ def alerts_list(request):
     
     # Фильтр по объекту
     if object_filter:
-        alerts = alerts.filter(rule__attribute__system__object_id=object_filter)
+        alerts = alerts.filter(rule__attribute__sys__obj_id=object_filter)
     
     # Фильтр по системе
     if system_filter:
-        alerts = alerts.filter(rule__attribute__system_id=system_filter)
+        alerts = alerts.filter(rule__attribute__sys_id=system_filter)
     
     # Поиск по названию правила или описанию
     if search_query:
@@ -72,15 +72,15 @@ def alerts_list(request):
     # Статистика по тревогам
     total_alerts = alerts.count()
     active_count = AlertEvent.objects.filter(
-        rule__attribute__system__object__company=company,
+        rule__attribute__sys__obj__company=company,
         status='active'
     ).count()
     acknowledged_count = AlertEvent.objects.filter(
-        rule__attribute__system__object__company=company,
+        rule__attribute__sys__obj__company=company,
         status='acknowledged'
     ).count()
     resolved_today = AlertEvent.objects.filter(
-        rule__attribute__system__object__company=company,
+        rule__attribute__sys__obj__company=company,
         status='resolved',
         resolved_at__date=timezone.now().date()
     ).count()
@@ -88,7 +88,7 @@ def alerts_list(request):
     # Средняя длительность разрешения тревог за последние 7 дней
     week_ago = timezone.now() - timedelta(days=7)
     recent_resolved = AlertEvent.objects.filter(
-        rule__attribute__system__object__company=company,
+        rule__attribute__sys__obj__company=company,
         status='resolved',
         resolved_at__gte=week_ago
     )
@@ -145,7 +145,7 @@ def alert_acknowledge(request, alert_id):
     alert = get_object_or_404(AlertEvent, id=alert_id)
     
     # Проверка прав доступа
-    if alert.rule.attribute.system.object.company != request.user.company:
+    if alert.rule.attribute.sys.obj.company != request.user.company:
         messages.error(request, "У вас нет доступа к этой тревоге")
         return redirect('data:alerts_list')
     
@@ -178,7 +178,7 @@ def alert_resolve(request, alert_id):
     alert = get_object_or_404(AlertEvent, id=alert_id)
     
     # Проверка прав доступа
-    if alert.rule.attribute.system.object.company != request.user.company:
+    if alert.rule.attribute.sys.obj.company != request.user.company:
         messages.error(request, "У вас нет доступа к этой тревоге")
         return redirect('data:alerts_list')
     
@@ -211,7 +211,7 @@ def alert_snooze(request, alert_id):
     alert = get_object_or_404(AlertEvent, id=alert_id)
     
     # Проверка прав доступа
-    if alert.rule.attribute.system.object.company != request.user.company:
+    if alert.rule.attribute.sys.obj.company != request.user.company:
         messages.error(request, "У вас нет доступа к этой тревоге")
         return redirect('data:alerts_list')
     
@@ -246,7 +246,7 @@ def alert_add_comment(request, alert_id):
     alert = get_object_or_404(AlertEvent, id=alert_id)
     
     # Проверка прав доступа
-    if alert.rule.attribute.system.object.company != request.user.company:
+    if alert.rule.attribute.sys.obj.company != request.user.company:
         messages.error(request, "У вас нет доступа к этой тревоге")
         return redirect('data:alerts_list')
     
@@ -274,7 +274,7 @@ def alert_detail(request, alert_id):
     alert = get_object_or_404(AlertEvent, id=alert_id)
     
     # Проверка прав доступа
-    if alert.rule.attribute.system.object.company != request.user.company:
+    if alert.rule.attribute.sys.obj.company != request.user.company:
         messages.error(request, "У вас нет доступа к этой тревоге")
         return redirect('data:alerts_list')
     
