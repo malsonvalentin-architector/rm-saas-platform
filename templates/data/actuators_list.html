@@ -200,7 +200,7 @@
                                 
                                 <!-- Модальное окно управления -->
                                 <div class="modal fade" id="controlModal-{{ actuator.id }}" tabindex="-1">
-                                    <div class="modal-dialog">
+                                    <div class="modal-dialog modal-dialog-centered">
                                         <div class="modal-content">
                                             <form method="post" action="{% url 'data:actuator_control' actuator.id %}">
                                                 {% csrf_token %}
@@ -281,4 +281,50 @@
     </div>
     
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Оптимизация работы модальных окон - предотвращение вспышки и прыжков
+document.addEventListener('DOMContentLoaded', function() {
+    // Получаем все модальные окна
+    const modals = document.querySelectorAll('.modal');
+    
+    modals.forEach(modal => {
+        // При показе modal
+        modal.addEventListener('show.bs.modal', function () {
+            // Сохраняем текущую позицию скролла
+            const scrollY = window.scrollY;
+            document.body.style.top = `-${scrollY}px`;
+            
+            // Плавное появление
+            requestAnimationFrame(() => {
+                modal.style.display = 'block';
+            });
+        });
+        
+        // При скрытии modal
+        modal.addEventListener('hidden.bs.modal', function () {
+            // Восстанавливаем позицию скролла
+            const scrollY = document.body.style.top;
+            document.body.style.top = '';
+            window.scrollTo(0, parseInt(scrollY || '0') * -1);
+        });
+    });
+    
+    // Оптимизация для кнопок управления
+    const controlButtons = document.querySelectorAll('[data-bs-toggle="modal"]');
+    controlButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            // Предотвращаем множественные клики
+            if (button.classList.contains('opening')) {
+                e.preventDefault();
+                return;
+            }
+            button.classList.add('opening');
+            setTimeout(() => button.classList.remove('opening'), 300);
+        });
+    });
+});
+</script>
 {% endblock %}
