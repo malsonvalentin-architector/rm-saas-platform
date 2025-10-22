@@ -174,7 +174,7 @@ def actuator_control(request, actuator_id):
             'command_id': command.id,
         })
     
-    return redirect('actuators_list')
+    return redirect('data:actuators_list')
 
 
 @login_required
