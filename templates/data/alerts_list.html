@@ -329,7 +329,7 @@
 
 {% block content %}
 <div class="container-fluid py-4">
-    <!-- Панель навигации (Phase 4.3) -->
+    <!-- Панель навигации (Phase 4.3 + 4.4) -->
     <div class="mb-3">
         <div class="btn-group" role="group">
             <a href="{% url 'data:object_list' %}" class="btn btn-outline-primary">
@@ -340,6 +340,9 @@
             </a>
             <a href="{% url 'data:alerts_list' %}" class="btn btn-primary">
                 <i class="fas fa-bell me-2"></i>Тревоги
+            </a>
+            <a href="{% url 'data:actuators_list' %}" class="btn btn-outline-primary">
+                <i class="fas fa-gamepad me-2"></i>Управление
             </a>
         </div>
     </div>

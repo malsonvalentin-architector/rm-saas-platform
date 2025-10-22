@@ -8,7 +8,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.html import format_html
 from .models import (
     User_profile, Company, SubscriptionPlan, Subscription, AddonModule, Payment,
-    Obj, System, Atributes, Data, AlertRule
+    Obj, System, Atributes, Data, AlertRule, Actuator, ActuatorCommand
 )
 from .forms import UserCreationForm, UserChangeForm
 
@@ -323,3 +323,96 @@ class AlertRuleAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+
+# ============================================================================
+# ADMIN: УПРАВЛЕНИЕ УСТРОЙСТВАМИ (PHASE 4.4)
+# ============================================================================
+
+@admin.register(Actuator)
+class ActuatorAdmin(admin.ModelAdmin):
+    list_display = ('name', 'actuator_type', 'sys', 'current_value_display', 
+                   'is_online', 'is_active', 'last_command_at')
+    list_filter = ('actuator_type', 'is_active', 'is_online', 'sys__obj__company')
+    search_fields = ('name', 'description', 'sys__name', 'sys__obj__obj')
+    readonly_fields = ('created_at', 'updated_at', 'last_command_at')
+    
+    fieldsets = (
+        ('Основное', {
+            'fields': ('name', 'sys', 'actuator_type', 'description')
+        }),
+        ('Modbus настройки', {
+            'fields': ('modbus_carel', 'register', 'carel_reg', 'register_type')
+        }),
+        ('Параметры управления', {
+            'fields': ('min_value', 'max_value', 'default_value', 'uom')
+        }),
+        ('Текущее состояние', {
+            'fields': ('current_value', 'last_command_at', 'is_active', 'is_online')
+        }),
+        ('Системные', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def current_value_display(self, obj):
+        """Отображение текущего значения с цветом"""
+        if obj.current_value is None:
+            return format_html('<span style="color: gray;">N/A</span>')
+        
+        if obj.is_binary():
+            color = 'green' if obj.current_value > 0 else 'gray'
+            text = 'ВКЛ' if obj.current_value > 0 else 'ВЫКЛ'
+        else:
+            color = 'blue'
+            text = f"{obj.current_value:.1f} {obj.uom}"
+        
+        return format_html(f'<span style="color: {color}; font-weight: bold;">{text}</span>')
+    
+    current_value_display.short_description = 'Значение'
+
+
+@admin.register(ActuatorCommand)
+class ActuatorCommandAdmin(admin.ModelAdmin):
+    list_display = ('actuator', 'command_value', 'user', 'executed_at', 
+                   'status_badge', 'response_time_ms', 'source_ip')
+    list_filter = ('status', 'executed_at', 'actuator__actuator_type', 'actuator__sys__obj__company')
+    search_fields = ('actuator__name', 'user__email', 'notes', 'error_message')
+    readonly_fields = ('executed_at', 'actuator', 'user', 'source_ip')
+    date_hierarchy = 'executed_at'
+    
+    # Ограничиваем количество записей для производительности
+    list_per_page = 100
+    
+    fieldsets = (
+        ('Команда', {
+            'fields': ('actuator', 'command_value', 'user', 'executed_at', 'source_ip')
+        }),
+        ('Результат', {
+            'fields': ('status', 'response_time_ms', 'error_message')
+        }),
+        ('Дополнительно', {
+            'fields': ('notes',)
+        }),
+    )
+    
+    def status_badge(self, obj):
+        """Отображение статуса с цветом"""
+        colors = {
+            'pending': 'orange',
+            'success': 'green',
+            'failed': 'red',
+            'timeout': 'gray'
+        }
+        color = colors.get(obj.status, 'gray')
+        return format_html(
+            '<span style="color: {}; font-weight: bold;">{}</span>',
+            color, obj.get_status_display()
+        )
+    
+    status_badge.short_description = 'Статус'
+    
+    def has_add_permission(self, request):
+        """Запретить ручное создание команд через админку"""
+        return False

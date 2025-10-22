@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}История команд: {{ actuator.name }} - ProMonitor{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    
+    <!-- Навигация назад -->
+    <div class="mb-4">
+        <a href="{% url 'data:actuators_list' %}" class="btn btn-outline-secondary">
+            ← Назад к устройствам
+        </a>
+    </div>
+    
+    <!-- Заголовок -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>📊 История команд</h1>
+    </div>
+    
+    <!-- Информация об устройстве -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h4>{{ actuator.get_actuator_type_display }}: {{ actuator.name }}</h4>
+                    <p class="text-muted mb-2">{{ actuator.description }}</p>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <strong>Объект:</strong> 
+                            <a href="{% url 'data:object_dashboard' actuator.sys.obj.id %}">
+                                {{ actuator.sys.obj.obj }}
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Система:</strong> {{ actuator.sys.name }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <strong>Текущее значение:</strong> 
+                            <span class="badge bg-primary fs-6">{{ actuator.get_display_value }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Диапазон:</strong> 
+                            {{ actuator.min_value }} - {{ actuator.max_value }} {{ actuator.uom }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <strong>Статус:</strong>
+                            {% if actuator.is_online %}
+                                <span class="badge bg-success">🟢 В сети</span>
+                            {% else %}
+                                <span class="badge bg-secondary">🔴 Не в сети</span>
+                            {% endif %}
+                            {% if not actuator.is_active %}
+                                <span class="badge bg-warning">⏸️ Неактивен</span>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Последняя команда:</strong>
+                            {% if actuator.last_command_at %}
+                                {{ actuator.last_command_at|date:"d.m.Y H:i" }}
+                            {% else %}
+                                <span class="text-muted">Никогда</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Статистика -->
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-body">
+                    <h5>Всего команд</h5>
+                    <p class="display-5">{{ total_commands }}</p>
+                </div>
+            </div>
+            
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5>Успешных</h5>
+                    <p class="display-5">{{ success_commands }}</p>
+                </div>
+            </div>
+            
+            <div class="card text-white bg-danger mb-3">
+                <div class="card-body">
+                    <h5>Ошибок</h5>
+                    <p class="display-5">{{ failed_commands }}</p>
+                </div>
+            </div>
+            
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5>Успешность</h5>
+                    <p class="display-5">{{ success_rate|floatformat:1 }}%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- История команд -->
+    <div class="card">
+        <div class="card-header">
+            <h5>📜 История команд (последние 100)</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if commands %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Время</th>
+                                <th>Значение</th>
+                                <th>Пользователь</th>
+                                <th>Статус</th>
+                                <th>Отклик</th>
+                                <th>IP адрес</th>
+                                <th>Примечания</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for command in commands %}
+                                <tr {% if command.is_recent %}class="table-success"{% endif %}>
+                                    <td>
+                                        {{ command.executed_at|date:"d.m.Y H:i:s" }}
+                                        {% if command.is_recent %}
+                                            <span class="badge bg-warning">Новая</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong class="text-primary">{{ command.command_value }} {{ actuator.uom }}</strong>
+                                    </td>
+                                    <td>
+                                        {% if command.user %}
+                                            {{ command.user.email }}
+                                        {% else %}
+                                            <span class="text-muted">System</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if command.status == 'success' %}
+                                            <span class="badge bg-success">✅ Выполнена</span>
+                                        {% elif command.status == 'pending' %}
+                                            <span class="badge bg-warning">⏳ Ожидает</span>
+                                        {% elif command.status == 'failed' %}
+                                            <span class="badge bg-danger">❌ Ошибка</span>
+                                        {% elif command.status == 'timeout' %}
+                                            <span class="badge bg-secondary">⏱️ Таймаут</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if command.response_time_ms %}
+                                            {{ command.response_time_ms }} мс
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ command.source_ip|default:"N/A" }}</small>
+                                    </td>
+                                    <td>
+                                        {% if command.notes %}
+                                            <small>{{ command.notes|truncatewords:10 }}</small>
+                                        {% elif command.error_message %}
+                                            <small class="text-danger">{{ command.error_message|truncatewords:10 }}</small>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <h3>📭 История команд пуста</h3>
+                    <p class="text-muted">Команды ещё не выполнялись</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+</div>
+{% endblock %}

@@ -810,3 +810,197 @@ class Payment(models.Model):
     
     def __str__(self):
         return f"${self.amount} - {self.subscription.company.name} ({self.get_status_display()})"
+# ============================================================================
+# PHASE 4.4: ACTUATORS & CONTROL SYSTEM (MVP Version)
+# ============================================================================
+# Философия: Steve Jobs MVP - начать с простого и элегантного
+# - Базовая модель исполнительного устройства
+# - Простая история команд
+# - Готовность к расширению
+
+
+class Actuator(models.Model):
+    """
+    Исполнительное устройство (Phase 4.4 MVP)
+    
+    Примеры:
+    - Клапан (valve): открыть/закрыть, 0-100%
+    - Реле (relay): вкл/выкл
+    - Мотор (motor): скорость 0-100%
+    - Выключатель (switch): вкл/выкл
+    - Диммер (dimmer): яркость 0-100%
+    """
+    
+    # Временные метки
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Создан")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Обновлён")
+    
+    # Привязка к системе (как у Atributes)
+    sys = models.ForeignKey('System', on_delete=models.CASCADE, verbose_name="Система", related_name='actuators')
+    
+    # Основная информация
+    name = models.CharField(max_length=100, verbose_name="Название")
+    description = models.TextField(blank=True, verbose_name="Описание")
+    
+    # Тип устройства
+    ACTUATOR_TYPES = [
+        ('valve', '🚰 Клапан'),
+        ('relay', '⚡ Реле'),
+        ('motor', '⚙️ Мотор'),
+        ('switch', '💡 Выключатель'),
+        ('dimmer', '🔆 Диммер'),
+        ('pump', '💧 Насос'),
+        ('fan', '🌀 Вентилятор'),
+        ('heater', '🔥 Нагреватель'),
+        ('cooler', '❄️ Охладитель'),
+    ]
+    actuator_type = models.CharField(
+        max_length=20,
+        choices=ACTUATOR_TYPES,
+        verbose_name="Тип устройства"
+    )
+    
+    # Modbus параметры (аналогично Atributes)
+    modbus_carel = models.BooleanField(default=True, verbose_name="Modbus/CAREL")
+    register = models.IntegerField(null=True, blank=True, verbose_name="Регистр Modbus")
+    carel_reg = models.CharField(max_length=50, blank=True, verbose_name="Переменная CAREL")
+    
+    # Тип регистра для записи
+    REGISTER_TYPES = [
+        ('HD', 'Holding Register'),
+        ('CL', 'Coil'),
+    ]
+    register_type = models.CharField(
+        max_length=2,
+        choices=REGISTER_TYPES,
+        default='HD',
+        verbose_name="Тип регистра"
+    )
+    
+    # Параметры управления
+    min_value = models.FloatField(default=0, verbose_name="Минимальное значение")
+    max_value = models.FloatField(default=100, verbose_name="Максимальное значение")
+    default_value = models.FloatField(default=0, verbose_name="Значение по умолчанию")
+    
+    # Текущее состояние
+    current_value = models.FloatField(null=True, blank=True, verbose_name="Текущее значение")
+    last_command_at = models.DateTimeField(null=True, blank=True, verbose_name="Последняя команда")
+    
+    # Единица измерения
+    uom = models.CharField(max_length=20, blank=True, default='%', verbose_name="Ед. изм.")
+    
+    # Статус
+    is_active = models.BooleanField(default=True, verbose_name="Активен")
+    is_online = models.BooleanField(default=False, verbose_name="В сети")
+    
+    class Meta:
+        verbose_name = "Исполнительное устройство"
+        verbose_name_plural = "Исполнительные устройства"
+        ordering = ['sys', 'name']
+        indexes = [
+            models.Index(fields=['sys', 'is_active']),
+            models.Index(fields=['actuator_type']),
+        ]
+    
+    def __str__(self):
+        return f"{self.name} ({self.get_actuator_type_display()}) - {self.sys}"
+    
+    def is_binary(self):
+        """Проверка: бинарное устройство (вкл/выкл)?"""
+        return self.actuator_type in ['relay', 'switch', 'pump']
+    
+    def is_analog(self):
+        """Проверка: аналоговое устройство (0-100%)?"""
+        return self.actuator_type in ['valve', 'motor', 'dimmer', 'fan', 'heater', 'cooler']
+    
+    def get_display_value(self):
+        """Отображаемое значение с единицами измерения"""
+        if self.current_value is None:
+            return "N/A"
+        
+        if self.is_binary():
+            return "ВКЛ" if self.current_value > 0 else "ВЫКЛ"
+        
+        return f"{self.current_value:.1f} {self.uom}"
+    
+    def get_object_name(self):
+        """Название объекта через систему → объект"""
+        return self.sys.obj.obj if self.sys and self.sys.obj else "N/A"
+
+
+class ActuatorCommand(models.Model):
+    """
+    История команд управления (Phase 4.4 MVP)
+    
+    Хранит:
+    - Кто выполнил команду
+    - Когда
+    - Какое значение было установлено
+    - Статус выполнения
+    """
+    
+    # Привязка к устройству
+    actuator = models.ForeignKey(
+        Actuator,
+        on_delete=models.CASCADE,
+        verbose_name="Устройство",
+        related_name='commands'
+    )
+    
+    # Команда
+    command_value = models.FloatField(verbose_name="Заданное значение")
+    executed_at = models.DateTimeField(auto_now_add=True, verbose_name="Время выполнения")
+    
+    # Пользователь
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Пользователь",
+        related_name='actuator_commands'
+    )
+    
+    # Статус выполнения
+    STATUS_CHOICES = [
+        ('pending', '⏳ Ожидает'),
+        ('success', '✅ Выполнена'),
+        ('failed', '❌ Ошибка'),
+        ('timeout', '⏱️ Таймаут'),
+    ]
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending',
+        verbose_name="Статус"
+    )
+    
+    # Дополнительная информация
+    response_time_ms = models.IntegerField(null=True, blank=True, verbose_name="Время отклика (мс)")
+    error_message = models.TextField(blank=True, verbose_name="Сообщение об ошибке")
+    notes = models.TextField(blank=True, verbose_name="Примечания")
+    
+    # IP адрес источника команды (для аудита)
+    source_ip = models.GenericIPAddressField(null=True, blank=True, verbose_name="IP источника")
+    
+    class Meta:
+        verbose_name = "Команда управления"
+        verbose_name_plural = "Команды управления"
+        ordering = ['-executed_at']
+        indexes = [
+            models.Index(fields=['actuator', '-executed_at']),
+            models.Index(fields=['user', '-executed_at']),
+            models.Index(fields=['status', '-executed_at']),
+        ]
+    
+    def __str__(self):
+        user_name = self.user.email if self.user else "System"
+        return f"{self.actuator.name}: {self.command_value} by {user_name} ({self.get_status_display()})"
+    
+    def get_duration(self):
+        """Время с момента выполнения команды"""
+        return timezone.now() - self.executed_at
+    
+    def is_recent(self):
+        """Проверка: команда выполнена недавно (< 5 минут)?"""
+        return self.get_duration().total_seconds() < 300

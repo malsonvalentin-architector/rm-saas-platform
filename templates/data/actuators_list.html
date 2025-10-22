@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Управление устройствами - ProMonitor{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    
+    <!-- Навигация между вкладками (как в Phase 4.3) -->
+    <div class="btn-group mb-4" role="group">
+        <a href="{% url 'data:object_list' %}" class="btn btn-outline-secondary">
+            🏢 Объекты
+        </a>
+        <a href="{% url 'data:all_systems' %}" class="btn btn-outline-secondary">
+            ⚙️ Системы
+        </a>
+        <a href="{% url 'data:alerts_list' %}" class="btn btn-outline-secondary">
+            🔔 Тревоги
+        </a>
+        <a href="{% url 'data:actuators_list' %}" class="btn btn-primary">
+            🎮 Управление
+        </a>
+    </div>
+    
+    <!-- Заголовок -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>🎮 Управление устройствами</h1>
+    </div>
+    
+    <!-- Карточки статистики -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Всего устройств</h5>
+                    <p class="card-text display-4">{{ total_actuators }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">В сети</h5>
+                    <p class="card-text display-4">{{ online_actuators }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Активных</h5>
+                    <p class="card-text display-4">{{ active_actuators }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Команд за 24ч</h5>
+                    <p class="card-text display-4">{{ commands_24h }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Фильтры -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>🔍 Фильтры</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="type" class="form-label">Тип устройства</label>
+                    <select name="type" id="type" class="form-select">
+                        <option value="">Все типы</option>
+                        {% for type_code, type_name in actuator_types %}
+                            <option value="{{ type_code }}" {% if current_type == type_code %}selected{% endif %}>
+                                {{ type_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label for="object" class="form-label">Объект</label>
+                    <select name="object" id="object" class="form-select">
+                        <option value="">Все объекты</option>
+                        {% for obj in objects %}
+                            <option value="{{ obj.id }}" {% if current_object|stringformat:"s" == obj.id|stringformat:"s" %}selected{% endif %}>
+                                {{ obj.obj }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-2">
+                    <label for="status" class="form-label">Статус</label>
+                    <select name="status" id="status" class="form-select">
+                        <option value="">Все</option>
+                        <option value="online" {% if current_status == 'online' %}selected{% endif %}>В сети</option>
+                        <option value="offline" {% if current_status == 'offline' %}selected{% endif %}>Не в сети</option>
+                        <option value="active" {% if current_status == 'active' %}selected{% endif %}>Активные</option>
+                        <option value="inactive" {% if current_status == 'inactive' %}selected{% endif %}>Неактивные</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label for="search" class="form-label">Поиск</label>
+                    <input type="text" name="search" id="search" class="form-control" 
+                           placeholder="Название устройства..." value="{{ search_query }}">
+                </div>
+                
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Применить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Список устройств -->
+    <div class="card">
+        <div class="card-header">
+            <h5>📋 Устройства ({{ actuators|length }})</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if actuators %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Устройство</th>
+                                <th>Тип</th>
+                                <th>Объект / Система</th>
+                                <th>Текущее значение</th>
+                                <th>Диапазон</th>
+                                <th>Статус</th>
+                                <th>Последняя команда</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for actuator in actuators %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ actuator.name }}</strong>
+                                        {% if actuator.description %}
+                                            <br><small class="text-muted">{{ actuator.description|truncatewords:10 }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ actuator.get_actuator_type_display }}</td>
+                                    <td>
+                                        <a href="{% url 'data:object_dashboard' actuator.sys.obj.id %}" class="text-decoration-none">
+                                            🏢 {{ actuator.sys.obj.obj }}
+                                        </a>
+                                        <br>
+                                        <small class="text-muted">⚙️ {{ actuator.sys.name }}</small>
+                                    </td>
+                                    <td>
+                                        <span id="value-{{ actuator.id }}" class="badge {% if actuator.is_binary %}{% if actuator.current_value > 0 %}bg-success{% else %}bg-secondary{% endif %}{% else %}bg-primary{% endif %} fs-6">
+                                            {{ actuator.get_display_value }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small>{{ actuator.min_value }} - {{ actuator.max_value }} {{ actuator.uom }}</small>
+                                    </td>
+                                    <td>
+                                        {% if actuator.is_online %}
+                                            <span class="badge bg-success">🟢 В сети</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">🔴 Не в сети</span>
+                                        {% endif %}
+                                        {% if not actuator.is_active %}
+                                            <span class="badge bg-warning">⏸️ Неактивен</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if actuator.last_command_at %}
+                                            {{ actuator.last_command_at|timesince }} назад
+                                        {% else %}
+                                            <span class="text-muted">Никогда</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <!-- Кнопка управления -->
+                                        <button type="button" class="btn btn-sm btn-primary" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#controlModal-{{ actuator.id }}"
+                                                {% if not actuator.is_active %}disabled{% endif %}>
+                                            🎮 Управление
+                                        </button>
+                                        
+                                        <!-- Кнопка истории -->
+                                        <a href="{% url 'data:actuator_history' actuator.id %}" 
+                                           class="btn btn-sm btn-secondary">
+                                            📊 История
+                                        </a>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Модальное окно управления -->
+                                <div class="modal fade" id="controlModal-{{ actuator.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form method="post" action="{% url 'data:actuator_control' actuator.id %}">
+                                                {% csrf_token %}
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">🎮 Управление: {{ actuator.name }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label for="value-input-{{ actuator.id }}" class="form-label">
+                                                            Значение ({{ actuator.min_value }} - {{ actuator.max_value }} {{ actuator.uom }})
+                                                        </label>
+                                                        
+                                                        {% if actuator.is_binary %}
+                                                            <!-- Бинарное устройство: кнопки ВКЛ/ВЫКЛ -->
+                                                            <div class="btn-group w-100" role="group">
+                                                                <button type="submit" name="value" value="0" 
+                                                                        class="btn btn-outline-danger btn-lg">
+                                                                    ⭕ ВЫКЛ
+                                                                </button>
+                                                                <button type="submit" name="value" value="1" 
+                                                                        class="btn btn-outline-success btn-lg">
+                                                                    🟢 ВКЛ
+                                                                </button>
+                                                            </div>
+                                                        {% else %}
+                                                            <!-- Аналоговое устройство: ползунок -->
+                                                            <input type="range" 
+                                                                   class="form-range" 
+                                                                   name="value" 
+                                                                   id="value-input-{{ actuator.id }}"
+                                                                   min="{{ actuator.min_value }}" 
+                                                                   max="{{ actuator.max_value }}" 
+                                                                   value="{{ actuator.current_value|default:actuator.default_value }}"
+                                                                   step="1"
+                                                                   oninput="document.getElementById('value-display-{{ actuator.id }}').textContent = this.value + ' {{ actuator.uom }}'">
+                                                            <div class="text-center mt-2">
+                                                                <span id="value-display-{{ actuator.id }}" class="fs-4 text-primary">
+                                                                    {{ actuator.current_value|default:actuator.default_value }} {{ actuator.uom }}
+                                                                </span>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    
+                                                    <div class="mb-3">
+                                                        <label for="notes-{{ actuator.id }}" class="form-label">Примечания (необязательно)</label>
+                                                        <textarea name="notes" id="notes-{{ actuator.id }}" class="form-control" rows="2"></textarea>
+                                                    </div>
+                                                    
+                                                    <div class="alert alert-info">
+                                                        <strong>ℹ️ Информация:</strong><br>
+                                                        Объект: {{ actuator.sys.obj.obj }}<br>
+                                                        Система: {{ actuator.sys.name }}<br>
+                                                        Регистр: {{ actuator.register|default:actuator.carel_reg }}
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                                    {% if not actuator.is_binary %}
+                                                        <button type="submit" class="btn btn-primary">✅ Выполнить команду</button>
+                                                    {% endif %}
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <h3>😔 Устройства не найдены</h3>
+                    <p class="text-muted">Попробуйте изменить фильтры</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+</div>
+{% endblock %}

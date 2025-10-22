@@ -3,6 +3,7 @@ from . import views
 from . import views_crud
 from . import views_systems
 from . import views_alerts
+from . import views_actuators
 
 app_name = 'data'
 
@@ -36,6 +37,11 @@ urlpatterns = [
     path('alerts/<int:alert_id>/resolve/', views_alerts.alert_resolve, name='alert_resolve'),
     path('alerts/<int:alert_id>/snooze/', views_alerts.alert_snooze, name='alert_snooze'),
     path('alerts/<int:alert_id>/comment/', views_alerts.alert_add_comment, name='alert_add_comment'),
+    
+    # Actuators (Phase 4.4)
+    path('actuators/', views_actuators.actuators_list, name='actuators_list'),
+    path('actuators/<int:actuator_id>/control/', views_actuators.actuator_control, name='actuator_control'),
+    path('actuators/<int:actuator_id>/history/', views_actuators.actuator_history, name='actuator_history'),
     
     # DEBUG: URL patterns inspector
     path('debug/urls/', views.debug_urls, name='debug_urls'),
