@@ -1,5 +1,6 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Avg, Max, Min, Count, Q
 from django.utils import timezone
@@ -46,28 +47,24 @@ def object_list(request):
 def object_dashboard(request, object_id):
     """Детальный дашборд объекта с планом этажа"""
     # Phase 4.1: Check company access
-    # DEBUG: Temporarily allow all users to see all objects for testing
     try:
-        obj = Obj.objects.get(id=object_id)
+        if request.user.role == 'superadmin':
+            obj = Obj.objects.get(id=object_id)
+        else:
+            obj = Obj.objects.get(id=object_id, company=request.user.company)
     except Obj.DoesNotExist:
-        from django.http import HttpResponse
-        import json
-        debug_info = {
-            'error': 'Object not found',
-            'object_id': object_id,
-            'user': {
-                'username': request.user.username,
-                'role': request.user.role,
-                'company_id': request.user.company_id if hasattr(request.user, 'company') else None,
-                'company_name': request.user.company.name if hasattr(request.user, 'company') and request.user.company else None,
-            },
-            'available_objects': list(Obj.objects.values('id', 'obj', 'company_id')[:10]),
-        }
-        return HttpResponse(
-            json.dumps(debug_info, indent=2, default=str),
-            content_type='application/json',
-            status=404
-        )
+        # Object not found - redirect to first available object
+        if request.user.role == 'superadmin':
+            first_obj = Obj.objects.first()
+        else:
+            first_obj = Obj.objects.filter(company=request.user.company).first()
+        
+        if first_obj:
+            messages.warning(request, f'Объект ID={object_id} не найден. Перенаправлено на: {first_obj.obj}')
+            return redirect('data:object_dashboard', object_id=first_obj.id)
+        else:
+            messages.error(request, 'Нет доступных объектов. Создайте первый объект.')
+            return redirect('data:object_list')
     
     # Получаем все системы объекта
     systems = System.objects.filter(obj=obj).prefetch_related('atributes_set')
