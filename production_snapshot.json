@@ -1,0 +1,105 @@
+{
+  "scan_date": "2025-10-22T10:55:00Z",
+  "vpn_config": {
+    "server": "195.210.47.184:1194",
+    "protocol": "OpenVPN UDP",
+    "encryption": "AES-256-GCM",
+    "our_ip": "10.8.0.26",
+    "gateway_ip": "10.8.0.25"
+  },
+  "networks": {
+    "vpn_network": "10.8.0.0/24",
+    "production_networks": [
+      "192.168.11.0/24",
+      "192.168.12.0/24",
+      "192.168.15.0/24",
+      "192.168.16.0/24"
+    ]
+  },
+  "discovered_devices": [
+    {
+      "id": 1,
+      "ip": "192.168.11.1",
+      "hostname": "gateway",
+      "type": "Gateway/Router",
+      "open_ports": [
+        {"port": 22, "service": "SSH"},
+        {"port": 80, "service": "HTTP"},
+        {"port": 443, "service": "HTTPS"}
+      ],
+      "description": "Network gateway with SSH access"
+    },
+    {
+      "id": 2,
+      "ip": "192.168.11.11",
+      "hostname": "webserver",
+      "type": "Web Server",
+      "open_ports": [
+        {"port": 21, "service": "FTP"},
+        {"port": 80, "service": "HTTP"},
+        {"port": 8000, "service": "HTTP-ALT"}
+      ],
+      "description": "Web server with FTP access"
+    },
+    {
+      "id": 3,
+      "ip": "192.168.11.101",
+      "hostname": "carel-pco-controller",
+      "type": "CAREL pCO Programmable Controller",
+      "manufacturer": "CAREL",
+      "model": "C.pCO",
+      "firmware_version": "Webkit 6.0a",
+      "open_ports": [
+        {"port": 21, "service": "FTP"},
+        {"port": 80, "service": "HTTP"},
+        {"port": 443, "service": "HTTPS"},
+        {"port": 502, "service": "Modbus TCP"}
+      ],
+      "modbus": {
+        "enabled": true,
+        "port": 502,
+        "slave_id": 1,
+        "holding_registers": {
+          "start": 0,
+          "count": 10,
+          "sample_values": [28836, 16830, 22544, 16833, 25428, 16907, 16515, 16906, 61342, 16806]
+        },
+        "input_registers": {
+          "start": 0,
+          "count": 10,
+          "sample_values": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        },
+        "coils": {
+          "start": 0,
+          "count": 10,
+          "sample_values": [false, false, false, false, false, false, false, false, false, false]
+        },
+        "discrete_inputs": {
+          "start": 0,
+          "count": 10,
+          "sample_values": [false, false, false, false, false, false, false, false, false, false]
+        }
+      },
+      "web_interface": {
+        "url": "http://192.168.11.101",
+        "pages": [
+          "/custompage.htm",
+          "/pgd/index.htm",
+          "/vars.htm",
+          "/alarms.htm",
+          "/stats.htm",
+          "/logger.htm",
+          "/upgrade.htm",
+          "/upload.htm"
+        ]
+      },
+      "description": "HVAC/Refrigeration controller with Modbus TCP support"
+    }
+  ],
+  "scan_statistics": {
+    "total_ips_scanned": 1024,
+    "active_devices": 3,
+    "modbus_devices": 1,
+    "scan_duration_seconds": 168
+  }
+}

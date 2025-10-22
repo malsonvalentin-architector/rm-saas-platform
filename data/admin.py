@@ -416,3 +416,33 @@ class ActuatorCommandAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         """Запретить ручное создание команд через админку"""
         return False
+
+
+# ============================================================
+# MODBUS INTEGRATION ADMIN
+# Added: Phase 4.6 - Modbus Integration
+# ============================================================
+
+from data.models import ModbusConnection, ModbusRegisterMap, ModbusConnectionLog
+
+@admin.register(ModbusConnection)
+class ModbusConnectionAdmin(admin.ModelAdmin):
+    list_display = ['name', 'host', 'port', 'enabled', 'created_at']
+    list_filter = ['enabled', 'protocol']
+    search_fields = ['name', 'host']
+
+@admin.register(ModbusRegisterMap)
+class ModbusRegisterMapAdmin(admin.ModelAdmin):
+    list_display = ['connection', 'sensor', 'register_type', 'address', 'enabled']
+    list_filter = ['enabled', 'register_type', 'connection']
+    search_fields = ['sensor__name']
+
+@admin.register(ModbusConnectionLog)
+class ModbusConnectionLogAdmin(admin.ModelAdmin):
+    list_display = ['connection', 'status', 'registers_read', 'created_at']
+    list_filter = ['status', 'connection']
+    readonly_fields = ['connection', 'status', 'message', 'created_at']
+    
+    def has_add_permission(self, request):
+        return False
+

@@ -1004,3 +1004,239 @@ class ActuatorCommand(models.Model):
     def is_recent(self):
         """Проверка: команда выполнена недавно (< 5 минут)?"""
         return self.get_duration().total_seconds() < 300
+
+
+# ============================================================
+# MODBUS INTEGRATION MODELS
+# Added: Phase 4.6 - Modbus Integration
+# ============================================================
+
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+
+class ModbusConnection(models.Model):
+    """
+    Modbus TCP подключение к контроллеру или эмулятору
+    """
+    PROTOCOL_CHOICES = [
+        ('tcp', 'Modbus TCP'),
+        ('rtu', 'Modbus RTU over TCP'),
+    ]
+    
+    name = models.CharField(
+        max_length=100,
+        verbose_name="Название подключения",
+        help_text="Например: CAREL pCO Emulator"
+    )
+    
+    host = models.CharField(
+        max_length=255,
+        verbose_name="Хост",
+        help_text="IP адрес или hostname (например: localhost, 192.168.11.101)"
+    )
+    
+    port = models.IntegerField(
+        default=502,
+        validators=[MinValueValidator(1), MaxValueValidator(65535)],
+        verbose_name="Порт",
+        help_text="Стандартный Modbus TCP порт: 502"
+    )
+    
+    protocol = models.CharField(
+        max_length=10,
+        choices=PROTOCOL_CHOICES,
+        default='tcp',
+        verbose_name="Протокол"
+    )
+    
+    slave_id = models.IntegerField(
+        default=1,
+        validators=[MinValueValidator(0), MaxValueValidator(247)],
+        verbose_name="Slave ID",
+        help_text="ID устройства (обычно 1)"
+    )
+    
+    timeout = models.IntegerField(
+        default=3,
+        validators=[MinValueValidator(1), MaxValueValidator(30)],
+        verbose_name="Таймаут (секунды)",
+        help_text="Таймаут подключения"
+    )
+    
+    poll_interval = models.IntegerField(
+        default=10,
+        validators=[MinValueValidator(1), MaxValueValidator(3600)],
+        verbose_name="Интервал опроса (секунды)",
+        help_text="Как часто читать данные"
+    )
+    
+    enabled = models.BooleanField(
+        default=True,
+        verbose_name="Активно",
+        help_text="Включить/выключить опрос этого подключения"
+    )
+    
+    description = models.TextField(
+        blank=True,
+        verbose_name="Описание",
+        help_text="Дополнительная информация"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Modbus подключение"
+        verbose_name_plural = "Modbus подключения"
+        ordering = ['name']
+    
+    def __str__(self):
+        return f"{self.name} ({self.host}:{self.port})"
+
+
+class ModbusRegisterMap(models.Model):
+    """
+    Mapping Modbus регистров к датчикам системы
+    """
+    REGISTER_TYPE_CHOICES = [
+        ('holding', 'Holding Register (40001+)'),
+        ('input', 'Input Register (30001+)'),
+        ('coil', 'Coil (00001+)'),
+        ('discrete', 'Discrete Input (10001+)'),
+    ]
+    
+    DATA_TYPE_CHOICES = [
+        ('int16', 'Int16 (signed)'),
+        ('uint16', 'UInt16 (unsigned)'),
+        ('int32', 'Int32 (2 registers)'),
+        ('uint32', 'UInt32 (2 registers)'),
+        ('float32', 'Float32 (2 registers)'),
+        ('bool', 'Boolean'),
+    ]
+    
+    connection = models.ForeignKey(
+        ModbusConnection,
+        on_delete=models.CASCADE,
+        related_name='register_maps',
+        verbose_name="Modbus подключение"
+    )
+    
+    sensor = models.ForeignKey(
+        'Sensor',
+        on_delete=models.CASCADE,
+        related_name='modbus_registers',
+        verbose_name="Датчик",
+        help_text="К какому датчику привязан этот регистр"
+    )
+    
+    register_type = models.CharField(
+        max_length=20,
+        choices=REGISTER_TYPE_CHOICES,
+        verbose_name="Тип регистра"
+    )
+    
+    address = models.IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(65535)],
+        verbose_name="Адрес регистра",
+        help_text="0-based адрес (например: 0 = 40001)"
+    )
+    
+    data_type = models.CharField(
+        max_length=20,
+        choices=DATA_TYPE_CHOICES,
+        default='int16',
+        verbose_name="Тип данных"
+    )
+    
+    scale_factor = models.FloatField(
+        default=1.0,
+        verbose_name="Масштабный коэффициент",
+        help_text="Умножить значение на этот коэффициент (например: 0.1 для деления на 10)"
+    )
+    
+    offset = models.FloatField(
+        default=0.0,
+        verbose_name="Смещение",
+        help_text="Добавить к значению после масштабирования"
+    )
+    
+    enabled = models.BooleanField(
+        default=True,
+        verbose_name="Активно"
+    )
+    
+    description = models.TextField(
+        blank=True,
+        verbose_name="Описание"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Modbus регистр"
+        verbose_name_plural = "Modbus регистры"
+        ordering = ['connection', 'address']
+        unique_together = [['connection', 'register_type', 'address']]
+    
+    def __str__(self):
+        return f"{self.connection.name} - {self.register_type}[{self.address}] -> {self.sensor.name}"
+    
+    def calculate_value(self, raw_value):
+        """
+        Преобразует сырое значение из Modbus в физическую величину
+        """
+        return (raw_value * self.scale_factor) + self.offset
+
+
+class ModbusConnectionLog(models.Model):
+    """
+    Логи подключений и ошибок Modbus
+    """
+    STATUS_CHOICES = [
+        ('success', 'Успешно'),
+        ('error', 'Ошибка'),
+        ('timeout', 'Таймаут'),
+    ]
+    
+    connection = models.ForeignKey(
+        ModbusConnection,
+        on_delete=models.CASCADE,
+        related_name='logs',
+        verbose_name="Подключение"
+    )
+    
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        verbose_name="Статус"
+    )
+    
+    message = models.TextField(
+        verbose_name="Сообщение"
+    )
+    
+    registers_read = models.IntegerField(
+        default=0,
+        verbose_name="Прочитано регистров"
+    )
+    
+    duration_ms = models.IntegerField(
+        default=0,
+        verbose_name="Длительность (мс)"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Лог Modbus"
+        verbose_name_plural = "Логи Modbus"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['-created_at']),
+            models.Index(fields=['connection', '-created_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.connection.name} - {self.status} ({self.created_at})"
+
