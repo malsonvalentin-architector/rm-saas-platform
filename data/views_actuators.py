@@ -35,11 +35,12 @@ def actuators_list(request):
     company = request.user.company
     
     # Получаем все актуаторы компании
-    actuators = Actuator.objects.filter(
-        sys__obj__company=company
-    ).select_related(
+    # ВРЕМЕННО: показываем все актуаторы (для демо)
+    actuators = Actuator.objects.all().select_related(
         'sys', 'sys__obj'
     ).order_by('sys__obj__obj', 'sys__name', 'name')
+    # TODO: вернуть фильтр по компании после тестирования
+    # actuators = Actuator.objects.filter(sys__obj__company=company).select_related(...)
     
     # Фильтры
     actuator_type = request.GET.get('type', '')
