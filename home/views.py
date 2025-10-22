@@ -7,7 +7,7 @@ from django.db.models import Count, Q, Avg
 from django.utils import timezone
 from django.urls import reverse
 from datetime import timedelta
-from data.models import Obj, System, AlertRule, Atributes, Data, Actuator
+from data.models import Obj, System, AlertRule, Atributes, Data
 import logging
 
 logger = logging.getLogger(__name__)
@@ -60,18 +60,20 @@ def dashboard(request):
             active_alerts = 0
         
         # Phase 4.4/4.6: Actuators statistics
+        total_actuators = 0
+        online_actuators = 0
+        offline_actuators = 0
         try:
+            # Lazy import to avoid crashes if model doesn't exist yet
+            from data.models import Actuator
             if objects.exists():
                 our_systems = System.objects.filter(obj__in=objects)
                 total_actuators = Actuator.objects.filter(sys__in=our_systems).count()
                 online_actuators = Actuator.objects.filter(sys__in=our_systems, is_online=True).count()
                 offline_actuators = total_actuators - online_actuators
-            else:
-                total_actuators = 0
-                online_actuators = 0
-                offline_actuators = 0
         except Exception as e:
             logger.error(f"Error counting actuators: {e}")
+            # Fallback to 0 if Actuator table doesn't exist yet or any other error
             total_actuators = 0
             online_actuators = 0
             offline_actuators = 0
