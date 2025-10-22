@@ -80,6 +80,20 @@ else
 fi
 echo ""
 
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "STEP 2.7/6: Creating Demo Actuators (Phase 4.4/4.6)"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+if python manage.py create_demo_actuators 2>&1; then
+    echo "✅ Demo actuators created!"
+    echo "🎮 Control devices ready:"
+    echo "   • Valves, Relays, Pumps, Fans"
+    echo "   • Heaters, Motors, Switches"
+    echo "   • Command history populated"
+else
+    echo "⚠️  Actuators may already exist"
+fi
+echo ""
+
 # Step 3: Static files
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "STEP 3/6: Collecting Static Files"
