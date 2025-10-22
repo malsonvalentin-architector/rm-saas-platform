@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from . import views_crud
+from . import views_systems
 
 app_name = 'data'
 
@@ -8,6 +9,9 @@ urlpatterns = [
     # Objects list and dashboard
     path('objects/', views.object_list, name='object_list'),
     path('objects/<int:object_id>/', views.object_dashboard, name='object_dashboard'),
+    
+    # Global systems overview (Phase 4.2)
+    path('systems/', views_systems.all_systems_overview, name='all_systems'),
     
     # Objects CRUD
     path('objects/create/', views_crud.object_create, name='object_create'),
