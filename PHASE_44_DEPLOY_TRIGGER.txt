@@ -1,0 +1,17 @@
+🎮 PHASE 4.4 MVP DEPLOYMENT TRIGGER
+=====================================
+
+Deploy Date: 2025-10-22 05:10 UTC
+Commit: 2cf5349
+Phase: 4.4 - Actuators & Basic Control System
+
+CHANGES:
+- Models: Actuator, ActuatorCommand
+- Views: actuators_list, actuator_control, actuator_history
+- Templates: actuators_list.html, actuator_history.html
+- Migration: 0012_phase_44_actuators
+- Admin: ActuatorAdmin, ActuatorCommandAdmin
+- Navigation: Added "Управление" button on all pages
+- Demo data: create_demo_actuators command
+
+READY FOR PRODUCTION! 🚀
