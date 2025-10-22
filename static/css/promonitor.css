@@ -335,6 +335,7 @@ body {
 /* 0. КРИТИЧНО: Скрываем все modals по умолчанию */
 .modal {
     display: none !important;
+    background-color: transparent;
 }
 
 .modal.show {
@@ -392,9 +393,7 @@ body {
 }
 
 /* 7. Предотвращаем flash of white content */
-.modal {
-    background-color: transparent;
-}
+/* УДАЛЕНО: объединено с правилом .modal выше (строка 336-339) */
 
 .modal-content {
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
