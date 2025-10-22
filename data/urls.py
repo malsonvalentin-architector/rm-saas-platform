@@ -6,6 +6,7 @@ from . import views_alerts
 from . import views_actuators
 from . import views_debug
 from . import views_debug_template
+from . import views_actuators_api
 
 app_name = 'data'
 
@@ -44,6 +45,12 @@ urlpatterns = [
     path('actuators/', views_actuators.actuators_list, name='actuators_list'),
     path('actuators/<int:actuator_id>/control/', views_actuators.actuator_control, name='actuator_control'),
     path('actuators/<int:actuator_id>/history/', views_actuators.actuator_history, name='actuator_history'),
+    
+    # Actuators API - Real-Time (Phase 4.5)
+    path('api/actuators/live-stats/', views_actuators_api.actuators_live_stats, name='api_actuators_live_stats'),
+    path('api/actuators/commands-timeline/', views_actuators_api.actuators_commands_timeline, name='api_commands_timeline'),
+    path('api/actuators/activity-chart/', views_actuators_api.actuators_activity_chart, name='api_activity_chart'),
+    path('api/actuators/by-type/', views_actuators_api.actuators_by_type, name='api_actuators_by_type'),
     
     # DEBUG: URL patterns inspector
     path('debug/urls/', views.debug_urls, name='debug_urls'),

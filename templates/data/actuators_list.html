@@ -25,6 +25,10 @@
     <!-- Заголовок -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>🎮 Управление устройствами</h1>
+        <div class="live-indicator" id="live-indicator">
+            <span class="live-indicator-dot"></span>
+            <span>LIVE</span>
+        </div>
     </div>
     
     <!-- Карточки статистики -->
@@ -33,7 +37,7 @@
             <div class="card text-white bg-primary">
                 <div class="card-body">
                     <h5 class="card-title">Всего устройств</h5>
-                    <p class="card-text display-4">{{ total_actuators }}</p>
+                    <p class="card-text display-4 stat-value-animated" id="total-devices">{{ total_actuators }}</p>
                 </div>
             </div>
         </div>
@@ -41,7 +45,7 @@
             <div class="card text-white bg-success">
                 <div class="card-body">
                     <h5 class="card-title">В сети</h5>
-                    <p class="card-text display-4">{{ online_actuators }}</p>
+                    <p class="card-text display-4 stat-value-animated" id="online-devices">{{ online_actuators }}</p>
                 </div>
             </div>
         </div>
@@ -49,7 +53,7 @@
             <div class="card text-white bg-info">
                 <div class="card-body">
                     <h5 class="card-title">Активных</h5>
-                    <p class="card-text display-4">{{ active_actuators }}</p>
+                    <p class="card-text display-4 stat-value-animated" id="active-devices">{{ active_actuators }}</p>
                 </div>
             </div>
         </div>
@@ -57,7 +61,46 @@
             <div class="card text-white bg-warning">
                 <div class="card-body">
                     <h5 class="card-title">Команд за 24ч</h5>
-                    <p class="card-text display-4">{{ commands_24h }}</p>
+                    <p class="card-text display-4 stat-value-animated" id="commands-24h">{{ commands_24h }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Live Charts Section (Phase 4.5) -->
+    <div class="row mb-4">
+        <!-- График команд за 24 часа -->
+        <div class="col-lg-6 mb-4">
+            <div class="chart-card">
+                <canvas id="commandsTimelineChart" class="chart-canvas"></canvas>
+            </div>
+        </div>
+        
+        <!-- График активности за последний час -->
+        <div class="col-lg-6 mb-4">
+            <div class="chart-card">
+                <canvas id="activityChart" class="chart-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <!-- Pie Chart - устройства по типам -->
+        <div class="col-lg-6 mb-4">
+            <div class="chart-card">
+                <canvas id="devicesPieChart" class="chart-canvas"></canvas>
+            </div>
+        </div>
+        
+        <!-- Последние команды -->
+        <div class="col-lg-6 mb-4">
+            <div class="chart-card">
+                <h5>🔔 Последние команды</h5>
+                <div id="recent-commands-list" class="list-group recent-commands-list">
+                    <div class="text-center text-muted py-3">
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                        <span class="ms-2">Загрузка...</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -287,6 +330,15 @@
 </div>
 {% endblock %}
 
+{% block extra_css %}
+<!-- Chart.js CSS -->
+<link rel="stylesheet" href="{% static 'css/live-charts.css' %}">
+{% endblock %}
+
 {% block extra_js %}
-<!-- Bootstrap modal работает автоматически, не нужен custom JS -->
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<!-- Live Charts JavaScript (Phase 4.5) -->
+<script src="{% static 'js/actuators-live-charts.js' %}"></script>
 {% endblock %}
