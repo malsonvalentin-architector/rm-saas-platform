@@ -7,7 +7,7 @@ from django.db.models import Count, Q, Avg
 from django.utils import timezone
 from django.urls import reverse
 from datetime import timedelta
-from data.models import Obj, System, AlertRule, Atributes, Data
+from data.models import Obj, System, AlertRule, Atributes, Data, Actuator
 import logging
 
 logger = logging.getLogger(__name__)
@@ -58,6 +58,23 @@ def dashboard(request):
         except Exception as e:
             logger.error(f"Error counting alerts: {e}")
             active_alerts = 0
+        
+        # Phase 4.4/4.6: Actuators statistics
+        try:
+            if objects.exists():
+                our_systems = System.objects.filter(obj__in=objects)
+                total_actuators = Actuator.objects.filter(sys__in=our_systems).count()
+                online_actuators = Actuator.objects.filter(sys__in=our_systems, is_online=True).count()
+                offline_actuators = total_actuators - online_actuators
+            else:
+                total_actuators = 0
+                online_actuators = 0
+                offline_actuators = 0
+        except Exception as e:
+            logger.error(f"Error counting actuators: {e}")
+            total_actuators = 0
+            online_actuators = 0
+            offline_actuators = 0
         
         # Средние показатели датчиков за последние 24 часа
         last_24h = timezone.now() - timedelta(hours=24)
@@ -128,6 +145,9 @@ def dashboard(request):
             'total_objects': total_objects,
             'total_systems': total_systems,
             'active_alerts': active_alerts,
+            'total_actuators': total_actuators,
+            'online_actuators': online_actuators,
+            'offline_actuators': offline_actuators,
             'avg_temperature': avg_temperature,
             'avg_humidity': avg_humidity,
             'avg_power': avg_power,
