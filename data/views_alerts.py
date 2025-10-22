@@ -109,9 +109,9 @@ def alerts_list(request):
     critical_alerts = alerts.filter(rule__severity='critical', status='active')[:5]
     
     # Список объектов и систем для фильтров
-    from .models import Object, System
-    objects_list = Object.objects.filter(company=company).order_by('name')
-    systems_list = System.objects.filter(object__company=company).order_by('name')
+    from .models import Obj, System
+    objects_list = Obj.objects.filter(company=company).order_by('obj')
+    systems_list = System.objects.filter(obj__company=company).order_by('name')
     
     # Ограничиваем количество тревог на странице
     alerts = alerts[:100]  # Показываем последние 100 тревог
