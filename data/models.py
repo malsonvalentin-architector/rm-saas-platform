@@ -1121,12 +1121,23 @@ class ModbusRegisterMap(models.Model):
         verbose_name="Modbus подключение"
     )
     
-    sensor = models.ForeignKey(
-        'Sensor',
-        on_delete=models.CASCADE,
-        related_name='modbus_registers',
-        verbose_name="Датчик",
-        help_text="К какому датчику привязан этот регистр"
+    # Связь с датчиком (опционально, пока нет модели Sensor)
+    # sensor = models.ForeignKey(
+    #     'Atributes',  # Используем существующую модель
+    #     on_delete=models.SET_NULL,
+    #     null=True,
+    #     blank=True,
+    #     related_name='modbus_registers',
+    #     verbose_name="Датчик",
+    #     help_text="К какому датчику привязан этот регистр"
+    # )
+    
+    # Временное решение: текстовое поле для имени датчика
+    sensor_name = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="Имя датчика",
+        help_text="Название датчика/параметра"
     )
     
     register_type = models.CharField(
