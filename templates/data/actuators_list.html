@@ -278,7 +278,7 @@
     <!-- Модальные окна управления (вынесены за пределы таблицы) -->
     {% if actuators %}
         {% for actuator in actuators %}
-        <div class="modal fade" id="controlModal-{{ actuator.id }}" tabindex="-1" aria-labelledby="modalLabel-{{ actuator.id }}" aria-hidden="true">
+        <div class="modal fade" id="controlModal-{{ actuator.id }}" tabindex="-1" aria-labelledby="modalLabel-{{ actuator.id }}" aria-hidden="true" style="display:none;">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <form method="post" action="{% url 'data:actuator_control' actuator.id %}">
