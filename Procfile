@@ -1,4 +1,4 @@
-web: gunicorn rm.wsgi --bind 0.0.0.0:$PORT
+web: bash start_web.sh
 worker: celery -A rm worker --loglevel=info --concurrency=2
 beat: celery -A rm beat --loglevel=info
-emulator: python modbus_emulator.py
+emulator: bash start_emulator.sh
