@@ -1,5 +1,6 @@
 # Generated automatically for Phase 4.6 - Enhanced Emulator Integration
 from django.db import migrations
+from django.utils import timezone
 
 def populate_enhanced_emulator(apps, schema_editor):
     """
@@ -21,7 +22,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunSQL(
-            # Forward SQL - Create connection and mappings
+            # Forward SQL - Create connection and mappings (FIXED: NOW() replaced with CURRENT_TIMESTAMP)
             sql="""
             -- Insert ModbusConnection for Enhanced Emulator v2.0
             INSERT INTO data_modbusconnection (
@@ -37,8 +38,8 @@ class Migration(migrations.Migration):
                 60.0,
                 true,
                 'Enhanced Modbus Emulator with 800+ registers for HVAC monitoring',
-                NOW(),
-                NOW()
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
             )
             ON CONFLICT DO NOTHING;
 
@@ -61,8 +62,8 @@ class Migration(migrations.Migration):
                 "offset",
                 enabled,
                 description,
-                NOW(),
-                NOW()
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
             FROM emulator_conn, (VALUES
                 -- Temperature Sensors (4 zones) - Float32 = 2 registers each, step by 2
                 ('Zone 1 Temperature', 'holding', 1000, 'float32', 1.0, 0.0, true, 
