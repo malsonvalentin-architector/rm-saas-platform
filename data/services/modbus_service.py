@@ -6,7 +6,7 @@ Modbus Service для чтения данных из контроллеров
 import time
 import struct
 from datetime import datetime, timezone
-from pymodbus.client.sync import ModbusTcpClient
+from pymodbus.client import ModbusTcpClient  # FIXED: Updated for pymodbus 3.x
 from django.db import transaction
 from data.models import (
     ModbusConnection, 
