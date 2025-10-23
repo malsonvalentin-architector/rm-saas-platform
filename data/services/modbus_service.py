@@ -160,23 +160,27 @@ class ModbusService:
             # Подключаемся
             self.connect()
             
-            # Получаем все активные mapping'и
+            # Получаем все активные mapping'и с непустым sensor_name
             register_maps = self.connection.register_maps.filter(
-                enabled=True,
-                sensor__isnull=False
-            ).select_related('sensor')
+                enabled=True
+            ).exclude(sensor_name='')
             
             # Читаем каждый регистр
             with transaction.atomic():
                 for reg_map in register_maps:
                     try:
-                        value = self.read_register(reg_map)
+                        # Читаем сырое и рассчитанное значение
+                        raw_value = self.read_register(reg_map)
                         
                         # Сохраняем в SensorData
                         SensorData.objects.create(
-                            sensor=reg_map.sensor,
-                            value=value,
-                            timestamp=datetime.now(timezone.utc)
+                            connection=self.connection,
+                            register_map=reg_map,
+                            sensor_name=reg_map.sensor_name,
+                            raw_value=raw_value,
+                            calculated_value=reg_map.calculate_value(raw_value),
+                            unit='',  # Единицы измерения пока не заданы в reg_map
+                            quality='good'
                         )
                         
                         registers_read += 1
