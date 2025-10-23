@@ -1251,3 +1251,93 @@ class ModbusConnectionLog(models.Model):
     def __str__(self):
         return f"{self.connection.name} - {self.status} ({self.created_at})"
 
+
+class SensorData(models.Model):
+    """
+    Исторические данные с датчиков Modbus
+    Phase 4.6: Enhanced Emulator v2.0 Integration
+    """
+    
+    # Связи
+    connection = models.ForeignKey(
+        'ModbusConnection',
+        on_delete=models.CASCADE,
+        related_name='sensor_data',
+        verbose_name="Modbus соединение"
+    )
+    
+    register_map = models.ForeignKey(
+        'ModbusRegisterMap',
+        on_delete=models.CASCADE,
+        related_name='sensor_data',
+        verbose_name="Регистр"
+    )
+    
+    sensor = models.ForeignKey(
+        'Sensor',
+        on_delete=models.CASCADE,
+        related_name='modbus_data',
+        verbose_name="Датчик"
+    )
+    
+    # Данные
+    raw_value = models.FloatField(
+        verbose_name="Сырое значение",
+        help_text="Значение напрямую из Modbus регистра"
+    )
+    
+    calculated_value = models.FloatField(
+        verbose_name="Рассчитанное значение",
+        help_text="После применения scale_factor и offset"
+    )
+    
+    unit = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="Единица измерения"
+    )
+    
+    # Временная метка
+    timestamp = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Время получения",
+        db_index=True
+    )
+    
+    # Качество данных
+    quality = models.CharField(
+        max_length=20,
+        choices=[
+            ('good', 'Хорошее'),
+            ('uncertain', 'Неопределённое'),
+            ('bad', 'Плохое'),
+        ],
+        default='good',
+        verbose_name="Качество данных"
+    )
+    
+    class Meta:
+        verbose_name = "Данные датчика Modbus"
+        verbose_name_plural = "Данные датчиков Modbus"
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['-timestamp']),
+            models.Index(fields=['sensor', '-timestamp']),
+            models.Index(fields=['connection', '-timestamp']),
+            models.Index(fields=['register_map', '-timestamp']),
+        ]
+        # Для оптимизации запросов за период
+        db_table = 'data_sensordata'
+    
+    def __str__(self):
+        return f"{self.sensor.name}: {self.calculated_value} {self.unit} ({self.timestamp})"
+    
+    def save(self, *args, **kwargs):
+        """
+        Автоматически рассчитывает calculated_value при сохранении
+        """
+        if self.register_map:
+            self.calculated_value = self.register_map.calculate_value(self.raw_value)
+            # Берём единицу измерения из датчика
+            self.unit = self.sensor.unit if self.sensor else ''
+        super().save(*args, **kwargs)
