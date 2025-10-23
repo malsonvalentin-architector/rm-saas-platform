@@ -1273,11 +1273,12 @@ class SensorData(models.Model):
         verbose_name="Регистр"
     )
     
-    sensor = models.ForeignKey(
-        'Sensor',
-        on_delete=models.CASCADE,
-        related_name='modbus_data',
-        verbose_name="Датчик"
+    # Имя датчика (текстовое поле)
+    sensor_name = models.CharField(
+        max_length=255,
+        verbose_name="Имя датчика",
+        help_text="Название датчика из register_map.sensor_name",
+        db_index=True
     )
     
     # Данные
@@ -1322,7 +1323,7 @@ class SensorData(models.Model):
         ordering = ['-timestamp']
         indexes = [
             models.Index(fields=['-timestamp']),
-            models.Index(fields=['sensor', '-timestamp']),
+            models.Index(fields=['sensor_name', '-timestamp']),
             models.Index(fields=['connection', '-timestamp']),
             models.Index(fields=['register_map', '-timestamp']),
         ]
@@ -1330,7 +1331,7 @@ class SensorData(models.Model):
         db_table = 'data_sensordata'
     
     def __str__(self):
-        return f"{self.sensor.name}: {self.calculated_value} {self.unit} ({self.timestamp})"
+        return f"{self.sensor_name}: {self.calculated_value} {self.unit} ({self.timestamp})"
     
     def save(self, *args, **kwargs):
         """
@@ -1338,6 +1339,7 @@ class SensorData(models.Model):
         """
         if self.register_map:
             self.calculated_value = self.register_map.calculate_value(self.raw_value)
-            # Берём единицу измерения из датчика
-            self.unit = self.sensor.unit if self.sensor else ''
+            # Берём имя датчика и единицу из register_map
+            self.sensor_name = self.register_map.sensor_name
+            self.unit = ''  # Единица измерения может быть задана в коде опроса
         super().save(*args, **kwargs)

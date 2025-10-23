@@ -1,5 +1,6 @@
-# Generated migration for SensorData model
+# Generated migration for SensorData model (FIXED)
 # Phase 4.6: Enhanced Emulator v2.0 Integration - Data Storage
+# FIX: Removed FK to non-existent 'Sensor' model, using sensor_name CharField instead
 
 from django.db import migrations, models
 import django.db.models.deletion
@@ -16,6 +17,12 @@ class Migration(migrations.Migration):
             name='SensorData',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('sensor_name', models.CharField(
+                    db_index=True,
+                    help_text='Название датчика из register_map.sensor_name',
+                    max_length=255,
+                    verbose_name='Имя датчика'
+                )),
                 ('raw_value', models.FloatField(help_text='Значение напрямую из Modbus регистра', verbose_name='Сырое значение')),
                 ('calculated_value', models.FloatField(help_text='После применения scale_factor и offset', verbose_name='Рассчитанное значение')),
                 ('unit', models.CharField(blank=True, max_length=50, verbose_name='Единица измерения')),
@@ -38,12 +45,6 @@ class Migration(migrations.Migration):
                     to='data.modbusregistermap',
                     verbose_name='Регистр'
                 )),
-                ('sensor', models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name='modbus_data',
-                    to='data.sensor',
-                    verbose_name='Датчик'
-                )),
             ],
             options={
                 'verbose_name': 'Данные датчика Modbus',
@@ -52,7 +53,7 @@ class Migration(migrations.Migration):
                 'ordering': ['-timestamp'],
                 'indexes': [
                     models.Index(fields=['-timestamp'], name='data_sensor_timesta_idx'),
-                    models.Index(fields=['sensor', '-timestamp'], name='data_sensor_sensor_timesta_idx'),
+                    models.Index(fields=['sensor_name', '-timestamp'], name='data_sensor_sensor_timesta_idx'),
                     models.Index(fields=['connection', '-timestamp'], name='data_sensor_connect_timesta_idx'),
                     models.Index(fields=['register_map', '-timestamp'], name='data_sensor_registe_timesta_idx'),
                 ],
