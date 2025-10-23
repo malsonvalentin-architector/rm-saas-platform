@@ -7,7 +7,7 @@ import random
 import time
 import threading
 from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSlaveContext, ModbusServerContext
-from pymodbus.server.sync import StartTcpServer
+from pymodbus.server import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 
 class EnhancedModbusEmulatorV2:
