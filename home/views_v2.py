@@ -126,8 +126,8 @@ def dashboard_v2(request):
     
     # Recent alerts for timeline
     recent_alerts = Alert.objects.filter(
-        sensor__building__company=request.user.company
-    ).select_related('sensor', 'sensor__building').order_by('-created_at')[:10]
+        rule__attribute__sys__obj__company=request.user.company
+    ).select_related('rule', 'rule__attribute', 'rule__attribute__sys__obj').order_by('-triggered_at')[:10]
     
     # System health metrics
     now = timezone.now()
@@ -136,13 +136,13 @@ def dashboard_v2(request):
     
     # Sensor readings in last hour vs 24h (activity indicator)
     readings_last_hour = SensorReading.objects.filter(
-        sensor__building__company=request.user.company,
-        timestamp__gte=last_hour
+        name__sys__obj__company=request.user.company,
+        date__gte=last_hour
     ).count()
     
     readings_last_24h = SensorReading.objects.filter(
-        sensor__building__company=request.user.company,
-        timestamp__gte=last_24h
+        name__sys__obj__company=request.user.company,
+        date__gte=last_24h
     ).count()
     
     # Calculate system uptime percentage
@@ -151,15 +151,15 @@ def dashboard_v2(request):
     
     # Environmental averages across all buildings
     avg_temperature = SensorReading.objects.filter(
-        sensor__building__company=request.user.company,
-        sensor__sensor_type__name__icontains='temperature',
-        timestamp__gte=last_24h
+        name__sys__obj__company=request.user.company,
+        name__name__icontains='температур',
+        date__gte=last_24h
     ).aggregate(avg=Avg('value'))['avg']
     
     avg_humidity = SensorReading.objects.filter(
-        sensor__building__company=request.user.company,
-        sensor__sensor_type__name__icontains='humidity',
-        timestamp__gte=last_24h
+        name__sys__obj__company=request.user.company,
+        name__name__icontains='влажн',
+        date__gte=last_24h
     ).aggregate(avg=Avg('value'))['avg']
     
     # Prepare context
@@ -237,34 +237,34 @@ def building_detail_v2(request, building_id):
     last_24h = now - timedelta(hours=24)
     
     readings = SensorReading.objects.filter(
-        sensor__building=building,
-        timestamp__gte=last_24h
-    ).select_related('sensor').order_by('timestamp')
+        name__sys__obj=building,
+        date__gte=last_24h
+    ).select_related('name', 'name__sys').order_by('date')
     
     # Organize readings by sensor for charts
     chart_data = {}
     for reading in readings:
-        sensor_name = reading.sensor.name
+        sensor_name = reading.name.name
         if sensor_name not in chart_data:
             chart_data[sensor_name] = {
                 'labels': [],
                 'data': [],
-                'unit': reading.sensor.sensor_type.unit if reading.sensor.sensor_type else '',
-                'type': reading.sensor.sensor_type.name if reading.sensor.sensor_type else 'unknown'
+                'unit': reading.name.units or '',
+                'type': reading.name.name
             }
         
         chart_data[sensor_name]['labels'].append(
-            reading.timestamp.strftime('%H:%M')
+            reading.date.strftime('%H:%M')
         )
-        chart_data[sensor_name]['data'].append(float(reading.value))
+        chart_data[sensor_name]['data'].append(float(reading.value) if reading.value else 0)
     
     # Calculate building analytics
     status = get_building_status(building)
     
     # Get alerts for this building
     alerts = Alert.objects.filter(
-        sensor__building=building
-    ).select_related('sensor').order_by('-created_at')[:20]
+        rule__attribute__sys__obj=building
+    ).select_related('rule', 'rule__attribute').order_by('-triggered_at')[:20]
     
     context = {
         'building': building,
@@ -347,8 +347,8 @@ def dashboard_stats_api(request):
     last_hour = now - timedelta(hours=1)
     
     recent_readings = SensorReading.objects.filter(
-        sensor__building__company=request.user.company,
-        timestamp__gte=last_hour
+        name__sys__obj__company=request.user.company,
+        date__gte=last_hour
     ).count()
     
     # Building status distribution
