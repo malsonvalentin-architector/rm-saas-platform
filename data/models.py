@@ -1357,3 +1357,67 @@ class SensorData(models.Model):
             self.sensor_name = self.register_map.sensor_name
             self.unit = ''  # Единица измерения может быть задана в коде опроса
         super().save(*args, **kwargs)
+
+
+# ============================================================================
+# AI ASSISTANT MODELS
+# ============================================================================
+
+class AIInteractionLog(models.Model):
+    """
+    Log of AI Assistant interactions for analytics and improvement
+    Phase 4: AI Assistant Integration
+    """
+    
+    user = models.ForeignKey(
+        User_profile,
+        on_delete=models.CASCADE,
+        verbose_name="Пользователь"
+    )
+    
+    session_id = models.CharField(
+        max_length=50,
+        verbose_name="Session ID"
+    )
+    
+    # Interaction data
+    message = models.TextField(verbose_name="Сообщение пользователя")
+    response = models.TextField(verbose_name="Ответ AI")
+    intent = models.CharField(
+        max_length=50,
+        verbose_name="Определенный intent"
+    )
+    confidence = models.FloatField(
+        default=0.0,
+        verbose_name="Уверенность ответа"
+    )
+    
+    # JSON data
+    context_data = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name="Данные контекста"
+    )
+    response_data = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name="Полные данные ответа"
+    )
+    
+    timestamp = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Время взаимодействия"
+    )
+    
+    class Meta:
+        verbose_name = "Лог AI взаимодействий"
+        verbose_name_plural = "Логи AI взаимодействий"
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['user', '-timestamp'], name='ai_log_user_timestamp'),
+            models.Index(fields=['session_id', '-timestamp'], name='ai_log_session_timestamp'),
+            models.Index(fields=['intent', '-timestamp'], name='ai_log_intent_timestamp'),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.email} - {self.intent} ({self.timestamp.strftime('%H:%M')})"

@@ -5,6 +5,7 @@ URL patterns for enhanced dashboard with honeycomb visualization
 
 from django.urls import path
 from . import views_v2
+from .ai_views import AIChatView, ai_rate_message, ai_chat_history, ai_clear_history, ai_status, ai_quick_analysis, ai_suggestions
 
 app_name = 'dashboard_v2'
 
@@ -22,4 +23,13 @@ urlpatterns = [
     
     # User preferences
     path('api/update-theme/', views_v2.update_user_theme, name='update_theme'),
+    
+    # AI Assistant endpoints
+    path('api/ai-chat/', AIChatView.as_view(), name='ai_chat'),
+    path('api/ai-rate/', ai_rate_message, name='ai_rate'),
+    path('api/ai-history/', ai_chat_history, name='ai_history'),
+    path('api/ai-clear/', ai_clear_history, name='ai_clear'),
+    path('api/ai-status/', ai_status, name='ai_status'),
+    path('api/ai-analysis/', ai_quick_analysis, name='ai_analysis'),
+    path('api/ai-suggestions/', ai_suggestions, name='ai_suggestions'),
 ]
