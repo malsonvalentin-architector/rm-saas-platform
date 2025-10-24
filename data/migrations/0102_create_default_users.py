@@ -94,7 +94,7 @@ def remove_users(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0001_initial'),
+        ('data', '0101_add_ai_interaction_log'),
     ]
 
     operations = [
