@@ -19,19 +19,6 @@ from data.models import Obj as Building, System as SensorSystem, Atributes as Se
 from .utils import get_building_status, calculate_sensor_health
 
 
-def get_company_filter(user, model_path='company'):
-    """
-    Helper function to get company filter for queries.
-    Returns Q object for filtering based on user role.
-    Superadmin sees everything, others see only their company data.
-    """
-    if user.role == 'superadmin':
-        return Q()  # No filter - see everything
-    else:
-        filter_kwargs = {model_path: user.company}
-        return Q(**filter_kwargs)
-
-
 @login_required
 def dashboard_v2(request):
     """
@@ -51,25 +38,18 @@ def dashboard_v2(request):
     # Get company buildings (superadmin sees all)
     if request.user.role == 'superadmin':
         buildings = Building.objects.all().select_related('company')
+        total_sensors = Sensor.objects.count()
+        active_alerts = Alert.objects.filter(status='active').count()
     else:
-        buildings = Building.objects.filter(get_company_filter(request.user, "company")).select_related('company')
+        buildings = Building.objects.filter(company=request.user.company).select_related('company')
+        total_sensors = Sensor.objects.filter(sys__obj__company=request.user.company).count()
+        active_alerts = Alert.objects.filter(
+            rule__attribute__sys__obj__company=request.user.company,
+            status='active'
+        ).count()
     
     # Calculate overview statistics
     total_buildings = buildings.count()
-    
-    if request.user.role == 'superadmin':
-        total_sensors = Sensor.objects.all().count()
-    else:
-        total_sensors = Sensor.objects.filter(sys__obj__get_company_filter(request.user, "company")).count()
-    
-    # Active alerts count
-    if request.user.role == 'superadmin':
-        active_alerts = Alert.objects.filter(status='active').count()
-    else:
-        active_alerts = Alert.objects.filter(
-            rule__attribute__sys__obj__get_company_filter(request.user, "company"),
-            status='active'
-        ).count()
     
     # Building status counts
     building_statuses = {
@@ -149,7 +129,7 @@ def dashboard_v2(request):
     
     # Recent alerts for timeline
     recent_alerts = Alert.objects.filter(
-        get_company_filter(request.user, 'rule__attribute__sys__obj__company')
+        rule__attribute__sys__obj__company=request.user.company
     ).select_related('rule', 'rule__attribute', 'rule__attribute__sys__obj').order_by('-triggered_at')[:10]
     
     # System health metrics
@@ -159,12 +139,12 @@ def dashboard_v2(request):
     
     # Sensor readings in last hour vs 24h (activity indicator)
     readings_last_hour = SensorReading.objects.filter(
-        get_company_filter(request.user, 'name__sys__obj__company'),
+        name__sys__obj__company=request.user.company,
         date__gte=last_hour
     ).count()
     
     readings_last_24h = SensorReading.objects.filter(
-        get_company_filter(request.user, 'name__sys__obj__company'),
+        name__sys__obj__company=request.user.company,
         date__gte=last_24h
     ).count()
     
@@ -174,13 +154,13 @@ def dashboard_v2(request):
     
     # Environmental averages across all buildings
     avg_temperature = SensorReading.objects.filter(
-        get_company_filter(request.user, 'name__sys__obj__company'),
+        name__sys__obj__company=request.user.company,
         name__name__icontains='температур',
         date__gte=last_24h
     ).aggregate(avg=Avg('value'))['avg']
     
     avg_humidity = SensorReading.objects.filter(
-        get_company_filter(request.user, 'name__sys__obj__company'),
+        name__sys__obj__company=request.user.company,
         name__name__icontains='влажн',
         date__gte=last_24h
     ).aggregate(avg=Avg('value'))['avg']
@@ -246,11 +226,10 @@ def building_detail_v2(request, building_id):
     """
     Detailed building view with sensors and analytics
     """
-    building = get_object_or_404(
-        Building, 
-        id=building_id, 
-        get_company_filter(request.user, "company")
-    )
+    if request.user.role == 'superadmin':
+        building = get_object_or_404(Building, id=building_id)
+    else:
+        building = get_object_or_404(Building, id=building_id, company=request.user.company)
     
     # Get all sensors for this building
     sensors = Sensor.objects.filter(building=building).select_related('sensor_type')
@@ -307,7 +286,10 @@ def honeycomb_data_api(request):
     """
     API endpoint for real-time honeycomb map data
     """
-    buildings = Building.objects.filter(get_company_filter(request.user, "company"))
+    if request.user.role == 'superadmin':
+        buildings = Building.objects.all()
+    else:
+        buildings = Building.objects.filter(company=request.user.company)
     
     honeycomb_data = []
     for building in buildings:
@@ -356,23 +338,31 @@ def dashboard_stats_api(request):
     API endpoint for dashboard statistics updates
     """
     # Calculate real-time statistics
-    buildings = Building.objects.filter(get_company_filter(request.user, "company"))
-    total_buildings = buildings.count()
-    total_sensors = Sensor.objects.filter(sys__obj__get_company_filter(request.user, "company")).count()
+    if request.user.role == 'superadmin':
+        buildings = Building.objects.all()
+        total_sensors = Sensor.objects.count()
+        active_alerts = Alert.objects.filter(status='active').count()
+    else:
+        buildings = Building.objects.filter(company=request.user.company)
+        total_sensors = Sensor.objects.filter(sys__obj__company=request.user.company).count()
+        active_alerts = Alert.objects.filter(
+            rule__attribute__sys__obj__company=request.user.company,
+            status='active'
+        ).count()
     
-    active_alerts = Alert.objects.filter(
-        rule__attribute__sys__obj__get_company_filter(request.user, "company"),
-        status='active'
-    ).count()
+    total_buildings = buildings.count()
     
     # Recent activity
     now = timezone.now()
     last_hour = now - timedelta(hours=1)
     
-    recent_readings = SensorReading.objects.filter(
-        name__sys__obj__get_company_filter(request.user, "company"),
-        date__gte=last_hour
-    ).count()
+    if request.user.role == 'superadmin':
+        recent_readings = SensorReading.objects.filter(date__gte=last_hour).count()
+    else:
+        recent_readings = SensorReading.objects.filter(
+            name__sys__obj__company=request.user.company,
+            date__gte=last_hour
+        ).count()
     
     # Building status distribution
     statuses = {'healthy': 0, 'warning': 0, 'critical': 0, 'offline': 0}
@@ -461,7 +451,10 @@ class DashboardConsumer(AsyncWebsocketConsumer):
 @login_required
 def buildings_list_v2(request):
     """Buildings list view"""
-    buildings = Building.objects.filter(get_company_filter(request.user, "company"))
+    if request.user.role == 'superadmin':
+        buildings = Building.objects.all()
+    else:
+        buildings = Building.objects.filter(company=request.user.company)
     context = {
         'buildings': buildings,
         'page_title': 'Buildings'
@@ -472,7 +465,10 @@ def buildings_list_v2(request):
 @login_required
 def sensors_list_v2(request):
     """Sensors list view"""
-    sensors = Sensor.objects.filter(sys__obj__get_company_filter(request.user, "company"))
+    if request.user.role == 'superadmin':
+        sensors = Sensor.objects.all()
+    else:
+        sensors = Sensor.objects.filter(sys__obj__company=request.user.company)
     context = {
         'sensors': sensors,
         'page_title': 'Sensors'
@@ -483,9 +479,12 @@ def sensors_list_v2(request):
 @login_required
 def alerts_list_v2(request):
     """Alerts list view"""
-    alerts = Alert.objects.filter(
-        rule__attribute__sys__obj__get_company_filter(request.user, "company")
-    ).order_by('-created_at')
+    if request.user.role == 'superadmin':
+        alerts = Alert.objects.all().order_by('-triggered_at')
+    else:
+        alerts = Alert.objects.filter(
+            rule__attribute__sys__obj__company=request.user.company
+        ).order_by('-triggered_at')
     context = {
         'alerts': alerts,
         'page_title': 'Alerts'
@@ -523,7 +522,10 @@ def settings_v2(request):
 @login_required
 def users_list_v2(request):
     """Users management view"""
-    users = UserProfile.objects.filter(user__get_company_filter(request.user, "company"))
+    if request.user.role == 'superadmin':
+        users = UserProfile.objects.all()
+    else:
+        users = UserProfile.objects.filter(company=request.user.company)
     context = {
         'users': users,
         'page_title': 'Users'
