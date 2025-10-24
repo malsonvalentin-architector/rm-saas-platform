@@ -434,3 +434,77 @@ class DashboardConsumer(AsyncWebsocketConsumer):
     async def dashboard_update(self, event):
         # Receive message from room group
         await self.send(text_data=json.dumps(event['data']))
+
+# Additional Dashboard V2 Views
+
+@login_required
+def buildings_list_v2(request):
+    """Buildings list view"""
+    buildings = Building.objects.filter(company=request.user.company)
+    context = {
+        'buildings': buildings,
+        'page_title': 'Buildings'
+    }
+    return render(request, 'dashboard/v2/main.html', context)
+
+
+@login_required
+def sensors_list_v2(request):
+    """Sensors list view"""
+    sensors = Sensor.objects.filter(sys__obj__company=request.user.company)
+    context = {
+        'sensors': sensors,
+        'page_title': 'Sensors'
+    }
+    return render(request, 'dashboard/v2/main.html', context)
+
+
+@login_required
+def alerts_list_v2(request):
+    """Alerts list view"""
+    alerts = Alert.objects.filter(
+        rule__attribute__sys__obj__company=request.user.company
+    ).order_by('-created_at')
+    context = {
+        'alerts': alerts,
+        'page_title': 'Alerts'
+    }
+    return render(request, 'dashboard/v2/main.html', context)
+
+
+@login_required
+def reports_list_v2(request):
+    """Reports list view"""
+    context = {
+        'page_title': 'Reports'
+    }
+    return render(request, 'dashboard/v2/main.html', context)
+
+
+@login_required
+def analytics_v2(request):
+    """Analytics view"""
+    context = {
+        'page_title': 'Analytics'
+    }
+    return render(request, 'dashboard/v2/main.html', context)
+
+
+@login_required
+def settings_v2(request):
+    """Settings view"""
+    context = {
+        'page_title': 'Settings'
+    }
+    return render(request, 'dashboard/v2/main.html', context)
+
+
+@login_required
+def users_list_v2(request):
+    """Users management view"""
+    users = UserProfile.objects.filter(user__company=request.user.company)
+    context = {
+        'users': users,
+        'page_title': 'Users'
+    }
+    return render(request, 'dashboard/v2/main.html', context)
