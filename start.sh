@@ -14,6 +14,10 @@ echo "=== Creating Superuser ==="
 python manage.py create_superuser
 
 echo ""
+echo "=== Creating Demo Users ==="
+python manage.py create_demo_users || echo "⚠️  Demo users creation failed, continuing..."
+
+echo ""
 echo "=== Setting up Enhanced Emulator Integration ==="
 python manage.py setup_enhanced_emulator || echo "⚠️  Enhanced Emulator setup failed, continuing..."
 
