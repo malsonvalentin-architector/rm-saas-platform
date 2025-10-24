@@ -212,7 +212,7 @@ CELERY_TIMEZONE = 'Asia/Almaty'
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/dashboard/'
+LOGIN_REDIRECT_URL = '/dashboard/v2/'  # Dashboard V2 with dark theme
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 # Redirect after admin logout (prevents /admin/ redirect issue)
