@@ -25,13 +25,15 @@ def dashboard_v2(request):
     Main dashboard v2 with honeycomb building visualization
     """
     # Get user profile for theme and dashboard preferences
-    profile, created = UserProfile.objects.get_or_create(
-        user=request.user,
-        defaults={
-            'theme': 'dark',
-            'dashboard_version': 'v2'
-        }
-    )
+    # request.user is already UserProfile (AUTH_USER_MODEL = 'data.User_profile')
+    profile = request.user
+    
+    # Update preferences if needed
+    if not hasattr(profile, 'theme') or profile.theme is None:
+        profile.theme = 'dark'
+    if not hasattr(profile, 'dashboard_version') or profile.dashboard_version is None:
+        profile.dashboard_version = 'v2'
+    profile.save()
     
     # Get company buildings
     buildings = Building.objects.filter(company=request.user.company).select_related('company')
@@ -199,14 +201,10 @@ def update_user_theme(request):
         if theme not in ['dark', 'light']:
             return JsonResponse({'error': 'Invalid theme'}, status=400)
         
-        profile, created = UserProfile.objects.get_or_create(
-            user=request.user,
-            defaults={'theme': theme}
-        )
-        
-        if not created:
-            profile.theme = theme
-            profile.save()
+        # request.user is already UserProfile
+        profile = request.user
+        profile.theme = theme
+        profile.save()
         
         return JsonResponse({
             'success': True,
