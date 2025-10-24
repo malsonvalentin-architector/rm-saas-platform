@@ -6,6 +6,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic.base import RedirectView
+from home.test_views import system_status
 
 urlpatterns = [
     # Django Admin
@@ -25,6 +26,9 @@ urlpatterns = [
     
     # Home Dashboard - handles '/', 'dashboard/', 'logout/'
     path('', include('home.urls', namespace='home')),
+    
+    # System Status API (for testing)
+    path('api/system-status/', system_status, name='system_status'),
 ]
 
 # Static/Media files в режиме DEBUG
