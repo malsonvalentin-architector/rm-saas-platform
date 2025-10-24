@@ -156,6 +156,20 @@ class User_profile(AbstractUser):
     telegram_notifications = models.BooleanField(default=False, verbose_name="Telegram уведомления")
     telegram_chat_id = models.CharField(max_length=50, blank=True, verbose_name="Telegram Chat ID")
     
+    # Phase 2B: Dashboard V2 settings
+    theme = models.CharField(
+        max_length=10,
+        choices=[('light', 'Light'), ('dark', 'Dark')],
+        default='dark',
+        verbose_name="UI Theme"
+    )
+    dashboard_version = models.CharField(
+        max_length=10,
+        choices=[('v1', 'Version 1'), ('v2', 'Version 2')],
+        default='v2',
+        verbose_name="Dashboard Version"
+    )
+    
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     

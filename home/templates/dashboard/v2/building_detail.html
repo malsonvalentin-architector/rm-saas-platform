@@ -1,0 +1,134 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} - ProMonitor</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/v2/themes.css' %}">
+    <link rel="stylesheet" href="{% static 'css/v2/dashboard.css' %}">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="header-left">
+                <div class="logo">
+                    <span class="logo-icon">📊</span>
+                    <span class="logo-text">ProMonitor</span>
+                </div>
+                <nav class="main-nav">
+                    <a href="{% url 'dashboard_v2:main' %}" class="nav-item">
+                        <span class="material-icons">arrow_back</span>
+                        Back to Dashboard
+                    </a>
+                </nav>
+            </div>
+            
+            <div class="header-right">
+                <div class="user-menu">
+                    <div class="user-info">
+                        <span class="user-name">{{ user.get_full_name|default:user.username }}</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <main class="dashboard-main">
+            <div class="content-section">
+                <div class="section-header">
+                    <h1>{{ building.obj }}</h1>
+                    <div class="building-status status-{{ status }}">
+                        Status: {{ status|title }}
+                    </div>
+                </div>
+                
+                <div class="building-overview">
+                    <div class="stat-cards">
+                        <div class="stat-card">
+                            <div class="stat-value">{{ sensors.count }}</div>
+                            <div class="stat-label">Total Sensors</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-value">{{ alerts.count }}</div>
+                            <div class="stat-label">Recent Alerts</div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if chart_data %}
+                <div class="charts-section">
+                    <h3>Sensor Data (Last 24 Hours)</h3>
+                    <div class="chart-container">
+                        <canvas id="sensor-chart" width="800" height="400"></canvas>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="sensors-list">
+                    <h3>Sensors</h3>
+                    {% for sensor in sensors %}
+                    <div class="sensor-item">
+                        <div class="sensor-name">{{ sensor.name }}</div>
+                        <div class="sensor-description">{{ sensor.description }}</div>
+                        <div class="sensor-unit">{{ sensor.uom }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // Chart initialization
+        {% if chart_data %}
+        const chartData = {{ chart_data|safe }};
+        console.log('Chart data:', chartData);
+        
+        // Initialize chart if there's data
+        if (Object.keys(chartData).length > 0) {
+            const ctx = document.getElementById('sensor-chart').getContext('2d');
+            
+            const datasets = Object.keys(chartData).map((sensorName, index) => {
+                const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+                return {
+                    label: sensorName,
+                    data: chartData[sensorName].data,
+                    borderColor: colors[index % colors.length],
+                    backgroundColor: colors[index % colors.length] + '20',
+                    fill: false,
+                    tension: 0.1
+                };
+            });
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData[Object.keys(chartData)[0]].labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Sensor Readings Over Time'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+        {% endif %}
+    </script>
+</body>
+</html>

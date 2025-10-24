@@ -1,0 +1,490 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru" data-theme="{{ profile.theme }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} - ProMonitor</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/v2/themes.css' %}">
+    <link rel="stylesheet" href="{% static 'css/v2/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/v2/widgets.css' %}">
+    <link rel="stylesheet" href="{% static 'css/v2/honeycomb.css' %}">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Meta -->
+    <meta name="description" content="ProMonitor Dashboard V2 - Мониторинг зданий и датчиков">
+</head>
+<body>
+    <!-- Main Dashboard Container -->
+    <div class="dashboard-container">
+        
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <div class="logo">
+                    <span class="logo-icon">📊</span>
+                    <span class="logo-text">ProMonitor</span>
+                    <span class="version-badge">V2</span>
+                </div>
+                <nav class="main-nav">
+                    <a href="{% url 'home:dashboard' %}" class="nav-item active">
+                        <span class="material-icons">dashboard</span>
+                        Dashboard
+                    </a>
+                    <a href="#" class="nav-item">
+                        <span class="material-icons">location_city</span>
+                        Buildings
+                    </a>
+                    <a href="#" class="nav-item">
+                        <span class="material-icons">sensors</span>
+                        Sensors
+                    </a>
+                    <a href="#" class="nav-item">
+                        <span class="material-icons">notifications</span>
+                        Alerts
+                        {% if statistics.active_alerts > 0 %}
+                        <span class="alert-badge">{{ statistics.active_alerts }}</span>
+                        {% endif %}
+                    </a>
+                </nav>
+            </div>
+            
+            <div class="header-right">
+                <div class="theme-switcher">
+                    <button id="theme-toggle" class="theme-toggle" title="Переключить тему">
+                        <span class="material-icons theme-icon">dark_mode</span>
+                    </button>
+                </div>
+                
+                <div class="user-menu">
+                    <div class="user-info">
+                        <span class="user-name">{{ user.get_full_name|default:user.username }}</span>
+                        <span class="company-name">{{ user.company.name }}</span>
+                    </div>
+                    <div class="user-avatar">
+                        <span class="material-icons">account_circle</span>
+                    </div>
+                    <div class="user-dropdown">
+                        <a href="#" class="dropdown-item">
+                            <span class="material-icons">settings</span>
+                            Настройки
+                        </a>
+                        <a href="{% url 'home:logout' %}" class="dropdown-item">
+                            <span class="material-icons">logout</span>
+                            Выход
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            
+            <!-- Sidebar -->
+            <aside class="dashboard-sidebar">
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">Обзор системы</h3>
+                    
+                    <!-- System Health -->
+                    <div class="health-indicator">
+                        <div class="health-status">
+                            <div class="status-dot status-healthy"></div>
+                            <span>Система работает</span>
+                        </div>
+                        <div class="uptime">
+                            <span class="uptime-value">{{ statistics.uptime_percentage }}%</span>
+                            <span class="uptime-label">Аптайм</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Stats -->
+                    <div class="quick-stats">
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <span class="material-icons">location_city</span>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">{{ statistics.total_buildings }}</div>
+                                <div class="stat-label">Зданий</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <span class="material-icons">sensors</span>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">{{ statistics.total_sensors }}</div>
+                                <div class="stat-label">Датчиков</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <span class="material-icons">warning</span>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value alert-count">{{ statistics.active_alerts }}</div>
+                                <div class="stat-label">Алертов</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Building Status Distribution -->
+                    <div class="building-status-chart">
+                        <h4>Статус зданий</h4>
+                        <div class="status-bars">
+                            <div class="status-bar">
+                                <div class="status-label">
+                                    <span class="status-dot status-healthy"></span>
+                                    Норма
+                                </div>
+                                <div class="status-count">{{ building_statuses.healthy }}</div>
+                            </div>
+                            <div class="status-bar">
+                                <div class="status-label">
+                                    <span class="status-dot status-warning"></span>
+                                    Предупреждение
+                                </div>
+                                <div class="status-count">{{ building_statuses.warning }}</div>
+                            </div>
+                            <div class="status-bar">
+                                <div class="status-label">
+                                    <span class="status-dot status-critical"></span>
+                                    Критично
+                                </div>
+                                <div class="status-count">{{ building_statuses.critical }}</div>
+                            </div>
+                            <div class="status-bar">
+                                <div class="status-label">
+                                    <span class="status-dot status-offline"></span>
+                                    Офлайн
+                                </div>
+                                <div class="status-count">{{ building_statuses.offline }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Environmental Overview -->
+                    {% if statistics.avg_temperature or statistics.avg_humidity %}
+                    <div class="env-overview">
+                        <h4>Средние показатели</h4>
+                        {% if statistics.avg_temperature %}
+                        <div class="env-stat">
+                            <span class="material-icons">thermostat</span>
+                            <span class="env-value">{{ statistics.avg_temperature }}°C</span>
+                            <span class="env-label">Температура</span>
+                        </div>
+                        {% endif %}
+                        {% if statistics.avg_humidity %}
+                        <div class="env-stat">
+                            <span class="material-icons">water_drop</span>
+                            <span class="env-value">{{ statistics.avg_humidity }}%</span>
+                            <span class="env-label">Влажность</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Recent Alerts -->
+                {% if recent_alerts %}
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">Последние алерты</h3>
+                    <div class="alert-timeline">
+                        {% for alert in recent_alerts %}
+                        <div class="alert-item severity-{{ alert.severity }}">
+                            <div class="alert-time">{{ alert.created_at|date:"H:i" }}</div>
+                            <div class="alert-content">
+                                <div class="alert-message">{{ alert.message }}</div>
+                                <div class="alert-source">{{ alert.sensor.building.name }} - {{ alert.sensor.name }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </aside>
+            
+            <!-- Content Area -->
+            <div class="dashboard-content">
+                
+                <!-- Honeycomb Building Map -->
+                <section class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Карта зданий</h2>
+                        <div class="honeycomb-controls">
+                            <span class="filter-label">Фильтр:</span>
+                            <div class="status-filters">
+                                <button class="status-filter all active" data-status="all">Все</button>
+                                <button class="status-filter healthy" data-status="healthy">Норма</button>
+                                <button class="status-filter warning" data-status="warning">Предупреждение</button>
+                                <button class="status-filter critical" data-status="critical">Критично</button>
+                                <button class="status-filter offline" data-status="offline">Офлайн</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="honeycomb-wrapper">
+                        <div id="honeycomb-container" class="honeycomb-container">
+                            <div class="honeycomb-loading">
+                                <div class="loading-spinner"></div>
+                                Загрузка карты зданий...
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Activity Feed -->
+                <section class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Активность системы</h2>
+                        <div class="activity-stats">
+                            <div class="activity-stat">
+                                <span class="stat-value">{{ activity_metrics.readings_last_hour }}</span>
+                                <span class="stat-label">за час</span>
+                            </div>
+                            <div class="activity-stat">
+                                <span class="stat-value">{{ activity_metrics.readings_last_24h }}</span>
+                                <span class="stat-label">за сутки</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-grid">
+                        <!-- Real-time sensor readings chart would go here -->
+                        <div class="activity-chart">
+                            <canvas id="activity-chart" width="400" height="200"></canvas>
+                        </div>
+                        
+                        <!-- System performance metrics -->
+                        <div class="performance-metrics">
+                            <div class="metric-card">
+                                <div class="metric-icon">
+                                    <span class="material-icons">speed</span>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value">{{ statistics.uptime_percentage }}%</div>
+                                    <div class="metric-label">Аптайм системы</div>
+                                </div>
+                            </div>
+                            
+                            <div class="metric-card">
+                                <div class="metric-icon">
+                                    <span class="material-icons">network_check</span>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value">{{ activity_metrics.readings_last_hour }}</div>
+                                    <div class="metric-label">Показаний в час</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+            </div>
+            
+        </main>
+        
+    </div>
+    
+    <!-- Building Details Sidebar -->
+    <div class="building-details-sidebar">
+        <!-- Content will be populated by JavaScript -->
+    </div>
+    
+    <!-- JavaScript -->
+    <script src="{% static 'js/v2/theme-switcher.js' %}"></script>
+    <script src="{% static 'js/v2/honeycomb.js' %}"></script>
+    
+    <script>
+        // Initialize dashboard data
+        window.dashboardData = {
+            buildings: {{ honeycomb_buildings|safe }},
+            statistics: {{ statistics|safe }},
+            buildingStatuses: {{ building_statuses|safe }},
+            apiEndpoints: {
+                honeycombData: "{% url 'dashboard_v2:honeycomb_data' %}",
+                dashboardStats: "{% url 'dashboard_v2:dashboard_stats' %}",
+                updateTheme: "{% url 'dashboard_v2:update_theme' %}"
+            }
+        };
+        
+        // Initialize honeycomb map when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.dashboardData.buildings.length > 0) {
+                const honeycombContainer = document.querySelector('.honeycomb-loading');
+                if (honeycombContainer) {
+                    honeycombContainer.style.display = 'none';
+                }
+                
+                // Initialize honeycomb map with real data
+                if (window.buildingMap) {
+                    window.buildingMap.loadBuildings(window.dashboardData.buildings);
+                }
+            }
+            
+            // Setup status filters
+            const statusFilters = document.querySelectorAll('.status-filter');
+            statusFilters.forEach(filter => {
+                filter.addEventListener('click', function() {
+                    // Remove active from all filters
+                    statusFilters.forEach(f => f.classList.remove('active'));
+                    // Add active to clicked filter
+                    this.classList.add('active');
+                    
+                    // Apply filter to honeycomb map
+                    const status = this.dataset.status;
+                    if (window.buildingMap) {
+                        window.buildingMap.setFilter(status);
+                    }
+                });
+            });
+            
+            // Initialize activity chart
+            initActivityChart();
+            
+            // Setup real-time updates
+            setupRealTimeUpdates();
+        });
+        
+        function initActivityChart() {
+            const ctx = document.getElementById('activity-chart');
+            if (!ctx) return;
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 24}, (_, i) => `${i}:00`),
+                    datasets: [{
+                        label: 'Показания датчиков',
+                        data: Array.from({length: 24}, () => Math.floor(Math.random() * 100)),
+                        borderColor: 'var(--accent-primary)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'var(--border-secondary)'
+                            },
+                            ticks: {
+                                color: 'var(--text-secondary)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'var(--border-secondary)'
+                            },
+                            ticks: {
+                                color: 'var(--text-secondary)'
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            radius: 0,
+                            hitRadius: 10
+                        }
+                    }
+                }
+            });
+        }
+        
+        function setupRealTimeUpdates() {
+            // Update dashboard stats every 30 seconds
+            setInterval(async function() {
+                try {
+                    const response = await fetch(window.dashboardData.apiEndpoints.dashboardStats);
+                    const data = await response.json();
+                    
+                    // Update statistics in the UI
+                    updateDashboardStats(data);
+                    
+                } catch (error) {
+                    console.error('Failed to fetch dashboard stats:', error);
+                }
+            }, 30000);
+            
+            // Update honeycomb data every 60 seconds
+            setInterval(async function() {
+                try {
+                    const response = await fetch(window.dashboardData.apiEndpoints.honeycombData);
+                    const data = await response.json();
+                    
+                    // Update honeycomb map
+                    if (window.buildingMap && data.buildings) {
+                        data.buildings.forEach(building => {
+                            window.buildingMap.updateBuilding(building.id, building);
+                        });
+                    }
+                    
+                } catch (error) {
+                    console.error('Failed to fetch honeycomb data:', error);
+                }
+            }, 60000);
+        }
+        
+        function updateDashboardStats(data) {
+            // Update alert count
+            const alertCount = document.querySelector('.alert-count');
+            if (alertCount) {
+                alertCount.textContent = data.active_alerts;
+            }
+            
+            // Update header alert badge
+            const alertBadge = document.querySelector('.alert-badge');
+            if (data.active_alerts > 0) {
+                if (!alertBadge) {
+                    const alertNav = document.querySelector('.nav-item[href="#"]:has(.material-icons:contains("notifications"))');
+                    if (alertNav) {
+                        const badge = document.createElement('span');
+                        badge.className = 'alert-badge';
+                        badge.textContent = data.active_alerts;
+                        alertNav.appendChild(badge);
+                    }
+                } else {
+                    alertBadge.textContent = data.active_alerts;
+                }
+            } else if (alertBadge) {
+                alertBadge.remove();
+            }
+        }
+        
+        // Global functions for building actions
+        window.viewBuildingDetail = function(buildingId) {
+            const id = buildingId.replace('building-', '');
+            window.location.href = `{% url 'dashboard_v2:building_detail' 0 %}`.replace('0', id);
+        };
+        
+        window.configureSensors = function(buildingId) {
+            const id = buildingId.replace('building-', '');
+            // Implement sensor configuration page
+            console.log('Configure sensors for building:', id);
+        };
+    </script>
+    
+</body>
+</html>
