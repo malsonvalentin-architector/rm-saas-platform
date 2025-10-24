@@ -7,7 +7,7 @@ from django.urls import path
 from . import views_v2
 from .ai_views import AIChatView, ai_rate_message, ai_chat_history, ai_clear_history, ai_status, ai_quick_analysis, ai_suggestions
 
-# Note: app_name removed because namespace is set in home/urls.py
+app_name = 'dashboard_v2'  # Required for namespace in home/urls.py
 
 urlpatterns = [
     # Main dashboard v2
