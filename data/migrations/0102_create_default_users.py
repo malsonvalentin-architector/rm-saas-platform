@@ -1,12 +1,12 @@
 # Generated migration for creating default ProMonitor users
 
 from django.db import migrations
-from django.contrib.auth import get_user_model
 
 
 def create_users(apps, schema_editor):
     """Create default users for ProMonitor"""
-    User = get_user_model()
+    # Используем apps.get_model() для получения исторических моделей
+    User = apps.get_model('data', 'User_profile')
     Company = apps.get_model('data', 'Company')
     
     # Создаем или получаем demo компанию
@@ -66,20 +66,26 @@ def create_users(apps, schema_editor):
         email = user_data['email']
         password = user_data.pop('password')
         
-        # Создаем или обновляем пользователя
-        user, created = User.objects.update_or_create(
-            email=email,
-            defaults=user_data
-        )
-        user.set_password(password)
-        user.save()
-        
-        print(f"{'Created' if created else 'Updated'} user: {email}")
+        # Проверяем существует ли пользователь
+        try:
+            user = User.objects.get(email=email)
+            # Обновляем существующего
+            for key, value in user_data.items():
+                setattr(user, key, value)
+            user.set_password(password)
+            user.save()
+            print(f"Updated user: {email}")
+        except User.DoesNotExist:
+            # Создаем нового
+            user = User(**user_data)
+            user.set_password(password)
+            user.save()
+            print(f"Created user: {email}")
 
 
 def remove_users(apps, schema_editor):
     """Remove created users on migration rollback"""
-    User = get_user_model()
+    User = apps.get_model('data', 'User_profile')
     
     emails = [
         'superadmin@promonitor.kz',
