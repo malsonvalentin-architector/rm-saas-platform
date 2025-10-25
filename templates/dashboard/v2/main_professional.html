@@ -103,16 +103,20 @@
             width: 100%;
             max-width: 220px;
             height: auto;
+            /* Remove black background - make it transparent */
+            mix-blend-mode: screen;
             filter: drop-shadow(0 4px 12px rgba(66, 153, 225, 0.4)) 
                     drop-shadow(0 0 20px rgba(11, 197, 234, 0.3))
-                    brightness(1.1);
+                    brightness(1.3)
+                    contrast(1.2);
             transition: all 0.3s ease;
         }
         
         .logo:hover {
             filter: drop-shadow(0 6px 16px rgba(66, 153, 225, 0.6)) 
                     drop-shadow(0 0 30px rgba(11, 197, 234, 0.5))
-                    brightness(1.2);
+                    brightness(1.4)
+                    contrast(1.3);
             transform: scale(1.02);
         }
         
