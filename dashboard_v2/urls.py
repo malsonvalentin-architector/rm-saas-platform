@@ -9,7 +9,8 @@ app_name = 'dashboard_v2'
 
 urlpatterns = [
     # Main pages
-    path('', views.dashboard_home, name='home'),
+    path('', views.dashboard_home, name='dashboard'),
+    path('', views.dashboard_home, name='home'),  # Alias for compatibility
     path('control/', views.control_panel, name='control'),
     path('alerts/', views.alerts_page, name='alerts'),
     path('analytics/', views.analytics_page, name='analytics'),
