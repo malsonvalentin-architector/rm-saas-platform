@@ -5,6 +5,7 @@ URL patterns for enhanced dashboard with honeycomb visualization
 
 from django.urls import path
 from . import views_v2
+from . import views_v2_pages
 from .ai_views import AIChatView, ai_rate_message, ai_chat_history, ai_clear_history, ai_status, ai_quick_analysis, ai_suggestions
 
 app_name = 'dashboard_v2'  # Required for namespace in home/urls.py
@@ -16,14 +17,14 @@ urlpatterns = [
     path('main/', views_v2.dashboard_main_professional, name='dashboard_main'),
     path('standalone/', views_v2.dashboard_v2_standalone, name='dashboard_v2_standalone'),
     
-    # Navigation pages
-    path('buildings/', views_v2.buildings_list_v2, name='dashboard_v2_buildings'),
-    path('sensors/', views_v2.sensors_list_v2, name='dashboard_v2_sensors'),
-    path('alerts/', views_v2.alerts_list_v2, name='dashboard_v2_alerts'),
-    path('reports/', views_v2.reports_list_v2, name='dashboard_v2_reports'),
-    path('analytics/', views_v2.analytics_v2, name='dashboard_v2_analytics'),
-    path('settings/', views_v2.settings_v2, name='dashboard_v2_settings'),
-    path('users/', views_v2.users_list_v2, name='dashboard_v2_users'),
+    # Navigation pages - NEW PROFESSIONAL PAGES
+    path('buildings/', views_v2_pages.buildings_list, name='dashboard_v2_buildings'),
+    path('sensors/', views_v2_pages.sensors_list, name='dashboard_v2_sensors'),
+    path('alerts/', views_v2_pages.alerts_list, name='dashboard_v2_alerts'),
+    path('reports/', views_v2_pages.reports_page, name='dashboard_v2_reports'),
+    path('analytics/', views_v2_pages.analytics_page, name='dashboard_v2_analytics'),
+    path('settings/', views_v2_pages.settings_page, name='dashboard_v2_settings'),
+    path('users/', views_v2_pages.users_page, name='dashboard_v2_users'),
     
     # Building detail views
     path('building/<int:building_id>/', views_v2.building_detail_v2, name='building_detail'),

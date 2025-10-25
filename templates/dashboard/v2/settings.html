@@ -1,311 +1,68 @@
-{% extends "dashboard/v2/base.html" %}
 {% load static %}
-
-{% block title %}Settings - ProMonitor{% endblock %}
-
-{% block extra_css %}
-<style>
-    .settings-nav {
-        background: var(--card-bg);
-        border-radius: 12px;
-        padding: 24px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .settings-nav .nav-link {
-        color: var(--text-color);
-        padding: 12px 16px;
-        border-radius: 8px;
-        margin-bottom: 8px;
-        transition: all 0.2s;
-    }
-    .settings-nav .nav-link:hover {
-        background: var(--hover-bg);
-    }
-    .settings-nav .nav-link.active {
-        background: var(--primary-color);
-        color: white;
-    }
-    .settings-content {
-        background: var(--card-bg);
-        border-radius: 12px;
-        padding: 32px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .form-section {
-        margin-bottom: 32px;
-        padding-bottom: 32px;
-        border-bottom: 1px solid var(--border-color);
-    }
-    .form-section:last-child {
-        border-bottom: none;
-        margin-bottom: 0;
-        padding-bottom: 0;
-    }
-    .form-section h5 {
-        margin-bottom: 20px;
-        color: var(--text-color);
-    }
-    .switch {
-        position: relative;
-        display: inline-block;
-        width: 50px;
-        height: 24px;
-    }
-    .switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-    .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #ccc;
-        transition: .4s;
-        border-radius: 24px;
-    }
-    .slider:before {
-        position: absolute;
-        content: "";
-        height: 18px;
-        width: 18px;
-        left: 3px;
-        bottom: 3px;
-        background-color: white;
-        transition: .4s;
-        border-radius: 50%;
-    }
-    input:checked + .slider {
-        background-color: var(--primary-color);
-    }
-    input:checked + .slider:before {
-        transform: translateX(26px);
-    }
-</style>
-{% endblock %}
-
-{% block content %}
-<div class="page-header">
-    <div>
-        <h1><i class="fas fa-cog"></i> Settings</h1>
-        <p class="text-muted">Manage your system preferences</p>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-3">
-        <div class="settings-nav">
-            <nav class="nav flex-column">
-                <a class="nav-link active" href="#general" data-bs-toggle="tab">
-                    <i class="fas fa-sliders-h"></i> General
-                </a>
-                <a class="nav-link" href="#notifications" data-bs-toggle="tab">
-                    <i class="fas fa-bell"></i> Notifications
-                </a>
-                <a class="nav-link" href="#security" data-bs-toggle="tab">
-                    <i class="fas fa-shield-alt"></i> Security
-                </a>
-                <a class="nav-link" href="#integrations" data-bs-toggle="tab">
-                    <i class="fas fa-plug"></i> Integrations
-                </a>
-                <a class="nav-link" href="#appearance" data-bs-toggle="tab">
-                    <i class="fas fa-palette"></i> Appearance
-                </a>
-            </nav>
-        </div>
-    </div>
-    
-    <div class="col-md-9">
-        <div class="settings-content">
-            <div class="tab-content">
-                <!-- General Settings -->
-                <div class="tab-pane fade show active" id="general">
-                    <div class="form-section">
-                        <h5>Company Information</h5>
-                        <div class="mb-3">
-                            <label class="form-label">Company Name</label>
-                            <input type="text" class="form-control" value="{{ user.company.name }}" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Time Zone</label>
-                            <select class="form-select">
-                                <option>UTC+6 (Almaty)</option>
-                                <option>UTC+5 (Tashkent)</option>
-                                <option>UTC+3 (Moscow)</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Language</label>
-                            <select class="form-select">
-                                <option>English</option>
-                                <option>Русский</option>
-                                <option>Қазақша</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="form-section">
-                        <h5>System Preferences</h5>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>
-                                <strong>Auto-refresh Dashboard</strong>
-                                <p class="text-muted small mb-0">Automatically update data every 30 seconds</p>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>
-                                <strong>Sound Alerts</strong>
-                                <p class="text-muted small mb-0">Play sound on critical alerts</p>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <button class="btn btn-primary">Save Changes</button>
-                </div>
-                
-                <!-- Notifications -->
-                <div class="tab-pane fade" id="notifications">
-                    <div class="form-section">
-                        <h5>Email Notifications</h5>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>
-                                <strong>Critical Alerts</strong>
-                                <p class="text-muted small mb-0">Receive emails for critical system alerts</p>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>
-                                <strong>Daily Summary</strong>
-                                <p class="text-muted small mb-0">Daily system status report</p>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>
-                                <strong>System Updates</strong>
-                                <p class="text-muted small mb-0">Notifications about system updates</p>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-                    <button class="btn btn-primary">Save Changes</button>
-                </div>
-                
-                <!-- Security -->
-                <div class="tab-pane fade" id="security">
-                    <div class="form-section">
-                        <h5>Change Password</h5>
-                        <div class="mb-3">
-                            <label class="form-label">Current Password</label>
-                            <input type="password" class="form-control">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">New Password</label>
-                            <input type="password" class="form-control">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Confirm New Password</label>
-                            <input type="password" class="form-control">
-                        </div>
-                    </div>
-                    
-                    <div class="form-section">
-                        <h5>Two-Factor Authentication</h5>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>
-                                <strong>Enable 2FA</strong>
-                                <p class="text-muted small mb-0">Add an extra layer of security</p>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <button class="btn btn-primary">Update Security</button>
-                </div>
-                
-                <!-- Integrations -->
-                <div class="tab-pane fade" id="integrations">
-                    <div class="form-section">
-                        <h5>Modbus Integration</h5>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>
-                                <strong>Enable Modbus</strong>
-                                <p class="text-muted small mb-0">Connect to Modbus devices</p>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Modbus Server Host</label>
-                            <input type="text" class="form-control" value="localhost">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Modbus Server Port</label>
-                            <input type="number" class="form-control" value="5020">
-                        </div>
-                    </div>
-                    <button class="btn btn-primary">Save Integration Settings</button>
-                </div>
-                
-                <!-- Appearance -->
-                <div class="tab-pane fade" id="appearance">
-                    <div class="form-section">
-                        <h5>Theme</h5>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>
-                                <strong>Dark Mode</strong>
-                                <p class="text-muted small mb-0">Use dark theme</p>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="darkModeToggle">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-                    <button class="btn btn-primary">Save Appearance</button>
-                </div>
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Settings - ProMonitor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg-primary: #0f1419; --bg-secondary: #1a1f2e; --bg-card: #1e2635; --text-primary: #ffffff; --text-muted: #6b7c93; --border-color: #2d3748; --primary: #4299e1; --gradient-primary: linear-gradient(135deg, #4299e1 0%, #0BC5EA 100%); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI'; background: var(--bg-primary); color: var(--text-primary); }
+        .dashboard-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; background: var(--bg-secondary); border-right: 1px solid var(--border-color); position: fixed; height: 100vh; overflow-y: auto; }
+        .sidebar-header { padding: 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .logo { width: 180px; height: auto; mix-blend-mode: multiply; filter: brightness(1.2); }
+        .nav-section-title { padding: 0.5rem 1.5rem; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-top: 1rem; }
+        .nav-menu { list-style: none; }
+        .nav-link { display: flex; align-items: center; padding: 0.875rem 1.5rem; color: var(--text-muted); text-decoration: none; transition: all 0.3s; }
+        .nav-link:hover { background: rgba(66,153,225,0.1); color: var(--text-primary); }
+        .nav-link.active { background: rgba(66,153,225,0.15); color: var(--primary); border-left: 3px solid var(--primary); }
+        .nav-icon { width: 20px; margin-right: 0.75rem; }
+        .main-content { flex: 1; margin-left: 280px; padding: 2rem; }
+        .page-title { font-size: 2rem; font-weight: 700; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .coming-soon { text-align: center; padding: 6rem 2rem; }
+        .coming-soon-icon { font-size: 5rem; color: var(--primary); margin-bottom: 2rem; opacity: 0.6; }
+        .coming-soon h2 { font-size: 2.5rem; margin-bottom: 1rem; }
+        .coming-soon p { color: var(--text-muted); font-size: 1.125rem; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="https://page.gensparksite.com/v1/base64_upload/594bf021bb3ef4b76138b65e1e50e4d8" alt="ProMonitor.kz" class="logo">
             </div>
-        </div>
+            <nav>
+                <div class="nav-section-title">MAIN</div>
+                <ul class="nav-menu">
+                    <li><a href="/dashboard/main/" class="nav-link"><i class="fas fa-home nav-icon"></i> Dashboard</a></li>
+                    <li><a href="/dashboard/v2/buildings/" class="nav-link"><i class="fas fa-building nav-icon"></i> Buildings</a></li>
+                    <li><a href="/dashboard/v2/sensors/" class="nav-link"><i class="fas fa-microchip nav-icon"></i> Sensors</a></li>
+                    <li><a href="/dashboard/v2/alerts/" class="nav-link"><i class="fas fa-bell nav-icon"></i> Alerts</a></li>
+                </ul>
+                <div class="nav-section-title">ANALYTICS</div>
+                <ul class="nav-menu">
+                    <li><a href="/dashboard/v2/reports/" class="nav-link "><i class="fas fa-file-alt nav-icon"></i> Reports</a></li>
+                    <li><a href="/dashboard/v2/analytics/" class="nav-link "><i class="fas fa-chart-line nav-icon"></i> Analytics</a></li>
+                </ul>
+                <div class="nav-section-title">SYSTEM</div>
+                <ul class="nav-menu">
+                    <li><a href="/dashboard/v2/settings/" class="nav-link active"><i class="fas fa-cog nav-icon"></i> Settings</a></li>
+                    <li><a href="/dashboard/v2/users/" class="nav-link "><i class="fas fa-users nav-icon"></i> Users</a></li>
+                </ul>
+            </nav>
+        </aside>
+        
+        <main class="main-content">
+            <h1 class="page-title">Settings</h1>
+            
+            <div class="coming-soon">
+                <div class="coming-soon-icon"><i class="fas fa-tools"></i></div>
+                <h2>Coming Soon</h2>
+                <p>This feature is under development and will be available shortly.</p>
+            </div>
+        </main>
     </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    // Bootstrap tabs
-    const triggerTabList = document.querySelectorAll('[data-bs-toggle="tab"]');
-    triggerTabList.forEach(triggerEl => {
-        const tabTrigger = new bootstrap.Tab(triggerEl);
-        triggerEl.addEventListener('click', event => {
-            event.preventDefault();
-            tabTrigger.show();
-        });
-    });
-</script>
-{% endblock %}
+</body>
+</html>
