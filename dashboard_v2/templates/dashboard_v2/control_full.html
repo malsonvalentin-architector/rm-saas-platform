@@ -1,0 +1,365 @@
+{% extends 'dashboard_v2/base_full.html' %}
+{% load static %}
+
+{% block title %}Control Panel - Floor Plans{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Control Panel</h1>
+    <p class="page-subtitle">Художественная панель управления оборудованием</p>
+</div>
+
+<!-- CONTROL SCHEMA -->
+<div class="control-schema">
+    <div class="schema-header">
+        <h2 class="schema-title">🗺️ Схема объекта - Главное здание</h2>
+        <div class="schema-controls">
+            <button class="schema-btn">🔍 Zoom In</button>
+            <button class="schema-btn">🔍 Zoom Out</button>
+            <button class="schema-btn">🔄 Reset</button>
+        </div>
+    </div>
+
+    <div class="schema-canvas" id="schemaCanvas">
+        <!-- HVAC UNITS -->
+        <div class="equipment-node" style="top: 50px; left: 100px;" onclick="openEquipmentDrawer('hvac-zone1')">
+            <div class="hvac-unit">
+                <div class="node-status status-online"></div>
+            </div>
+            <div class="node-label">HVAC Zone 1</div>
+            <div class="node-value">22.5°C</div>
+        </div>
+
+        <div class="equipment-node" style="top: 50px; left: 300px;" onclick="openEquipmentDrawer('hvac-zone2')">
+            <div class="hvac-unit">
+                <div class="node-status status-warning"></div>
+            </div>
+            <div class="node-label">HVAC Zone 2</div>
+            <div class="node-value">25.8°C ⚠️</div>
+        </div>
+
+        <!-- SENSOR UNITS -->
+        <div class="equipment-node" style="top: 180px; left: 200px;" onclick="openEquipmentDrawer('sensor-1')">
+            <div class="sensor-unit">
+                <div class="node-status status-online"></div>
+            </div>
+            <div class="node-label">Sensor #1</div>
+            <div class="node-value">Normal</div>
+        </div>
+
+        <div class="equipment-node" style="top: 320px; left: 350px;" onclick="openEquipmentDrawer('sensor-2')">
+            <div class="sensor-unit">
+                <div class="node-status status-online"></div>
+            </div>
+            <div class="node-label">Sensor #2</div>
+            <div class="node-value">Normal</div>
+        </div>
+
+        <!-- FAN UNIT -->
+        <div class="equipment-node" style="top: 180px; left: 450px;" onclick="openEquipmentDrawer('fan-12')">
+            <div class="fan-unit">
+                <div class="node-status status-online"></div>
+            </div>
+            <div class="node-label">Fan #12</div>
+            <div class="node-value">1450 RPM</div>
+        </div>
+
+        <!-- BOILER UNIT -->
+        <div class="equipment-node" style="top: 320px; left: 100px;" onclick="openEquipmentDrawer('boiler-1')">
+            <div class="boiler-unit">
+                <div class="node-status status-online"></div>
+            </div>
+            <div class="node-label">Boiler #1</div>
+            <div class="node-value">75°C</div>
+        </div>
+
+        <!-- PUMP UNIT -->
+        <div class="equipment-node" style="top: 50px; left: 550px;" onclick="openEquipmentDrawer('pump-1')">
+            <div class="pump-unit">
+                <div class="node-status status-online"></div>
+            </div>
+            <div class="node-label">Pump #1</div>
+            <div class="node-value">Active</div>
+        </div>
+
+        <!-- CHILLER UNIT -->
+        <div class="equipment-node" style="top: 320px; left: 550px;" onclick="openEquipmentDrawer('chiller-1')">
+            <div class="chiller-unit">
+                <div class="node-status status-online"></div>
+            </div>
+            <div class="node-label">Chiller #1</div>
+            <div class="node-value">7.2°C</div>
+        </div>
+
+        <!-- CONTROLLER UNIT -->
+        <div class="equipment-node" style="top: 180px; left: 650px;" onclick="openEquipmentDrawer('controller-main')">
+            <div class="controller-unit">
+                <div class="node-status status-online"></div>
+            </div>
+            <div class="node-label">Main PLC</div>
+            <div class="node-value">Online</div>
+        </div>
+
+        <!-- CONNECTION PIPES -->
+        <div class="connection-pipe" style="top: 85px; left: 165px; width: 130px;"></div>
+        <div class="connection-pipe" style="top: 215px; left: 260px; width: 95px;"></div>
+        <div class="connection-pipe" style="top: 355px; left: 160px; width: 185px;"></div>
+        <div class="connection-pipe" style="top: 85px; left: 360px; width: 85px; height: 100px; transform: rotate(90deg); transform-origin: left;"></div>
+    </div>
+</div>
+
+<!-- INFO CARDS -->
+<div class="page-header" style="margin-top: 40px;">
+    <h2 style="font-size: 20px; font-weight: 600;">Активные Устройства</h2>
+</div>
+
+<div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+    <div class="metric-card">
+        <div class="card-icon">❄️</div>
+        <div class="card-title">HVAC Системы</div>
+        <div class="card-value" style="font-size: 22px;">4</div>
+        <div class="card-detail">Всего единиц</div>
+    </div>
+
+    <div class="metric-card">
+        <div class="card-icon">🌡️</div>
+        <div class="card-title">Датчики</div>
+        <div class="card-value" style="font-size: 22px;">12</div>
+        <div class="card-detail">Активные датчики</div>
+    </div>
+
+    <div class="metric-card">
+        <div class="card-icon">💨</div>
+        <div class="card-title">Вентиляторы</div>
+        <div class="card-value" style="font-size: 22px;">3</div>
+        <div class="card-detail">Работают</div>
+    </div>
+
+    <div class="metric-card">
+        <div class="card-icon">🔥</div>
+        <div class="card-title">Котлы</div>
+        <div class="card-value" style="font-size: 22px;">2</div>
+        <div class="card-detail">В рабочем режиме</div>
+    </div>
+
+    <div class="metric-card">
+        <div class="card-icon">💧</div>
+        <div class="card-title">Насосы</div>
+        <div class="card-value" style="font-size: 22px;">6</div>
+        <div class="card-detail">5 активны</div>
+    </div>
+
+    <div class="metric-card">
+        <div class="card-icon">🧊</div>
+        <div class="card-title">Чиллеры</div>
+        <div class="card-value" style="font-size: 22px;">1</div>
+        <div class="card-detail">Работает</div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Enhanced openEquipmentDrawer with mock data for Phase 2
+    window.openEquipmentDrawer = function(equipmentId) {
+        const drawer = document.getElementById('drawer');
+        const overlay = document.getElementById('overlay');
+        const drawerTitle = document.getElementById('drawerTitle');
+        const drawerContent = document.getElementById('drawerContent');
+
+        // Mock equipment data (will be replaced with API calls)
+        const equipmentData = {
+            'hvac-zone1': {
+                title: '❄️ HVAC Zone 1 - Cooling System',
+                html: `
+                    <div class="detail-section">
+                        <h3 class="detail-section-title">ПАРАМЕТРЫ РАБОТЫ</h3>
+                        <div class="detail-item">
+                            <span class="detail-label">Статус</span>
+                            <span class="detail-value" style="color: var(--success)">🟢 Online</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Температура</span>
+                            <span class="detail-value">22.5°C</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Целевая температура</span>
+                            <span class="detail-value">22.0°C</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Режим</span>
+                            <span class="detail-value">Охлаждение</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Мощность</span>
+                            <span class="detail-value">75%</span>
+                        </div>
+                    </div>
+
+                    <div class="control-panel">
+                        <h3 style="margin-bottom: 20px; font-size: 16px;">🎛️ ПАНЕЛЬ УПРАВЛЕНИЯ</h3>
+                        
+                        <div class="control-row">
+                            <span class="control-label">Вкл/Выкл</span>
+                            <div class="control-input">
+                                <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                            </div>
+                        </div>
+
+                        <div class="control-row">
+                            <span class="control-label">Целевая температура</span>
+                            <div class="control-input">
+                                <input type="number" class="number-input" value="22" step="0.5" min="18" max="30">
+                                <span style="font-size: 12px; color: var(--text-secondary);">°C</span>
+                            </div>
+                        </div>
+
+                        <button class="control-btn" onclick="sendCommand('${equipmentId}', 'update')">
+                            💾 ПРИМЕНИТЬ ИЗМЕНЕНИЯ
+                        </button>
+                    </div>
+                `
+            },
+            'hvac-zone2': {
+                title: '❄️ HVAC Zone 2 - Cooling System (⚠️ Warning)',
+                html: `
+                    <div class="detail-section">
+                        <h3 class="detail-section-title">ПАРАМЕТРЫ РАБОТЫ</h3>
+                        <div class="detail-item">
+                            <span class="detail-label">Статус</span>
+                            <span class="detail-value" style="color: var(--warning)">🟡 Warning</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Проблема</span>
+                            <span class="detail-value" style="color: var(--warning)">Превышение температуры</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Текущая температура</span>
+                            <span class="detail-value" style="color: var(--warning)">25.8°C ⚠️</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Целевая температура</span>
+                            <span class="detail-value">22.0°C</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Мощность</span>
+                            <span class="detail-value">98% (!)</span>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warning); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                        <div style="font-weight: 600; margin-bottom: 8px; color: var(--warning);">⚠️ РЕКОМЕНДАЦИИ:</div>
+                        <div style="font-size: 13px; color: var(--text-secondary);">
+                            • Проверить фильтры вентиляции<br>
+                            • Увеличить мощность охлаждения<br>
+                            • Возможна высокая нагрузка в зоне
+                        </div>
+                    </div>
+
+                    <div class="control-panel">
+                        <h3 style="margin-bottom: 20px; font-size: 16px;">🎛️ ПАНЕЛЬ УПРАВЛЕНИЯ</h3>
+                        
+                        <div class="control-row">
+                            <span class="control-label">Форсированное охлаждение</span>
+                            <div class="control-input">
+                                <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
+                            </div>
+                        </div>
+
+                        <button class="control-btn" onclick="sendCommand('${equipmentId}', 'boost_cooling')">
+                            💾 ПРИМЕНИТЬ ИЗМЕНЕНИЯ
+                        </button>
+                    </div>
+                `
+            },
+            'fan-12': {
+                title: '💨 Ventilation Fan Unit 12',
+                html: `
+                    <div class="detail-section">
+                        <h3 class="detail-section-title">ПАРАМЕТРЫ РАБОТЫ</h3>
+                        <div class="detail-item">
+                            <span class="detail-label">Скорость вращения</span>
+                            <span class="detail-value">1450 RPM</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Энергопотребление</span>
+                            <span class="detail-value">450 Вт</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Расход воздуха</span>
+                            <span class="detail-value">1200 м³/ч</span>
+                        </div>
+                    </div>
+
+                    <div class="control-panel">
+                        <h3 style="margin-bottom: 20px; font-size: 16px;">🎛️ ПАНЕЛЬ УПРАВЛЕНИЯ</h3>
+                        
+                        <div class="control-row">
+                            <span class="control-label">Вкл/Выкл</span>
+                            <div class="control-input">
+                                <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                            </div>
+                        </div>
+
+                        <button class="control-btn" onclick="sendCommand('${equipmentId}', 'toggle')">
+                            💾 ПРИМЕНИТЬ ИЗМЕНЕНИЯ
+                        </button>
+                    </div>
+                `
+            },
+            'boiler-1': {
+                title: '🔥 Boiler #1 - Котельная',
+                html: `
+                    <div class="detail-section">
+                        <h3 class="detail-section-title">ПАРАМЕТРЫ РАБОТЫ</h3>
+                        <div class="detail-item">
+                            <span class="detail-label">Температура воды</span>
+                            <span class="detail-value">75°C</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Давление</span>
+                            <span class="detail-value">2.1 бар</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Мощность горелки</span>
+                            <span class="detail-value">62%</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Расход газа</span>
+                            <span class="detail-value">3.2 м³/ч</span>
+                        </div>
+                    </div>
+
+                    <div class="control-panel">
+                        <h3 style="margin-bottom: 20px; font-size: 16px;">🎛️ ПАНЕЛЬ УПРАВЛЕНИЯ</h3>
+                        
+                        <div class="control-row">
+                            <span class="control-label">Целевая температура</span>
+                            <div class="control-input">
+                                <input type="number" class="number-input" value="75" step="5" min="40" max="90">
+                                <span style="font-size: 12px; color: var(--text-secondary);">°C</span>
+                            </div>
+                        </div>
+
+                        <button class="control-btn" onclick="sendCommand('${equipmentId}', 'set_temperature')">
+                            💾 ПРИМЕНИТЬ ИЗМЕНЕНИЯ
+                        </button>
+                    </div>
+                `
+            }
+        };
+
+        const data = equipmentData[equipmentId] || {
+            title: 'Equipment Details',
+            html: '<p style="text-align:center;padding:40px;">⚙️ Информация в разработке</p>'
+        };
+
+        drawerTitle.textContent = data.title;
+        drawerContent.innerHTML = data.html;
+
+        drawer.classList.add('open');
+        overlay.classList.add('active');
+    };
+</script>
+{% endblock %}

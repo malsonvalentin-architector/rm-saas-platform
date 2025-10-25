@@ -20,22 +20,82 @@ except (ImportError, AttributeError):
 
 @login_required
 def dashboard_home(request):
-    """Main dashboard page with metrics cards"""
+    """Main dashboard page with metrics cards - PHASE 2 FULL VERSION"""
+    
+    # Rich metrics data for Phase 2
+    metrics = [
+        {
+            'key': 'total_objects',
+            'name': 'Всего объектов',
+            'value': '12',
+            'detail': '+2 за последний месяц',
+            'icon': '🏢',
+            'status': 'success',
+            'status_text': 'Активны'
+        },
+        {
+            'key': 'active_systems',
+            'name': 'Активные системы',
+            'value': '48',
+            'detail': '46 онлайн, 2 в ожидании',
+            'icon': '⚡',
+            'status': 'success',
+            'status_text': 'Online'
+        },
+        {
+            'key': 'temperature',
+            'name': 'Средняя температура',
+            'value': '22.3°C',
+            'detail': 'Оптимальный диапазон',
+            'icon': '🌡️',
+            'status': 'success',
+            'status_text': 'Normal'
+        },
+        {
+            'key': 'alerts_count',
+            'name': 'Активные тревоги',
+            'value': '3',
+            'detail': '2 warning, 1 info',
+            'icon': '🔔',
+            'status': 'warning',
+            'status_text': 'Требует внимания'
+        },
+        {
+            'key': 'energy_consumption',
+            'name': 'Энергопотребление',
+            'value': '1,247 кВт',
+            'detail': '-8% к прошлому месяцу',
+            'icon': '💡',
+            'status': 'success',
+            'status_text': 'Оптимально'
+        },
+        {
+            'key': 'uptime',
+            'name': 'Uptime',
+            'value': '99.8%',
+            'detail': '30 дней без простоя',
+            'icon': '🚀',
+            'status': 'success',
+            'status_text': 'Excellent'
+        },
+    ]
+    
     context = {
         'page_title': 'Dashboard',
-        'active_page': 'dashboard'
+        'active_page': 'dashboard',
+        'metrics': metrics
     }
-    return render(request, 'dashboard_v2/dashboard.html', context)
+    return render(request, 'dashboard_v2/dashboard_full.html', context)
 
 
 @login_required
 def control_panel(request):
-    """Control Panel page with device management"""
+    """Control Panel page with artistic equipment visualization - PHASE 2 FULL"""
     context = {
         'page_title': 'Control Panel',
         'active_page': 'control'
     }
-    return render(request, 'dashboard_v2/control.html', context)
+    return render(request, 'dashboard_v2/control_full.html', context)
 
 
 @login_required

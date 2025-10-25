@@ -1,0 +1,475 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProMonitor v2.0 - {% block title %}Dashboard{% endblock %}</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'dashboard_v2/css/promonitor_full.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="logo-section">
+            <img src="https://cdn1.genspark.ai/user-upload-image/rmbg_generated/0_0f1ef544-f6b3-480a-9223-5f42d8d72f55" alt="ProMonitor" class="logo-image">
+        </div>
+
+        <div class="header-controls">
+            <div class="live-indicator">
+                <div class="live-dot"></div>
+                <span>LIVE</span>
+            </div>
+
+            <!-- THEME SWITCHER -->
+            <div class="theme-switcher" onclick="toggleTheme()">
+                <span class="theme-icon" id="themeIcon">🌙</span>
+                <span class="theme-text" id="themeText">Dark</span>
+            </div>
+
+            <!-- MODE SWITCHER (Мониторинг / Управление) -->
+            <div class="mode-switcher">
+                <span class="mode-label">Режим:</span>
+                <div class="mode-toggle" onclick="toggleMode()"></div>
+                <span class="mode-label" id="modeText">Мониторинг</span>
+            </div>
+
+            <div class="user-section">
+                <div class="user-avatar">
+                    {% if user.is_authenticated %}
+                        {{ user.email|first|upper }}{{ user.email|slice:"1:2"|upper }}
+                    {% else %}
+                        ГС
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MODE INDICATOR -->
+    <div class="mode-indicator" id="modeIndicator"></div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <!-- ГЛАВНОЕ -->
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">ГЛАВНОЕ</div>
+            
+            <div class="nav-item nav-item-expandable active" onclick="toggleSubmenu(this)">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">Dashboard</span>
+            </div>
+            <div class="submenu expanded">
+                <div class="submenu-item" onclick="navigateTo('dashboard-overview')">🏠 Overview</div>
+                <div class="submenu-item" onclick="navigateTo('dashboard-objects')">🏢 Objects</div>
+                <div class="submenu-item" onclick="navigateTo('dashboard-map')">🌍 Map View</div>
+                <div class="submenu-item" onclick="navigateTo('dashboard-widgets')">📱 Widgets</div>
+            </div>
+
+            <div class="nav-item nav-item-expandable" onclick="toggleSubmenu(this)">
+                <span class="nav-icon">🎛️</span>
+                <span class="nav-text">Control Panel</span>
+            </div>
+            <div class="submenu">
+                <div class="submenu-item" onclick="navigateTo('control-floorplans')">🗺️ Floor Plans</div>
+                <div class="submenu-item" onclick="navigateTo('control-equipment')">🔧 Equipment Control</div>
+                <div class="submenu-item" onclick="navigateTo('control-scenarios')">📜 Scenarios</div>
+                <div class="submenu-item" onclick="navigateTo('control-schedules')">⏰ Schedules</div>
+            </div>
+
+            <div class="nav-item nav-item-expandable" onclick="toggleSubmenu(this)">
+                <span class="nav-icon">📈</span>
+                <span class="nav-text">Analytics</span>
+            </div>
+            <div class="submenu">
+                <div class="submenu-item" onclick="navigateTo('analytics-energy')">📊 Energy Consumption</div>
+                <div class="submenu-item" onclick="navigateTo('analytics-temperature')">🌡️ Temperature Analytics</div>
+                <div class="submenu-item" onclick="navigateTo('analytics-cost')">💰 Cost Analysis</div>
+                <div class="submenu-item" onclick="navigateTo('analytics-performance')">📉 Performance Reports</div>
+                <div class="submenu-item" onclick="navigateTo('analytics-ml')">🤖 ML Insights</div>
+            </div>
+        </div>
+
+        <!-- МОНИТОРИНГ -->
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">МОНИТОРИНГ</div>
+            
+            <div class="nav-item nav-item-expandable" onclick="toggleSubmenu(this)">
+                <span class="nav-icon">🔔</span>
+                <span class="nav-text">Alerts</span>
+                <span class="nav-badge" id="alertsBadge">0</span>
+            </div>
+            <div class="submenu">
+                <div class="submenu-item" onclick="navigateTo('alerts-active')">🚨 Active Alerts</div>
+                <div class="submenu-item" onclick="navigateTo('alerts-history')">📜 Alert History</div>
+                <div class="submenu-item" onclick="navigateTo('alerts-rules')">⚙️ Alert Rules</div>
+                <div class="submenu-item" onclick="navigateTo('alerts-notifications')">📢 Notification Settings</div>
+            </div>
+        </div>
+
+        <!-- АВТОМАТИЗАЦИЯ -->
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">АВТОМАТИЗАЦИЯ</div>
+            
+            <div class="nav-item nav-item-expandable" onclick="toggleSubmenu(this)">
+                <span class="nav-icon">💬</span>
+                <span class="nav-text">AI Assistant</span>
+                <span class="nav-badge success">NEW</span>
+            </div>
+            <div class="submenu">
+                <div class="submenu-item" onclick="navigateTo('ai-chat')">🤖 Chat</div>
+                <div class="submenu-item" onclick="navigateTo('ai-recommendations')">💡 Recommendations</div>
+                <div class="submenu-item" onclick="navigateTo('ai-knowledge')">📚 Knowledge Base</div>
+            </div>
+        </div>
+
+        <!-- ИНТЕГРАЦИИ -->
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">ИНТЕГРАЦИИ</div>
+            
+            <div class="nav-item nav-item-expandable" onclick="toggleSubmenu(this)">
+                <span class="nav-icon">🏭</span>
+                <span class="nav-text">Controllers</span>
+            </div>
+            <div class="submenu">
+                <div class="submenu-item" onclick="navigateTo('controllers-carel')">Carel (12 units)</div>
+                <div class="submenu-item" onclick="navigateTo('controllers-siemens')">Siemens (8 units)</div>
+                <div class="submenu-item" onclick="navigateTo('controllers-schneider')">Schneider (4 units)</div>
+            </div>
+
+            <div class="nav-item nav-item-expandable" onclick="toggleSubmenu(this)">
+                <span class="nav-icon">🔗</span>
+                <span class="nav-text">Integrations</span>
+            </div>
+            <div class="submenu">
+                <div class="submenu-item" onclick="navigateTo('integrations-datasources')">📡 Data Sources</div>
+                <div class="submenu-item" onclick="navigateTo('integrations-services')">🔌 Connected Services</div>
+            </div>
+        </div>
+
+        <!-- ОТЧЁТЫ -->
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">ОТЧЁТЫ</div>
+            
+            <div class="nav-item nav-item-expandable" onclick="toggleSubmenu(this)">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">Reports</span>
+            </div>
+            <div class="submenu">
+                <div class="submenu-item" onclick="navigateTo('reports-generate')">📄 Generate Report</div>
+                <div class="submenu-item" onclick="navigateTo('reports-scheduled')">📅 Scheduled Reports</div>
+                <div class="submenu-item" onclick="navigateTo('reports-library')">📂 Report Library</div>
+            </div>
+        </div>
+
+        <!-- НАСТРОЙКИ -->
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">НАСТРОЙКИ</div>
+            
+            <div class="nav-item nav-item-expandable" onclick="toggleSubmenu(this)">
+                <span class="nav-icon">🏢</span>
+                <span class="nav-text">Company</span>
+            </div>
+            <div class="submenu">
+                <div class="submenu-item" onclick="navigateTo('company-users')">👥 Users</div>
+                <div class="submenu-item" onclick="navigateTo('company-objects')">🏛️ Objects</div>
+                <div class="submenu-item" onclick="navigateTo('company-settings')">⚙️ Company Settings</div>
+                <div class="submenu-item" onclick="navigateTo('company-permissions')">🔐 Permissions</div>
+            </div>
+
+            <div class="nav-item nav-item-expandable" onclick="toggleSubmenu(this)">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-text">Settings</span>
+            </div>
+            <div class="submenu">
+                <div class="submenu-item" onclick="navigateTo('settings-profile')">👤 My Profile</div>
+                <div class="submenu-item" onclick="navigateTo('settings-notifications')">🔔 My Notifications</div>
+                <div class="submenu-item" onclick="navigateTo('settings-appearance')">🎨 Appearance</div>
+                <div class="submenu-item" onclick="navigateTo('settings-system')">🔧 System Settings</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        {% block content %}
+        <!-- Page-specific content goes here -->
+        {% endblock %}
+    </main>
+
+    <!-- DRAWER PANEL -->
+    <div class="overlay" id="overlay" onclick="closeDrawer()"></div>
+    <div class="drawer" id="drawer">
+        <div class="drawer-header">
+            <h3 class="drawer-title" id="drawerTitle">Equipment Details</h3>
+            <button class="close-btn" onclick="closeDrawer()">✕</button>
+        </div>
+        <div class="drawer-content" id="drawerContent">
+            <!-- Dynamic content loaded via JavaScript -->
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // ==================== CONFIGURATION ====================
+        const API_BASE = '{% url "dashboard_v2:api_metrics" %}';
+        const URLS = {
+            metrics: '{% url "dashboard_v2:api_metrics" %}',
+            devices: '{% url "dashboard_v2:api_devices" %}',
+            command: '{% url "dashboard_v2:api_command" %}',
+            alerts: '{% url "dashboard_v2:api_alerts" %}',
+            analytics: '{% url "dashboard_v2:api_analytics" %}'
+        };
+
+        // ==================== THEME SWITCHER ====================
+        function toggleTheme() {
+            const body = document.body;
+            const isLight = body.classList.toggle('light-theme');
+            
+            // Update localStorage
+            localStorage.setItem('promonitor_theme', isLight ? 'light' : 'dark');
+            
+            // Update icon and text
+            const icon = document.getElementById('themeIcon');
+            const text = document.getElementById('themeText');
+            
+            if (isLight) {
+                icon.textContent = '☀️';
+                text.textContent = 'Light';
+            } else {
+                icon.textContent = '🌙';
+                text.textContent = 'Dark';
+            }
+            
+            console.log('Theme switched to:', isLight ? 'Light' : 'Dark');
+        }
+
+        // Load saved theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('promonitor_theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-theme');
+                document.getElementById('themeIcon').textContent = '☀️';
+                document.getElementById('themeText').textContent = 'Light';
+            }
+        });
+
+        // ==================== MODE SWITCHER ====================
+        function toggleMode() {
+            const toggle = document.querySelector('.mode-toggle');
+            const isControl = toggle.classList.toggle('active');
+            const modeText = document.getElementById('modeText');
+            const indicator = document.getElementById('modeIndicator');
+            
+            // Save mode to localStorage
+            localStorage.setItem('promonitor_mode', isControl ? 'control' : 'monitoring');
+            
+            if (isControl) {
+                document.body.classList.add('control-mode');
+                modeText.textContent = 'Управление';
+                indicator.textContent = '🎛️ Режим управления активирован';
+            } else {
+                document.body.classList.remove('control-mode');
+                modeText.textContent = 'Мониторинг';
+                indicator.textContent = '📊 Режим мониторинга активирован';
+            }
+            
+            // Show indicator
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+            
+            console.log('Mode switched to:', isControl ? 'Control' : 'Monitoring');
+        }
+
+        // Load saved mode on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedMode = localStorage.getItem('promonitor_mode');
+            if (savedMode === 'control') {
+                const toggle = document.querySelector('.mode-toggle');
+                toggle.classList.add('active');
+                document.body.classList.add('control-mode');
+                document.getElementById('modeText').textContent = 'Управление';
+            }
+        });
+
+        // ==================== NAVIGATION ====================
+        function navigateTo(pageName) {
+            console.log('Navigate to:', pageName);
+            
+            // Route mapping
+            const routes = {
+                'dashboard-overview': '{% url "dashboard_v2:dashboard" %}',
+                'dashboard-objects': '{% url "dashboard_v2:objects" %}',
+                'control-floorplans': '{% url "dashboard_v2:control" %}',
+                'analytics-energy': '{% url "dashboard_v2:analytics" %}',
+                'alerts-active': '{% url "dashboard_v2:alerts" %}',
+                'settings-profile': '{% url "dashboard_v2:settings" %}'
+            };
+            
+            const url = routes[pageName];
+            if (url) {
+                window.location.href = url;
+            } else {
+                // Coming soon placeholder
+                alert(`Страница "${pageName}" в разработке`);
+            }
+        }
+
+        // ==================== SIDEBAR EXPANDABLE ====================
+        function toggleSubmenu(element) {
+            element.classList.toggle('expanded');
+            
+            const submenu = element.nextElementSibling;
+            if (submenu && submenu.classList.contains('submenu')) {
+                submenu.classList.toggle('expanded');
+                
+                // Save state to localStorage
+                const navText = element.querySelector('.nav-text').textContent;
+                const isExpanded = element.classList.contains('expanded');
+                localStorage.setItem(`nav_${navText}`, isExpanded ? 'expanded' : 'collapsed');
+            }
+        }
+
+        // Restore sidebar state on load
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.nav-item-expandable').forEach(item => {
+                const navText = item.querySelector('.nav-text').textContent;
+                const savedState = localStorage.getItem(`nav_${navText}`);
+                
+                if (savedState === 'expanded') {
+                    item.classList.add('expanded');
+                    const submenu = item.nextElementSibling;
+                    if (submenu && submenu.classList.contains('submenu')) {
+                        submenu.classList.add('expanded');
+                    }
+                }
+            });
+        });
+
+        // ==================== DRAWER ====================
+        function openDrawer(itemType) {
+            const drawer = document.getElementById('drawer');
+            const overlay = document.getElementById('overlay');
+            const drawerTitle = document.getElementById('drawerTitle');
+            const drawerContent = document.getElementById('drawerContent');
+            
+            drawerTitle.textContent = 'Loading...';
+            drawerContent.innerHTML = '<p style="text-align:center;padding:40px;">⏳ Загрузка данных...</p>';
+            
+            drawer.classList.add('open');
+            overlay.classList.add('active');
+            
+            // Fetch real data from API
+            // TODO: Implement API call based on itemType
+            console.log('Opening drawer for:', itemType);
+        }
+
+        function openEquipmentDrawer(equipmentId) {
+            const drawer = document.getElementById('drawer');
+            const overlay = document.getElementById('overlay');
+            const drawerTitle = document.getElementById('drawerTitle');
+            const drawerContent = document.getElementById('drawerContent');
+            
+            // Fetch device data from API
+            fetch(URLS.devices)
+                .then(response => response.json())
+                .then(data => {
+                    const device = data.devices.find(d => d.id === equipmentId);
+                    if (device) {
+                        drawerTitle.textContent = device.name;
+                        drawerContent.innerHTML = `
+                            <div class="detail-section">
+                                <h3 class="detail-section-title">ПАРАМЕТРЫ</h3>
+                                <div class="detail-item">
+                                    <span class="detail-label">Статус</span>
+                                    <span class="detail-value">${device.status}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Тип</span>
+                                    <span class="detail-value">${device.type}</span>
+                                </div>
+                            </div>
+                            <div class="control-panel">
+                                <h3 style="margin-bottom: 20px; font-size: 16px;">🎛️ УПРАВЛЕНИЕ</h3>
+                                <button class="control-btn" onclick="sendCommand('${equipmentId}', 'turn_on')">
+                                    ✅ Включить
+                                </button>
+                                <button class="control-btn" onclick="sendCommand('${equipmentId}', 'turn_off')">
+                                    ❌ Выключить
+                                </button>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading device:', error);
+                    drawerContent.innerHTML = '<p style="color:var(--error)">Ошибка загрузки данных</p>';
+                });
+            
+            drawer.classList.add('open');
+            overlay.classList.add('active');
+        }
+
+        function closeDrawer() {
+            const drawer = document.getElementById('drawer');
+            const overlay = document.getElementById('overlay');
+            
+            drawer.classList.remove('open');
+            overlay.classList.remove('active');
+        }
+
+        // ==================== CONTROL COMMANDS ====================
+        function sendCommand(deviceId, command) {
+            console.log(`Sending command: ${command} to device: ${deviceId}`);
+            
+            fetch(URLS.command, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    device_id: deviceId,
+                    command: command
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.status === 'success' ? '✅ Команда выполнена' : '❌ Ошибка выполнения');
+            })
+            .catch(error => {
+                console.error('Error sending command:', error);
+                alert('❌ Ошибка связи с сервером');
+            });
+        }
+
+        // ==================== ALERTS BADGE UPDATE ====================
+        function updateAlertsBadge() {
+            fetch(URLS.alerts)
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.getElementById('alertsBadge');
+                    if (badge) {
+                        badge.textContent = data.alerts ? data.alerts.length : 0;
+                    }
+                })
+                .catch(error => console.error('Error updating alerts badge:', error));
+        }
+
+        // Update alerts badge every 30 seconds
+        setInterval(updateAlertsBadge, 30000);
+        document.addEventListener('DOMContentLoaded', updateAlertsBadge);
+
+        // ==================== INITIALIZATION ====================
+        console.log('ProMonitor v2.0 - Full Version Loaded');
+        console.log('API URLs:', URLS);
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

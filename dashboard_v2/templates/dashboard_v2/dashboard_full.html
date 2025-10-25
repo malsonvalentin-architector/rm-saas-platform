@@ -1,0 +1,92 @@
+{% extends 'dashboard_v2/base_full.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Overview{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Dashboard Overview</h1>
+    <p class="page-subtitle">Мониторинг и управление объектами в реальном времени</p>
+</div>
+
+<!-- METRICS GRID -->
+<div class="dashboard-grid">
+    {% for metric in metrics %}
+    <div class="metric-card">
+        <div class="card-header">
+            <div class="card-icon">{{ metric.icon }}</div>
+            <div class="card-badge badge-{{ metric.status }}">{{ metric.status_text }}</div>
+        </div>
+        <div class="card-title">{{ metric.name }}</div>
+        <div class="card-value" id="metric-{{ metric.key }}">{{ metric.value }}</div>
+        <div class="card-detail">{{ metric.detail }}</div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- SYSTEM STATUS GRID -->
+<div class="page-header" style="margin-top: 40px;">
+    <h2 style="font-size: 20px; font-weight: 600;">Статус Систем</h2>
+</div>
+
+<div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+    <div class="metric-card">
+        <div class="card-icon">🔥</div>
+        <div class="card-title">Котлы</div>
+        <div class="card-value" style="font-size: 20px;">2/2</div>
+        <div class="card-detail" style="color: var(--success);">✅ Все работают</div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="card-icon">❄️</div>
+        <div class="card-title">HVAC</div>
+        <div class="card-value" style="font-size: 20px;">4/4</div>
+        <div class="card-detail" style="color: var(--success);">✅ Все работают</div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="card-icon">💨</div>
+        <div class="card-title">Вентиляция</div>
+        <div class="card-value" style="font-size: 20px;">3/3</div>
+        <div class="card-detail" style="color: var(--success);">✅ Все работают</div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="card-icon">💧</div>
+        <div class="card-title">Насосы</div>
+        <div class="card-value" style="font-size: 20px;">5/6</div>
+        <div class="card-detail" style="color: var(--warning);">⚠️ Требует внимания</div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-update metrics every 5 seconds
+    function updateMetrics() {
+        fetch(URLS.metrics)
+            .then(response => response.json())
+            .then(data => {
+                // Update metric values
+                if (data.metrics) {
+                    data.metrics.forEach(metric => {
+                        const element = document.getElementById(`metric-${metric.key}`);
+                        if (element && element.textContent !== metric.value) {
+                            element.textContent = metric.value;
+                            // Add animation class
+                            element.style.animation = 'none';
+                            setTimeout(() => {
+                                element.style.animation = 'pulse 0.5s ease-in-out';
+                            }, 10);
+                        }
+                    });
+                }
+            })
+            .catch(error => console.error('Error updating metrics:', error));
+    }
+
+    // Update every 5 seconds
+    setInterval(updateMetrics, 5000);
+</script>
+{% endblock %}
