@@ -8,6 +8,11 @@
                 </div>
 
                 <div class="header-right">
+                    <!-- Version Switcher -->
+                    <a href="{% url 'home:dashboard' %}" class="btn btn-sm btn-outline-primary" style="margin-right: 15px;" title="Switch to Old Dashboard">
+                        <i class="fas fa-exchange-alt"></i> Old Design
+                    </a>
+                    
                     <div class="header-search">
                         <i class="fas fa-search header-search-icon"></i>
                         <input 
@@ -20,3 +25,28 @@
 
                     <div class="header-actions">
                         <button class="header-action-btn" id="notifications-btn" title="Notifications">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge">3</span>
+                        </button>
+
+                        <div class="user-profile-menu">
+                            <button class="user-profile-btn" id="user-profile-btn">
+                                <i class="fas fa-user-circle"></i>
+                                <span>{{ request.user.first_name }} {{ request.user.last_name }}</span>
+                            </button>
+                            <div class="user-dropdown" id="user-dropdown">
+                                <a href="#" class="dropdown-item">
+                                    <i class="fas fa-user"></i> Profile
+                                </a>
+                                <a href="{% url 'dashboard_v2:settings' %}" class="dropdown-item">
+                                    <i class="fas fa-cog"></i> Settings
+                                </a>
+                                <hr>
+                                <a href="{% url 'home:logout' %}" class="dropdown-item">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
