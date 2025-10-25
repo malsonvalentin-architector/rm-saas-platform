@@ -133,8 +133,9 @@ def alerts_list(request):
     # Get all alerts with related data
     alerts = Alert.objects.select_related(
         'rule',
-        'rule__sensor',
-        'rule__sensor__sys',
+        'rule__attribute',
+        'rule__attribute__sys',
+        'rule__attribute__sys__obj',
         'acknowledged_by',
         'resolved_by'
     ).all()

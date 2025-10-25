@@ -1,16 +1,81 @@
 {% load static %}
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <title>Analytics - ProMonitor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics & Insights - ProMonitor Dashboard</title>
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
     <style>
-        :root { --bg-primary: #0f1419; --bg-secondary: #1a1f2e; --bg-card: #1e2635; --text-primary: #ffffff; --text-muted: #6b7c93; --border-color: #2d3748; --primary: #4299e1; --gradient-primary: linear-gradient(135deg, #4299e1 0%, #0BC5EA 100%); }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI'; background: var(--bg-primary); color: var(--text-primary); }
-        .dashboard-container { display: flex; min-height: 100vh; }
-        .sidebar { width: 280px; background: var(--bg-secondary); border-right: 1px solid var(--border-color); position: fixed; height: 100vh; overflow-y: auto; }
+        /* Reuse Professional Theme from main_professional.html */
+        :root {
+            --bg-primary: #0f1419;
+            --bg-secondary: #1a1f2e;
+            --bg-tertiary: #252d3d;
+            --bg-card: #1e2635;
+            --bg-hover: #2a3447;
+            
+            --text-primary: #ffffff;
+            --text-secondary: #b8c5d6;
+            --text-muted: #6b7c93;
+            
+            --border-color: #2d3748;
+            --border-hover: #4a5568;
+            
+            --primary: #4299e1;
+            --primary-dark: #2b6cb0;
+            --primary-light: #63b3ed;
+            
+            --success: #48bb78;
+            --warning: #ed8936;
+            --danger: #f56565;
+            --info: #4299e1;
+            
+            --gradient-primary: linear-gradient(135deg, #4299e1 0%, #0BC5EA 100%);
+            --gradient-success: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            --gradient-warning: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+            --gradient-danger: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+        
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* SIDEBAR STYLES (copied from main_professional.html) */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        
         .sidebar-header {
             padding: 1.25rem 1.5rem;
             border-bottom: 2px solid var(--border-color);
@@ -20,6 +85,20 @@
             align-items: center;
             justify-content: center;
         }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 220px;
+            margin: 0 auto;
+            padding: 0.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        
         .logo {
             width: 100%;
             height: auto;
@@ -27,56 +106,590 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             object-fit: contain;
         }
-        .nav-section-title { padding: 0.5rem 1.5rem; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-top: 1rem; }
-        .nav-menu { list-style: none; }
-        .nav-link { display: flex; align-items: center; padding: 0.875rem 1.5rem; color: var(--text-muted); text-decoration: none; transition: all 0.3s; }
-        .nav-link:hover { background: rgba(66,153,225,0.1); color: var(--text-primary); }
-        .nav-link.active { background: rgba(66,153,225,0.15); color: var(--primary); border-left: 3px solid var(--primary); }
-        .nav-icon { width: 20px; margin-right: 0.75rem; }
-        .main-content { flex: 1; margin-left: 280px; padding: 2rem; }
-        .page-title { font-size: 2rem; font-weight: 700; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .coming-soon { text-align: center; padding: 6rem 2rem; }
-        .coming-soon-icon { font-size: 5rem; color: var(--primary); margin-bottom: 2rem; opacity: 0.6; }
-        .coming-soon h2 { font-size: 2.5rem; margin-bottom: 1rem; }
-        .coming-soon p { color: var(--text-muted); font-size: 1.125rem; }
+        
+        .logo:hover {
+            filter: brightness(1.2) contrast(1.15) drop-shadow(0 4px 16px rgba(66, 153, 225, 0.4));
+            transform: scale(1.03);
+        }
+        
+        .logo-container:hover {
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 6px 20px rgba(66, 153, 225, 0.3);
+        }
+        
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+        
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .nav-section-title {
+            padding: 0.5rem 1.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.875rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-link:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border-left-color: var(--primary);
+        }
+        
+        .nav-link.active {
+            background: rgba(66, 153, 225, 0.15);
+            color: var(--primary);
+            border-left-color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .nav-icon {
+            width: 20px;
+            margin-right: 0.75rem;
+            text-align: center;
+        }
+        
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            background: var(--bg-primary);
+        }
+        
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+        
+        /* FILTER PANEL */
+        .filter-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .filter-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        
+        .filter-select {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-select:hover {
+            border-color: var(--primary);
+        }
+        
+        /* STATS GRID */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--border-hover);
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .stat-icon.primary { background: rgba(66, 153, 225, 0.2); color: var(--primary); }
+        .stat-icon.success { background: rgba(72, 187, 120, 0.2); color: var(--success); }
+        .stat-icon.warning { background: rgba(237, 137, 54, 0.2); color: var(--warning); }
+        .stat-icon.danger { background: rgba(245, 101, 101, 0.2); color: var(--danger); }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .stat-trend.positive { color: var(--success); }
+        .stat-trend.negative { color: var(--danger); }
+        
+        /* CHARTS GRID */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        
+        .chart-header {
+            margin-bottom: 1.5rem;
+        }
+        
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .chart-subtitle {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="dashboard-container">
+        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <img src="https://page.gensparksite.com/v1/base64_upload/594bf021bb3ef4b76138b65e1e50e4d8" alt="ProMonitor.kz" class="logo">
+                <div class="logo-container">
+                    <img src="https://page.gensparksite.com/v1/base64_upload/b3a3a416e4d3b1d74a52edd01729c28e" 
+                         alt="ProMonitor.kz" 
+                         class="logo">
+                </div>
             </div>
-            <nav>
-                <div class="nav-section-title">MAIN</div>
-                <ul class="nav-menu">
-                    <li><a href="/dashboard/" class="nav-link"><i class="fas fa-home nav-icon"></i> Dashboard</a></li>
-                    <li><a href="/dashboard/buildings/" class="nav-link"><i class="fas fa-building nav-icon"></i> Buildings</a></li>
-                    <li><a href="/dashboard/sensors/" class="nav-link"><i class="fas fa-microchip nav-icon"></i> Sensors</a></li>
-                    <li><a href="/dashboard/alerts/" class="nav-link"><i class="fas fa-bell nav-icon"></i> Alerts</a></li>
-                </ul>
-                <div class="nav-section-title">ANALYTICS</div>
-                <ul class="nav-menu">
-                    <li><a href="/dashboard/reports/" class="nav-link "><i class="fas fa-file-alt nav-icon"></i> Reports</a></li>
-                    <li><a href="/dashboard/analytics/" class="nav-link active"><i class="fas fa-chart-line nav-icon"></i> Analytics</a></li>
-                </ul>
-                <div class="nav-section-title">SYSTEM</div>
-                <ul class="nav-menu">
-                    <li><a href="/dashboard/settings/" class="nav-link "><i class="fas fa-cog nav-icon"></i> Settings</a></li>
-                    <li><a href="/dashboard/users/" class="nav-link "><i class="fas fa-users nav-icon"></i> Users</a></li>
-                </ul>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">MAIN</div>
+                    <ul class="nav-menu">
+                        <li><a href="/dashboard/" class="nav-link">
+                            <i class="fas fa-home nav-icon"></i>
+                            <span>Dashboard</span>
+                        </a></li>
+                        <li><a href="/dashboard/buildings/" class="nav-link">
+                            <i class="fas fa-building nav-icon"></i>
+                            <span>Buildings</span>
+                        </a></li>
+                        <li><a href="/dashboard/sensors/" class="nav-link">
+                            <i class="fas fa-thermometer-half nav-icon"></i>
+                            <span>Sensors</span>
+                        </a></li>
+                        <li><a href="/dashboard/alerts/" class="nav-link">
+                            <i class="fas fa-bell nav-icon"></i>
+                            <span>Alerts</span>
+                        </a></li>
+                    </ul>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">ANALYTICS</div>
+                    <ul class="nav-menu">
+                        <li><a href="/dashboard/reports/" class="nav-link">
+                            <i class="fas fa-chart-line nav-icon"></i>
+                            <span>Reports</span>
+                        </a></li>
+                        <li><a href="/dashboard/analytics/" class="nav-link active">
+                            <i class="fas fa-chart-pie nav-icon"></i>
+                            <span>Analytics</span>
+                        </a></li>
+                    </ul>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">SYSTEM</div>
+                    <ul class="nav-menu">
+                        <li><a href="/dashboard/settings/" class="nav-link">
+                            <i class="fas fa-cog nav-icon"></i>
+                            <span>Settings</span>
+                        </a></li>
+                        <li><a href="/dashboard/users/" class="nav-link">
+                            <i class="fas fa-users nav-icon"></i>
+                            <span>Users</span>
+                        </a></li>
+                    </ul>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">TOOLS</div>
+                    <ul class="nav-menu">
+                        <li><a href="https://emulator.promonitor.kz/" target="_blank" class="nav-link" style="color: var(--primary);">
+                            <i class="fas fa-rocket nav-icon"></i>
+                            <span>Modbus Emulator</span>
+                            <i class="fas fa-external-link-alt" style="margin-left: auto; font-size: 0.75rem; opacity: 0.7;"></i>
+                        </a></li>
+                    </ul>
+                </div>
             </nav>
         </aside>
         
+        <!-- Main Content -->
         <main class="main-content">
-            <h1 class="page-title">Analytics</h1>
+            <div class="page-header">
+                <h1 class="page-title">Analytics & Insights</h1>
+                <p class="page-subtitle">Comprehensive analysis of your monitoring data</p>
+            </div>
             
-            <div class="coming-soon">
-                <div class="coming-soon-icon"><i class="fas fa-tools"></i></div>
-                <h2>Coming Soon</h2>
-                <p>This feature is under development and will be available shortly.</p>
+            <!-- Filter Panel -->
+            <div class="filter-panel">
+                <div class="filter-group">
+                    <label class="filter-label">Time Period</label>
+                    <select class="filter-select" id="timePeriod">
+                        <option value="24h">Last 24 Hours</option>
+                        <option value="7d" selected>Last 7 Days</option>
+                        <option value="30d">Last 30 Days</option>
+                        <option value="90d">Last 90 Days</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Building</label>
+                    <select class="filter-select" id="buildingFilter">
+                        <option value="all">All Buildings</option>
+                        <option value="a">Building A</option>
+                        <option value="b">Building B</option>
+                        <option value="c">Building C</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Metric Type</label>
+                    <select class="filter-select" id="metricType">
+                        <option value="all">All Metrics</option>
+                        <option value="temp">Temperature</option>
+                        <option value="humidity">Humidity</option>
+                        <option value="power">Power</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value">24,567</div>
+                            <div class="stat-label">Total Data Points</div>
+                        </div>
+                        <div class="stat-icon primary">
+                            <i class="fas fa-database"></i>
+                        </div>
+                    </div>
+                    <div class="stat-trend positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+12.5% from last period</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value">98.7%</div>
+                            <div class="stat-label">Average Uptime</div>
+                        </div>
+                        <div class="stat-icon success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="stat-trend positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+2.1% from last period</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value">23</div>
+                            <div class="stat-label">Active Alerts</div>
+                        </div>
+                        <div class="stat-icon warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                    <div class="stat-trend negative">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>-8.3% from last period</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value">4.2hrs</div>
+                            <div class="stat-label">Avg Response Time</div>
+                        </div>
+                        <div class="stat-icon danger">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <div class="stat-trend positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>-15.7% (faster)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Charts Grid -->
+            <div class="charts-grid">
+                <!-- Temperature Trend Chart -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Temperature Trends</h3>
+                        <p class="chart-subtitle">Average temperature across all buildings</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="tempTrendChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Sensor Distribution Chart -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Sensor Distribution</h3>
+                        <p class="chart-subtitle">Sensors by type and status</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="sensorDistChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Alert Frequency Chart -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Alert Frequency</h3>
+                        <p class="chart-subtitle">Alerts over time by severity</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="alertFreqChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Energy Consumption Chart -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Energy Consumption</h3>
+                        <p class="chart-subtitle">Power usage trends</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="energyChart"></canvas>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
+    
+    <script>
+        // Chart.js configuration
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#b8c5d6'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    ticks: { color: '#6b7c93' },
+                    grid: { color: 'rgba(45, 55, 72, 0.5)' }
+                },
+                x: {
+                    ticks: { color: '#6b7c93' },
+                    grid: { color: 'rgba(45, 55, 72, 0.5)' }
+                }
+            }
+        };
+        
+        // Temperature Trend Chart
+        new Chart(document.getElementById('tempTrendChart'), {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Temperature (°C)',
+                    data: [22.5, 23.1, 21.8, 24.2, 23.8, 22.9, 23.5],
+                    borderColor: '#4299e1',
+                    backgroundColor: 'rgba(66, 153, 225, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: chartOptions
+        });
+        
+        // Sensor Distribution Chart
+        new Chart(document.getElementById('sensorDistChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Temperature', 'Humidity', 'Power', 'Pressure'],
+                datasets: [{
+                    data: [150, 89, 120, 42],
+                    backgroundColor: ['#4299e1', '#48bb78', '#ed8936', '#f56565']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#b8c5d6' }
+                    }
+                }
+            }
+        });
+        
+        // Alert Frequency Chart
+        new Chart(document.getElementById('alertFreqChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [
+                    {
+                        label: 'Critical',
+                        data: [2, 3, 1, 4, 2, 1, 3],
+                        backgroundColor: '#f56565'
+                    },
+                    {
+                        label: 'Warning',
+                        data: [5, 7, 4, 8, 6, 3, 5],
+                        backgroundColor: '#ed8936'
+                    },
+                    {
+                        label: 'Info',
+                        data: [12, 15, 10, 18, 14, 8, 11],
+                        backgroundColor: '#4299e1'
+                    }
+                ]
+            },
+            options: chartOptions
+        });
+        
+        // Energy Consumption Chart
+        new Chart(document.getElementById('energyChart'), {
+            type: 'line',
+            data: {
+                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+                datasets: [{
+                    label: 'Power (kW)',
+                    data: [145, 132, 168, 195, 212, 178, 156],
+                    borderColor: '#48bb78',
+                    backgroundColor: 'rgba(72, 187, 120, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: chartOptions
+        });
+    </script>
 </body>
 </html>

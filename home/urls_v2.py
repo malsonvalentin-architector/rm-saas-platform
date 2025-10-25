@@ -13,7 +13,6 @@ app_name = 'dashboard_v2'  # Required for namespace in home/urls.py
 urlpatterns = [
     # Main dashboard - /dashboard/ (Clean URL Structure)
     path('', views_v2.dashboard_main_professional, name='main'),
-    path('standalone/', views_v2.dashboard_v2_standalone, name='standalone'),
     
     # Navigation pages - /dashboard/{page}/
     path('buildings/', views_v2_pages.buildings_list, name='buildings'),
