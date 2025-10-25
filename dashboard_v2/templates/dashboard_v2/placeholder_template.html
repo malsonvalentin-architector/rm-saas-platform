@@ -1,0 +1,136 @@
+{% extends "dashboard_v2/base_full.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} - ProMonitor.kz{% endblock %}
+
+{% block extra_css %}
+<style>
+    .placeholder-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 60vh;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .placeholder-icon {
+        font-size: 6rem;
+        margin-bottom: 2rem;
+        opacity: 0.5;
+    }
+
+    .placeholder-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+
+    .placeholder-description {
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+        max-width: 600px;
+    }
+
+    .placeholder-features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        max-width: 900px;
+        margin: 2rem auto;
+    }
+
+    .feature-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 120, 212, 0.2);
+    }
+
+    .feature-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .feature-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .feature-description {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+
+    .placeholder-cta {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn-primary {
+        padding: 0.75rem 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        padding: 0.75rem 2rem;
+        background: transparent;
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: rgba(0, 120, 212, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="placeholder-container">
+    <div class="placeholder-icon">{{ page_icon|default:"🚧" }}</div>
+    <h1 class="placeholder-title">{{ page_title }}</h1>
+    <p class="placeholder-description">{{ page_description|default:"Эта страница находится в разработке. Скоро здесь появится полный функционал." }}</p>
+
+    {% if features %}
+    <div class="placeholder-features">
+        {% for feature in features %}
+        <div class="feature-card">
+            <div class="feature-icon">{{ feature.icon }}</div>
+            <div class="feature-title">{{ feature.title }}</div>
+            <div class="feature-description">{{ feature.description }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="placeholder-cta">
+        <button class="btn-secondary" onclick="history.back()">← Назад</button>
+        <button class="btn-primary" onclick="window.location.href='{% url 'dashboard_v2:dashboard' %}'">На главную</button>
+    </div>
+</div>
+{% endblock %}

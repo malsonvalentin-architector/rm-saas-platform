@@ -13,10 +13,14 @@ urlpatterns = [
     path('', views.dashboard_home, name='home'),  # Alias for compatibility
     path('control/', views.control_panel, name='control'),
     path('alerts/', views.alerts_page, name='alerts'),
+    path('alerts/history/', views.alert_history_page, name='alert_history'),
     path('analytics/', views.analytics_page, name='analytics'),
     path('objects/', views.objects_page, name='objects'),
-    path('map/', views.map_page, name='map'),  # NEW
+    path('map/', views.map_page, name='map'),
     path('settings/', views.settings_page, name='settings'),
+    
+    # Placeholder pages (in development)
+    path('pages/<str:page_name>/', views.placeholder_page, name='placeholder'),
     
     # API endpoints
     path('api/metrics/', views.api_dashboard_metrics, name='api_metrics'),

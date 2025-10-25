@@ -1,0 +1,236 @@
+{% extends "dashboard_v2/base_full.html" %}
+{% load static %}
+
+{% block title %}История алертов - ProMonitor.kz{% endblock %}
+
+{% block extra_css %}
+<style>
+    .history-container {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .history-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .date-range-picker {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .date-input {
+        padding: 0.5rem 1rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-primary);
+    }
+
+    .history-table {
+        width: 100%;
+        background: var(--bg-card);
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+    }
+
+    .history-table thead {
+        background: rgba(0, 120, 212, 0.1);
+    }
+
+    .history-table th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: var(--text-primary);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .history-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .history-table tbody tr:hover {
+        background: rgba(0, 120, 212, 0.05);
+    }
+
+    .severity-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .severity-badge.critical {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--error);
+    }
+
+    .severity-badge.warning {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--warning);
+    }
+
+    .severity-badge.info {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+
+    .pagination button {
+        padding: 0.5rem 1rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        color: var(--text-primary);
+        cursor: pointer;
+    }
+
+    .pagination button:hover {
+        background: rgba(0, 120, 212, 0.1);
+    }
+
+    .pagination button.active {
+        background: var(--primary-blue);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="history-container">
+    <div class="history-header">
+        <h1>📜 История алертов</h1>
+        <div class="date-range-picker">
+            <input type="date" class="date-input" id="startDate">
+            <span>—</span>
+            <input type="date" class="date-input" id="endDate">
+            <button class="btn-add" onclick="filterByDate()">Применить</button>
+        </div>
+    </div>
+
+    <table class="history-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Дата/Время</th>
+                <th>Серьезность</th>
+                <th>Сообщение</th>
+                <th>Система</th>
+                <th>Статус</th>
+                <th>Закрыл</th>
+            </tr>
+        </thead>
+        <tbody id="historyTableBody">
+            <!-- Data will be loaded via JavaScript -->
+        </tbody>
+    </table>
+
+    <div class="pagination" id="pagination"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Mock history data (100 items)
+    const historyData = [];
+    for (let i = 1; i <= 100; i++) {
+        const severities = ['critical', 'warning', 'info'];
+        const statuses = ['resolved', 'acknowledged', 'auto-closed'];
+        const systems = ['HVAC Unit 1', 'Chiller 1', 'Boiler 1', 'AHU 2', 'Fan Coil 3'];
+        const users = ['admin@promonitor.kz', 'manager@promonitor.kz', 'System Auto'];
+        
+        historyData.push({
+            id: 1000 + i,
+            date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
+            severity: severities[Math.floor(Math.random() * severities.length)],
+            message: `Alert #${i} - ${Math.random() > 0.5 ? 'High temperature' : 'Pressure anomaly'}`,
+            system: systems[Math.floor(Math.random() * systems.length)],
+            status: statuses[Math.floor(Math.random() * statuses.length)],
+            closedBy: users[Math.floor(Math.random() * users.length)]
+        });
+    }
+
+    let currentPage = 1;
+    const itemsPerPage = 20;
+
+    function renderHistory(page = 1) {
+        const start = (page - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const pageData = historyData.slice(start, end);
+
+        const tbody = document.getElementById('historyTableBody');
+        tbody.innerHTML = pageData.map(item => `
+            <tr>
+                <td>#${item.id}</td>
+                <td>${item.date.toLocaleString('ru-RU')}</td>
+                <td><span class="severity-badge ${item.severity}">${item.severity}</span></td>
+                <td>${item.message}</td>
+                <td>${item.system}</td>
+                <td>${item.status}</td>
+                <td>${item.closedBy}</td>
+            </tr>
+        `).join('');
+
+        renderPagination();
+    }
+
+    function renderPagination() {
+        const totalPages = Math.ceil(historyData.length / itemsPerPage);
+        const pagination = document.getElementById('pagination');
+        
+        let html = '';
+        if (currentPage > 1) {
+            html += `<button onclick="changePage(${currentPage - 1})">← Prev</button>`;
+        }
+        
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === currentPage || i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                html += `<button class="${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+            } else if (i === currentPage - 3 || i === currentPage + 3) {
+                html += `<span>...</span>`;
+            }
+        }
+        
+        if (currentPage < totalPages) {
+            html += `<button onclick="changePage(${currentPage + 1})">Next →</button>`;
+        }
+        
+        pagination.innerHTML = html;
+    }
+
+    function changePage(page) {
+        currentPage = page;
+        renderHistory(page);
+    }
+
+    function filterByDate() {
+        alert('Фильтрация по дате в разработке');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        renderHistory(1);
+    });
+</script>
+{% endblock %}

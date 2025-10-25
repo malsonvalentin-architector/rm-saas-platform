@@ -335,22 +335,71 @@
             
             // Route mapping
             const routes = {
+                // Dashboard
                 'dashboard-overview': '{% url "dashboard_v2:dashboard" %}',
                 'dashboard-objects': '{% url "dashboard_v2:objects" %}',
                 'dashboard-map': '{% url "dashboard_v2:map" %}',
+                'dashboard-widgets': '{% url "dashboard_v2:placeholder" page_name="widgets" %}',
+                
+                // Control
                 'control-floorplans': '{% url "dashboard_v2:control" %}',
+                'control-equipment': '{% url "dashboard_v2:placeholder" page_name="equipment-control" %}',
+                'control-scenarios': '{% url "dashboard_v2:placeholder" page_name="scenarios" %}',
+                'control-schedules': '{% url "dashboard_v2:placeholder" page_name="schedules" %}',
+                
+                // Analytics
                 'analytics-energy': '{% url "dashboard_v2:analytics" %}',
+                'analytics-temperature': '{% url "dashboard_v2:placeholder" page_name="temperature-analytics" %}',
+                'analytics-cost': '{% url "dashboard_v2:placeholder" page_name="cost-analysis" %}',
+                'analytics-performance': '{% url "dashboard_v2:placeholder" page_name="performance-reports" %}',
+                'analytics-ml': '{% url "dashboard_v2:placeholder" page_name="ml-insights" %}',
+                
+                // Alerts
                 'alerts-active': '{% url "dashboard_v2:alerts" %}',
-                'settings-profile': '{% url "dashboard_v2:settings" %}'
+                'alerts-history': '{% url "dashboard_v2:alert_history" %}',
+                'alerts-rules': '{% url "dashboard_v2:placeholder" page_name="alert-rules" %}',
+                'alerts-notifications': '{% url "dashboard_v2:placeholder" page_name="notification-settings" %}',
+                
+                // AI Assistant
+                'ai-chat': '{% url "dashboard_v2:placeholder" page_name="ai-chat" %}',
+                'ai-recommendations': '{% url "dashboard_v2:placeholder" page_name="ai-recommendations" %}',
+                'ai-knowledge': '{% url "dashboard_v2:placeholder" page_name="ai-knowledge" %}',
+                
+                // Controllers
+                'controllers-carel': '{% url "dashboard_v2:placeholder" page_name="controllers-carel" %}',
+                'controllers-siemens': '{% url "dashboard_v2:placeholder" page_name="controllers-siemens" %}',
+                'controllers-schneider': '{% url "dashboard_v2:placeholder" page_name="controllers-schneider" %}',
+                
+                // Integrations
+                'integrations-datasources': '{% url "dashboard_v2:placeholder" page_name="integrations-datasources" %}',
+                'integrations-services': '{% url "dashboard_v2:placeholder" page_name="integrations-services" %}',
+                
+                // Reports
+                'reports-generate': '{% url "dashboard_v2:placeholder" page_name="reports-generate" %}',
+                'reports-scheduled': '{% url "dashboard_v2:placeholder" page_name="reports-scheduled" %}',
+                'reports-library': '{% url "dashboard_v2:placeholder" page_name="reports-library" %}',
+                
+                // Company
+                'company-users': '{% url "dashboard_v2:placeholder" page_name="company-users" %}',
+                'company-objects': '{% url "dashboard_v2:placeholder" page_name="company-objects" %}',
+                'company-settings': '{% url "dashboard_v2:placeholder" page_name="company-settings" %}',
+                'company-permissions': '{% url "dashboard_v2:placeholder" page_name="company-permissions" %}',
+                
+                // Settings
+                'settings-profile': '{% url "dashboard_v2:settings" %}',
+                'settings-notifications': '{% url "dashboard_v2:placeholder" page_name="settings-notifications" %}',
+                'settings-appearance': '{% url "dashboard_v2:placeholder" page_name="settings-appearance" %}',
+                'settings-system': '{% url "dashboard_v2:placeholder" page_name="settings-system" %}'
             };
             
             const url = routes[pageName];
             if (url) {
                 window.location.href = url;
             } else {
-                // Coming soon placeholder
-                alert(`Страница "${pageName}" в разработке`);
+                // Fallback to placeholder
+                window.location.href = '{% url "dashboard_v2:placeholder" page_name="coming-soon" %}'.replace('coming-soon', pageName);
             }
+
         }
 
         // ==================== SIDEBAR EXPANDABLE ====================
