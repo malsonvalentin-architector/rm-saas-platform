@@ -36,24 +36,26 @@
         }
         
         .sidebar-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid #3d4250;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .sidebar-logo {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #2196f3 0%, #00bcd4 100%);
-            border-radius: 10px;
+            padding: 0.25rem 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            min-height: 50px;
+            max-height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 1.2rem;
-            color: white;
+        }
+        
+        .sidebar-logo {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            mix-blend-mode: screen;
+            filter: drop-shadow(0 4px 15px rgba(66, 153, 225, 0.6)) 
+                    drop-shadow(0 0 30px rgba(11, 197, 234, 0.5))
+                    brightness(1.5)
+                    contrast(1.4);
+            transition: all 0.3s ease;
         }
         
         .sidebar-title {
