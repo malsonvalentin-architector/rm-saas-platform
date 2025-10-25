@@ -38,6 +38,7 @@ body {
     color: var(--text-primary);
     overflow-x: hidden;
     transition: background 0.3s ease, color 0.3s ease;
+    letter-spacing: 0.2px; /* Базовый spacing для всего текста */
 }
 
 /* ==================== HEADER ==================== */
@@ -540,11 +541,13 @@ body.control-mode .metric-card:hover {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    letter-spacing: 0.4px; /* Добавлен spacing для заголовков */
 }
 
 .page-subtitle {
     font-size: 13px;
     color: var(--text-secondary);
+    letter-spacing: 0.3px; /* Добавлен spacing */
 }
 
 .page-content {
@@ -646,7 +649,7 @@ body.light-theme .metric-card {
     color: var(--text-secondary);
     margin-bottom: 6px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px; /* Увеличен для лучшей читаемости */
 }
 
 .card-value {
@@ -662,6 +665,7 @@ body.light-theme .metric-card {
 .card-detail {
     font-size: 12px;
     color: var(--text-secondary);
+    letter-spacing: 0.3px; /* Добавлен spacing */
 }
 
 /* ==================== CONTROL PANEL ==================== */
@@ -978,6 +982,7 @@ body.light-theme .schema-canvas {
     margin-top: 6px;
     text-align: center;
     font-weight: 500;
+    letter-spacing: 0.4px; /* Добавлен spacing */
 }
 
 .node-value {
@@ -985,6 +990,7 @@ body.light-theme .schema-canvas {
     color: var(--text-primary);
     font-weight: 600;
     text-align: center;
+    letter-spacing: 0.3px; /* Добавлен spacing */
 }
 
 .connection-pipe {
@@ -1289,4 +1295,106 @@ body.light-theme .placeholder-section {
 .mode-indicator.show {
     opacity: 1;
     transform: translateY(0);
+}
+
+/* ==================== DATA TABLES ==================== */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    letter-spacing: 0.3px; /* Добавлен spacing между буквами */
+}
+
+.data-table thead {
+    background: rgba(0, 120, 212, 0.08);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.data-table th {
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 0.8px; /* Увеличенный spacing для заголовков */
+    white-space: nowrap;
+}
+
+.data-table tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: background 0.2s ease;
+}
+
+.data-table tbody tr:hover {
+    background: rgba(0, 120, 212, 0.05);
+}
+
+.data-table td {
+    padding: 14px 16px;
+    color: var(--text-primary);
+    letter-spacing: 0.4px; /* Spacing для текста в ячейках */
+    line-height: 1.5; /* Улучшенная высота строки */
+}
+
+/* ID column - monospace font */
+.data-table td:first-child {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 12px;
+    color: var(--primary-blue);
+    letter-spacing: 0.5px;
+}
+
+/* Status badges in tables */
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.status-online {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+}
+
+.status-warning {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--warning);
+}
+
+.status-offline {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--error);
+}
+
+/* Action buttons in tables */
+.action-btn {
+    background: rgba(0, 120, 212, 0.1);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 4px;
+}
+
+.action-btn:hover {
+    background: rgba(0, 120, 212, 0.2);
+    border-color: var(--primary-blue);
+    transform: translateY(-1px);
+}
+
+/* Light theme adjustments */
+body.light-theme .data-table thead {
+    background: rgba(0, 120, 212, 0.05);
+}
+
+body.light-theme .data-table tbody tr:hover {
+    background: rgba(0, 120, 212, 0.03);
 }
