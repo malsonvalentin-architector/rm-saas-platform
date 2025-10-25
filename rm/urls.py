@@ -24,6 +24,9 @@ urlpatterns = [
     # Data & Objects (BEFORE home to avoid conflicts)
     path('', include('data.urls', namespace='data')),
     
+    # Dashboard V2 (MUST be before home.urls to avoid namespace conflict)
+    path('dashboard/v2/', include('home.urls_v2')),
+    
     # Home Dashboard - handles '/', 'dashboard/', 'logout/'
     path('', include('home.urls', namespace='home')),
     
