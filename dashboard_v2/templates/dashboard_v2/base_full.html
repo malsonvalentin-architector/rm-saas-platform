@@ -15,7 +15,9 @@
     <!-- HEADER -->
     <header class="header">
         <div class="logo-section">
-            <img src="https://cdn1.genspark.ai/user-upload-image/rmbg_generated/0_0f1ef544-f6b3-480a-9223-5f42d8d72f55" alt="ProMonitor" class="logo-image">
+            <a href="{% url 'dashboard_v2:dashboard' %}" class="logo-link">
+                <img src="https://cdn1.genspark.ai/user-upload-image/rmbg_generated/0_0f1ef544-f6b3-480a-9223-5f42d8d72f55" alt="ProMonitor" class="logo-image">
+            </a>
         </div>
 
         <div class="header-controls">
@@ -38,12 +40,42 @@
             </div>
 
             <div class="user-section">
-                <div class="user-avatar">
+                <div class="user-avatar" onclick="toggleUserMenu()">
                     {% if user.is_authenticated %}
                         {{ user.email|first|upper }}{{ user.email|slice:"1:2"|upper }}
                     {% else %}
                         ГС
                     {% endif %}
+                </div>
+                <!-- User Dropdown Menu -->
+                <div class="user-dropdown" id="userDropdown">
+                    <div class="user-dropdown-header">
+                        <div class="user-dropdown-avatar">
+                            {% if user.is_authenticated %}
+                                {{ user.email|first|upper }}{{ user.email|slice:"1:2"|upper }}
+                            {% else %}
+                                ГС
+                            {% endif %}
+                        </div>
+                        <div class="user-dropdown-info">
+                            <div class="user-dropdown-name">{{ user.get_full_name|default:user.username }}</div>
+                            <div class="user-dropdown-email">{{ user.email }}</div>
+                        </div>
+                    </div>
+                    <div class="user-dropdown-divider"></div>
+                    <a href="{% url 'dashboard_v2:settings' %}" class="user-dropdown-item">
+                        <span class="dropdown-icon">👤</span>
+                        <span>Мой профиль</span>
+                    </a>
+                    <a href="{% url 'dashboard_v2:settings' %}" class="user-dropdown-item">
+                        <span class="dropdown-icon">⚙️</span>
+                        <span>Настройки</span>
+                    </a>
+                    <div class="user-dropdown-divider"></div>
+                    <a href="/accounts/logout/" class="user-dropdown-item logout">
+                        <span class="dropdown-icon">🚪</span>
+                        <span>Выйти</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -464,6 +496,22 @@
         // Update alerts badge every 30 seconds
         setInterval(updateAlertsBadge, 30000);
         document.addEventListener('DOMContentLoaded', updateAlertsBadge);
+
+        // ==================== USER DROPDOWN MENU ====================
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close user menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const userSection = document.querySelector('.user-section');
+            const dropdown = document.getElementById('userDropdown');
+            
+            if (dropdown && userSection && !userSection.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
 
         // ==================== INITIALIZATION ====================
         console.log('ProMonitor v2.0 - Full Version Loaded');

@@ -388,3 +388,208 @@ def api_analytics_stats(request):
             'error': str(e),
             'message': 'Failed to load analytics'
         }, status=500)
+
+
+# ==================== SETTINGS API ====================
+
+@csrf_exempt
+@login_required
+def api_settings_profile(request):
+    """
+    API: Update user profile
+    POST body: {first_name, last_name, email, phone}
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        user = request.user
+        
+        # Update user fields
+        if 'first_name' in data:
+            user.first_name = data['first_name']
+        if 'last_name' in data:
+            user.last_name = data['last_name']
+        if 'email' in data:
+            user.email = data['email']
+        
+        user.save()
+        
+        # Update profile phone (if profile model exists)
+        if 'phone' in data:
+            try:
+                if hasattr(user, 'profile'):
+                    user.profile.phone = data['phone']
+                    user.profile.save()
+            except:
+                pass
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Профиль обновлён',
+            'user': {
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email
+            }
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e),
+            'message': 'Ошибка сохранения профиля'
+        }, status=500)
+
+
+@csrf_exempt
+@login_required
+def api_settings_password(request):
+    """
+    API: Change user password
+    POST body: {current_password, new_password}
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        from django.contrib.auth import authenticate, update_session_auth_hash
+        
+        data = json.loads(request.body)
+        user = request.user
+        
+        current_password = data.get('current_password')
+        new_password = data.get('new_password')
+        
+        # Verify current password
+        if not user.check_password(current_password):
+            return JsonResponse({
+                'success': False,
+                'message': 'Неверный текущий пароль'
+            }, status=400)
+        
+        # Validate new password
+        if len(new_password) < 8:
+            return JsonResponse({
+                'success': False,
+                'message': 'Пароль должен быть минимум 8 символов'
+            }, status=400)
+        
+        # Change password
+        user.set_password(new_password)
+        user.save()
+        
+        # Keep user logged in
+        update_session_auth_hash(request, user)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Пароль успешно изменён'
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e),
+            'message': 'Ошибка смены пароля'
+        }, status=500)
+
+
+@csrf_exempt
+@login_required
+def api_settings_preferences(request):
+    """
+    API: Update user preferences
+    POST body: {theme, language, timezone, notifications}
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        user = request.user
+        
+        # Save preferences to user profile or session
+        # For now, we'll use session storage
+        if 'theme' in data:
+            request.session['theme'] = data['theme']
+        if 'language' in data:
+            request.session['language'] = data['language']
+        if 'timezone' in data:
+            request.session['timezone'] = data['timezone']
+        if 'notifications' in data:
+            request.session['notifications'] = data['notifications']
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Настройки сохранены'
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e),
+            'message': 'Ошибка сохранения настроек'
+        }, status=500)
+
+
+# ==================== ALERTS API ====================
+
+@csrf_exempt
+@login_required
+def api_alert_acknowledge(request):
+    """
+    API: Acknowledge an alert
+    POST body: {alert_id}
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        alert_id = data.get('alert_id')
+        
+        # TODO: Update alert status in database
+        # For now, just return success
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Alert {alert_id} acknowledged',
+            'alert_id': alert_id,
+            'status': 'acknowledged'
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e),
+            'message': 'Failed to acknowledge alert'
+        }, status=500)
+
+
+@csrf_exempt
+@login_required
+def api_alert_resolve(request):
+    """
+    API: Resolve an alert
+    POST body: {alert_id}
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        alert_id = data.get('alert_id')
+        
+        # TODO: Update alert status in database
+        # For now, just return success
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Alert {alert_id} resolved',
+            'alert_id': alert_id,
+            'status': 'resolved'
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e),
+            'message': 'Failed to resolve alert'
+        }, status=500)

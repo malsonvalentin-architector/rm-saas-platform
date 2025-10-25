@@ -690,20 +690,49 @@ document.getElementById('securityForm').addEventListener('submit', function(e) {
 
 // ===== SAVE SETTINGS FUNCTION =====
 function saveSettings(section) {
-    // Mock save (replace with real API call)
     console.log(`Saving ${section} settings...`);
     
-    // Show success message
-    const successMsg = document.getElementById('successMessage');
-    successMsg.classList.add('show');
+    let endpoint = '';
+    let formData = {};
     
-    setTimeout(() => {
-        successMsg.classList.remove('show');
-    }, 3000);
+    // Collect form data based on section
+    if (section === 'profile') {
+        endpoint = '{% url "dashboard_v2:api_settings_profile" %}';
+        formData = {
+            first_name: document.getElementById('firstName').value,
+            last_name: document.getElementById('lastName').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value
+        };
+    } else if (section === 'display') {
+        endpoint = '{% url "dashboard_v2:api_settings_preferences" %}';
+        formData = {
+            theme: document.getElementById('theme').value,
+            mode: document.getElementById('mode').value,
+            language: document.getElementById('language').value,
+            timezone: document.getElementById('timezone').value
+        };
+    } else if (section === 'notifications') {
+        endpoint = '{% url "dashboard_v2:api_settings_preferences" %}';
+        formData = {
+            notifications: {
+                email_alerts: document.getElementById('emailAlerts').checked,
+                email_reports: document.getElementById('emailReports').checked,
+                sms_alerts: document.getElementById('smsAlerts').checked,
+                browser_notifications: document.getElementById('browserNotifs').checked,
+                telegram_notifications: document.getElementById('telegramNotifs').checked
+            }
+        };
+    } else if (section === 'security') {
+        endpoint = '{% url "dashboard_v2:api_settings_password" %}';
+        formData = {
+            current_password: document.getElementById('currentPassword').value,
+            new_password: document.getElementById('newPassword').value
+        };
+    }
     
-    // In production, send data to backend:
-    /*
-    fetch('/api/settings/', {
+    // Send to backend API
+    fetch(endpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -714,10 +743,27 @@ function saveSettings(section) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showSuccessMessage();
+            // Show success message
+            const successMsg = document.getElementById('successMessage');
+            successMsg.textContent = data.message || 'Настройки успешно сохранены!';
+            successMsg.classList.add('show');
+            
+            setTimeout(() => {
+                successMsg.classList.remove('show');
+            }, 3000);
+            
+            // Clear password fields on success
+            if (section === 'security') {
+                document.getElementById('securityForm').reset();
+            }
+        } else {
+            alert('Ошибка: ' + (data.message || 'Не удалось сохранить'));
         }
+    })
+    .catch(error => {
+        console.error('Save error:', error);
+        alert('Ошибка связи с сервером');
     });
-    */
 }
 
 // ===== RESET FORM =====

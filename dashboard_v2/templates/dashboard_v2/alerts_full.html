@@ -520,15 +520,30 @@
     function acknowledgeAlert(alertId) {
         const alert = alertsData.find(a => a.id === alertId);
         if (alert) {
-            alert.status = 'acknowledged';
-            renderAlerts(currentFilter);
-            console.log('Alert acknowledged:', alertId);
-            
-            // TODO: Send to backend
-            // fetch(URLS.command, {
-            //     method: 'POST',
-            //     body: JSON.stringify({ alert_id: alertId, action: 'acknowledge' })
-            // });
+            // Send to backend
+            fetch('{% url "dashboard_v2:api_alert_acknowledge" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ alert_id: alertId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update UI
+                    alert.status = 'acknowledged';
+                    renderAlerts(currentFilter);
+                    console.log('Alert acknowledged:', alertId);
+                } else {
+                    alert('Ошибка: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Acknowledge error:', error);
+                alert('Ошибка связи с сервером');
+            });
         }
     }
 
@@ -536,20 +551,38 @@
     function resolveAlert(alertId) {
         const alertIndex = alertsData.findIndex(a => a.id === alertId);
         if (alertIndex !== -1) {
-            // Remove from active alerts
-            alertsData.splice(alertIndex, 1);
-            
-            // Update resolved count
-            const resolvedCount = document.getElementById('resolvedCount');
-            resolvedCount.textContent = parseInt(resolvedCount.textContent) + 1;
-            
-            renderAlerts(currentFilter);
-            console.log('Alert resolved:', alertId);
-            
-            // Show success message
-            alert('✅ Alert resolved successfully');
-            
-            // TODO: Send to backend
+            // Send to backend
+            fetch('{% url "dashboard_v2:api_alert_resolve" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ alert_id: alertId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove from active alerts
+                    alertsData.splice(alertIndex, 1);
+                    
+                    // Update resolved count
+                    const resolvedCount = document.getElementById('resolvedCount');
+                    resolvedCount.textContent = parseInt(resolvedCount.textContent) + 1;
+                    
+                    renderAlerts(currentFilter);
+                    console.log('Alert resolved:', alertId);
+                    
+                    // Show success message
+                    alert('✅ Alert resolved successfully');
+                } else {
+                    alert('Ошибка: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Resolve error:', error);
+                alert('Ошибка связи с сервером');
+            });
         }
     }
 
@@ -575,6 +608,22 @@
 
     // Update every 10 seconds
     setInterval(updateAlertTimes, 10000);
+
+    // ==================== CSRF TOKEN HELPER ====================
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 
     // ==================== INITIAL RENDER ====================
     document.addEventListener('DOMContentLoaded', function() {
