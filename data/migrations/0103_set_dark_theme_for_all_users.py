@@ -20,7 +20,7 @@ def reverse_migration(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data', '0102_create_multi_tenant_users'),
+        ('data', '0102_create_default_users'),
     ]
 
     operations = [
