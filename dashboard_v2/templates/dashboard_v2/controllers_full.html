@@ -1,0 +1,271 @@
+{% extends 'dashboard_v2/base_full.html' %}
+{% load static %}
+
+{% block title %}Controllers Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Controllers Management</h1>
+    <p class="page-subtitle">Управление всеми контроллерами системы</p>
+</div>
+
+<!-- SUMMARY STATS -->
+<div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-bottom: 30px;">
+    <div class="metric-card">
+        <div class="card-icon">🏭</div>
+        <div class="card-title">Total Controllers</div>
+        <div class="card-value">24</div>
+        <div class="card-detail">Все контроллеры</div>
+    </div>
+    
+    <div class="metric-card" style="border-left: 4px solid var(--success);">
+        <div class="card-icon">✅</div>
+        <div class="card-title">Online</div>
+        <div class="card-value" style="color: var(--success);">22</div>
+        <div class="card-detail">Активные</div>
+    </div>
+    
+    <div class="metric-card" style="border-left: 4px solid var(--warning);">
+        <div class="card-icon">⚠️</div>
+        <div class="card-title">Warning</div>
+        <div class="card-value" style="color: var(--warning);">1</div>
+        <div class="card-detail">Предупреждения</div>
+    </div>
+    
+    <div class="metric-card" style="border-left: 4px solid var(--danger);">
+        <div class="card-icon">❌</div>
+        <div class="card-title">Offline</div>
+        <div class="card-value" style="color: var(--danger);">1</div>
+        <div class="card-detail">Не отвечают</div>
+    </div>
+</div>
+
+<!-- CONTROLLERS BY MANUFACTURER -->
+<div class="page-header">
+    <h2 style="font-size: 20px; font-weight: 600;">Controllers by Manufacturer</h2>
+</div>
+
+<!-- CAREL CONTROLLERS -->
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border-color);">
+        <div>
+            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 4px;">🏭 Carel Controllers</h3>
+            <p style="font-size: 13px; color: var(--text-secondary);">12 units connected</p>
+        </div>
+        <button class="button-primary" style="padding: 8px 16px;">+ Add Carel</button>
+    </div>
+    
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Location</th>
+                    <th>IP Address</th>
+                    <th>Status</th>
+                    <th>Last Sync</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>#CAR-001</td>
+                    <td>HVAC Controller A1</td>
+                    <td>Building A - Floor 1</td>
+                    <td>192.168.1.101</td>
+                    <td><span class="status-badge status-online">Online</span></td>
+                    <td>2 min ago</td>
+                    <td>
+                        <button class="action-btn" onclick="openControllerDrawer('car-001')">⚙️</button>
+                        <button class="action-btn">📊</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>#CAR-002</td>
+                    <td>HVAC Controller A2</td>
+                    <td>Building A - Floor 2</td>
+                    <td>192.168.1.102</td>
+                    <td><span class="status-badge status-online">Online</span></td>
+                    <td>1 min ago</td>
+                    <td>
+                        <button class="action-btn" onclick="openControllerDrawer('car-002')">⚙️</button>
+                        <button class="action-btn">📊</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>#CAR-003</td>
+                    <td>Chiller Controller</td>
+                    <td>Building A - Basement</td>
+                    <td>192.168.1.103</td>
+                    <td><span class="status-badge status-warning">Warning</span></td>
+                    <td>5 min ago</td>
+                    <td>
+                        <button class="action-btn" onclick="openControllerDrawer('car-003')">⚙️</button>
+                        <button class="action-btn">📊</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 12px; color: var(--text-secondary); font-size: 13px;">
+                        + 9 more Carel controllers...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- SIEMENS CONTROLLERS -->
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border-color);">
+        <div>
+            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 4px;">🏭 Siemens Controllers</h3>
+            <p style="font-size: 13px; color: var(--text-secondary);">8 units connected</p>
+        </div>
+        <button class="button-primary" style="padding: 8px 16px;">+ Add Siemens</button>
+    </div>
+    
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Location</th>
+                    <th>IP Address</th>
+                    <th>Status</th>
+                    <th>Last Sync</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>#SIE-001</td>
+                    <td>BMS Main Controller</td>
+                    <td>Building B - Server Room</td>
+                    <td>192.168.2.101</td>
+                    <td><span class="status-badge status-online">Online</span></td>
+                    <td>30 sec ago</td>
+                    <td>
+                        <button class="action-btn">⚙️</button>
+                        <button class="action-btn">📊</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>#SIE-002</td>
+                    <td>Lighting Controller B1</td>
+                    <td>Building B - Floor 1</td>
+                    <td>192.168.2.102</td>
+                    <td><span class="status-badge status-online">Online</span></td>
+                    <td>1 min ago</td>
+                    <td>
+                        <button class="action-btn">⚙️</button>
+                        <button class="action-btn">📊</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 12px; color: var(--text-secondary); font-size: 13px;">
+                        + 6 more Siemens controllers...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- SCHNEIDER CONTROLLERS -->
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border-color);">
+        <div>
+            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 4px;">🏭 Schneider Controllers</h3>
+            <p style="font-size: 13px; color: var(--text-secondary);">4 units connected</p>
+        </div>
+        <button class="button-primary" style="padding: 8px 16px;">+ Add Schneider</button>
+    </div>
+    
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Location</th>
+                    <th>IP Address</th>
+                    <th>Status</th>
+                    <th>Last Sync</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>#SCH-001</td>
+                    <td>Power Monitoring</td>
+                    <td>Building C - Electrical Room</td>
+                    <td>192.168.3.101</td>
+                    <td><span class="status-badge status-online">Online</span></td>
+                    <td>1 min ago</td>
+                    <td>
+                        <button class="action-btn">⚙️</button>
+                        <button class="action-btn">📊</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>#SCH-002</td>
+                    <td>UPS Controller</td>
+                    <td>Building C - Server Room</td>
+                    <td>192.168.3.102</td>
+                    <td><span class="status-badge status-offline">Offline</span></td>
+                    <td>15 min ago</td>
+                    <td>
+                        <button class="action-btn">⚙️</button>
+                        <button class="action-btn">📊</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 12px; color: var(--text-secondary); font-size: 13px;">
+                        + 2 more Schneider controllers...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function openControllerDrawer(controllerId) {
+        const drawer = document.getElementById('drawer');
+        const overlay = document.getElementById('overlay');
+        const drawerTitle = document.getElementById('drawerTitle');
+        const drawerContent = document.getElementById('drawerContent');
+        
+        drawerTitle.textContent = `Controller Details: ${controllerId.toUpperCase()}`;
+        drawerContent.innerHTML = `
+            <div class="detail-section">
+                <h3 class="detail-section-title">CONNECTION INFO</h3>
+                <div class="detail-item">
+                    <span class="detail-label">Protocol</span>
+                    <span class="detail-value">Modbus TCP</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Port</span>
+                    <span class="detail-value">502</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Polling Rate</span>
+                    <span class="detail-value">30 sec</span>
+                </div>
+            </div>
+            
+            <div class="control-panel">
+                <h3 style="margin-bottom: 20px; font-size: 16px;">⚙️ ACTIONS</h3>
+                <button class="control-btn" style="margin-bottom: 10px;">🔄 Restart Controller</button>
+                <button class="control-btn" style="margin-bottom: 10px;">📊 View Logs</button>
+                <button class="control-btn" style="margin-bottom: 10px;">⚙️ Configure</button>
+            </div>
+        `;
+        
+        drawer.classList.add('open');
+        overlay.classList.add('active');
+    }
+</script>
+{% endblock %}

@@ -161,6 +161,46 @@ def alert_history_page(request):
 
 
 @login_required
+def controllers_page(request):
+    """Controllers Management page"""
+    context = {
+        'page_title': 'Controllers Management',
+        'active_page': 'controllers'
+    }
+    return render(request, 'dashboard_v2/controllers_full.html', context)
+
+
+@login_required
+def datasources_page(request):
+    """Data Sources page"""
+    context = {
+        'page_title': 'Data Sources',
+        'active_page': 'integrations'
+    }
+    return render(request, 'dashboard_v2/datasources_full.html', context)
+
+
+@login_required
+def reports_generate_page(request):
+    """Generate Report page"""
+    context = {
+        'page_title': 'Generate Report',
+        'active_page': 'reports'
+    }
+    return render(request, 'dashboard_v2/reports_generate_full.html', context)
+
+
+@login_required
+def users_page(request):
+    """Users Management page"""
+    context = {
+        'page_title': 'Users Management',
+        'active_page': 'company'
+    }
+    return render(request, 'dashboard_v2/users_full.html', context)
+
+
+@login_required
 def placeholder_page(request, page_name):
     """Generic placeholder page for pages in development"""
     

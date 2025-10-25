@@ -1,0 +1,310 @@
+{% extends 'dashboard_v2/base_full.html' %}
+{% load static %}
+
+{% block title %}Data Sources{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Data Sources</h1>
+    <p class="page-subtitle">Управление источниками данных и интеграциями</p>
+</div>
+
+<!-- ACTION BAR -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <div>
+        <button class="button-primary">+ Add Data Source</button>
+    </div>
+    <div style="display: flex; gap: 12px;">
+        <button class="button-secondary">🔄 Sync All</button>
+        <button class="button-secondary">⚙️ Configure</button>
+    </div>
+</div>
+
+<!-- DATA SOURCES GRID -->
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-bottom: 30px;">
+    
+    <!-- MODBUS DATA SOURCE -->
+    <div class="card" style="position: relative;">
+        <div style="position: absolute; top: 16px; right: 16px;">
+            <span class="status-badge status-online">Connected</span>
+        </div>
+        
+        <div style="padding: 24px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #0078D4 0%, #005A9E 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    🔌
+                </div>
+                <div>
+                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">Modbus TCP/IP</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary);">Industrial Protocol</p>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Devices Connected</span>
+                    <span style="font-size: 13px; font-weight: 600;">24</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Data Points</span>
+                    <span style="font-size: 13px; font-weight: 600;">1,240</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Last Sync</span>
+                    <span style="font-size: 13px; font-weight: 600;">30 sec ago</span>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 8px;">
+                <button class="button-secondary" style="flex: 1; padding: 8px;">⚙️ Configure</button>
+                <button class="button-secondary" style="flex: 1; padding: 8px;">📊 View Data</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- BACnet DATA SOURCE -->
+    <div class="card" style="position: relative;">
+        <div style="position: absolute; top: 16px; right: 16px;">
+            <span class="status-badge status-online">Connected</span>
+        </div>
+        
+        <div style="padding: 24px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #10B981 0%, #059669 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    🏢
+                </div>
+                <div>
+                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">BACnet/IP</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary);">Building Automation</p>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Devices Connected</span>
+                    <span style="font-size: 13px; font-weight: 600;">18</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Data Points</span>
+                    <span style="font-size: 13px; font-weight: 600;">890</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Last Sync</span>
+                    <span style="font-size: 13px; font-weight: 600;">1 min ago</span>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 8px;">
+                <button class="button-secondary" style="flex: 1; padding: 8px;">⚙️ Configure</button>
+                <button class="button-secondary" style="flex: 1; padding: 8px;">📊 View Data</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MQTT DATA SOURCE -->
+    <div class="card" style="position: relative;">
+        <div style="position: absolute; top: 16px; right: 16px;">
+            <span class="status-badge status-warning">Reconnecting</span>
+        </div>
+        
+        <div style="padding: 24px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    📡
+                </div>
+                <div>
+                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">MQTT Broker</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary);">IoT Communication</p>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Devices Connected</span>
+                    <span style="font-size: 13px; font-weight: 600;">45</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Topics</span>
+                    <span style="font-size: 13px; font-weight: 600;">128</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Last Message</span>
+                    <span style="font-size: 13px; font-weight: 600;">5 sec ago</span>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 8px;">
+                <button class="button-secondary" style="flex: 1; padding: 8px;">⚙️ Configure</button>
+                <button class="button-secondary" style="flex: 1; padding: 8px;">📊 View Data</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- OPC UA DATA SOURCE -->
+    <div class="card" style="position: relative;">
+        <div style="position: absolute; top: 16px; right: 16px;">
+            <span class="status-badge status-online">Connected</span>
+        </div>
+        
+        <div style="padding: 24px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    🔐
+                </div>
+                <div>
+                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">OPC UA</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary);">Unified Architecture</p>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Servers Connected</span>
+                    <span style="font-size: 13px; font-weight: 600;">3</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Nodes</span>
+                    <span style="font-size: 13px; font-weight: 600;">560</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Last Sync</span>
+                    <span style="font-size: 13px; font-weight: 600;">15 sec ago</span>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 8px;">
+                <button class="button-secondary" style="flex: 1; padding: 8px;">⚙️ Configure</button>
+                <button class="button-secondary" style="flex: 1; padding: 8px;">📊 View Data</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- DATABASE SOURCE -->
+    <div class="card" style="position: relative;">
+        <div style="position: absolute; top: 16px; right: 16px;">
+            <span class="status-badge status-online">Connected</span>
+        </div>
+        
+        <div style="padding: 24px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    💾
+                </div>
+                <div>
+                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">PostgreSQL DB</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary);">Historical Data</p>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Tables</span>
+                    <span style="font-size: 13px; font-weight: 600;">24</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Records</span>
+                    <span style="font-size: 13px; font-weight: 600;">2.4M</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Last Query</span>
+                    <span style="font-size: 13px; font-weight: 600;">2 sec ago</span>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 8px;">
+                <button class="button-secondary" style="flex: 1; padding: 8px;">⚙️ Configure</button>
+                <button class="button-secondary" style="flex: 1; padding: 8px;">📊 View Data</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- REST API SOURCE -->
+    <div class="card" style="position: relative;">
+        <div style="position: absolute; top: 16px; right: 16px;">
+            <span class="status-badge status-online">Connected</span>
+        </div>
+        
+        <div style="padding: 24px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    🌐
+                </div>
+                <div>
+                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">REST APIs</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary);">External Services</p>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Endpoints</span>
+                    <span style="font-size: 13px; font-weight: 600;">8</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Requests/day</span>
+                    <span style="font-size: 13px; font-weight: 600;">12.5K</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Latency</span>
+                    <span style="font-size: 13px; font-weight: 600;">45 ms</span>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 8px;">
+                <button class="button-secondary" style="flex: 1; padding: 8px;">⚙️ Configure</button>
+                <button class="button-secondary" style="flex: 1; padding: 8px;">📊 View Data</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- RECENT ACTIVITY -->
+<div class="card">
+    <div class="card-header" style="padding: 20px; border-bottom: 1px solid var(--border-color);">
+        <h3 style="font-size: 18px; font-weight: 600;">Recent Activity</h3>
+    </div>
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Source</th>
+                    <th>Event</th>
+                    <th>Details</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2024-01-15 14:23:45</td>
+                    <td>Modbus TCP/IP</td>
+                    <td>Data Sync</td>
+                    <td>Synced 1,240 data points</td>
+                    <td><span class="status-badge status-online">Success</span></td>
+                </tr>
+                <tr>
+                    <td>2024-01-15 14:22:30</td>
+                    <td>MQTT Broker</td>
+                    <td>Connection Lost</td>
+                    <td>Attempting reconnection...</td>
+                    <td><span class="status-badge status-warning">Warning</span></td>
+                </tr>
+                <tr>
+                    <td>2024-01-15 14:20:15</td>
+                    <td>BACnet/IP</td>
+                    <td>Device Added</td>
+                    <td>New device: HVAC-B3-01</td>
+                    <td><span class="status-badge status-online">Success</span></td>
+                </tr>
+                <tr>
+                    <td>2024-01-15 14:18:00</td>
+                    <td>PostgreSQL DB</td>
+                    <td>Query Executed</td>
+                    <td>Historical data query: 24h</td>
+                    <td><span class="status-badge status-online">Success</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,297 @@
+{% extends 'dashboard_v2/base_full.html' %}
+{% load static %}
+
+{% block title %}Generate Report{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Generate Report</h1>
+    <p class="page-subtitle">Создание кастомных отчётов по данным мониторинга</p>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+    
+    <!-- REPORT BUILDER -->
+    <div class="card">
+        <div class="card-header" style="padding: 20px; border-bottom: 1px solid var(--border-color);">
+            <h3 style="font-size: 18px; font-weight: 600;">Report Configuration</h3>
+        </div>
+        
+        <div style="padding: 24px;">
+            <!-- BASIC INFO -->
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px;">Report Title *</label>
+                <input type="text" class="form-control" placeholder="e.g. Monthly Energy Consumption Report" value="">
+            </div>
+            
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px;">Description</label>
+                <textarea class="form-control" rows="3" placeholder="Brief description of the report"></textarea>
+            </div>
+            
+            <!-- REPORT TYPE -->
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 12px;">Report Type *</label>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                    <div class="radio-card active">
+                        <input type="radio" name="report-type" value="energy" checked>
+                        <div class="radio-card-icon">⚡</div>
+                        <div class="radio-card-label">Energy Report</div>
+                    </div>
+                    <div class="radio-card">
+                        <input type="radio" name="report-type" value="temperature">
+                        <div class="radio-card-icon">🌡️</div>
+                        <div class="radio-card-label">Temperature</div>
+                    </div>
+                    <div class="radio-card">
+                        <input type="radio" name="report-type" value="alerts">
+                        <div class="radio-card-icon">🚨</div>
+                        <div class="radio-card-label">Alerts Summary</div>
+                    </div>
+                    <div class="radio-card">
+                        <input type="radio" name="report-type" value="equipment">
+                        <div class="radio-card-icon">⚙️</div>
+                        <div class="radio-card-label">Equipment Status</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TIME PERIOD -->
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 12px;">Time Period *</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">From Date</label>
+                        <input type="date" class="form-control" value="2024-01-01">
+                    </div>
+                    <div>
+                        <label style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">To Date</label>
+                        <input type="date" class="form-control" value="2024-01-31">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OBJECTS SELECTION -->
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 12px;">Select Objects *</label>
+                <div style="max-height: 200px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
+                    <label class="checkbox-label">
+                        <input type="checkbox" checked>
+                        <span>All Objects</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox">
+                        <span>ТРЦ Dostyk Plaza</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox">
+                        <span>Офисный комплекс Alatau</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox">
+                        <span>Бизнес-центр Nurly Tau</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox">
+                        <span>Логистический центр</span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- FORMAT -->
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 12px;">Export Format *</label>
+                <select class="form-control">
+                    <option value="pdf">📄 PDF Document</option>
+                    <option value="excel">📊 Excel Spreadsheet</option>
+                    <option value="csv">📋 CSV File</option>
+                    <option value="html">🌐 HTML Report</option>
+                </select>
+            </div>
+            
+            <!-- ACTIONS -->
+            <div style="display: flex; gap: 12px;">
+                <button class="button-primary" style="flex: 1;" onclick="generateReport()">
+                    📊 Generate Report
+                </button>
+                <button class="button-secondary" style="flex: 1;">
+                    💾 Save as Template
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- QUICK TEMPLATES -->
+    <div>
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header" style="padding: 16px; border-bottom: 1px solid var(--border-color);">
+                <h3 style="font-size: 16px; font-weight: 600;">Quick Templates</h3>
+            </div>
+            <div style="padding: 16px;">
+                <button class="template-btn" onclick="loadTemplate('daily')">
+                    📅 Daily Summary
+                </button>
+                <button class="template-btn" onclick="loadTemplate('weekly')">
+                    📊 Weekly Analysis
+                </button>
+                <button class="template-btn" onclick="loadTemplate('monthly')">
+                    📈 Monthly Report
+                </button>
+                <button class="template-btn" onclick="loadTemplate('custom')">
+                    ⚙️ Custom Report
+                </button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header" style="padding: 16px; border-bottom: 1px solid var(--border-color);">
+                <h3 style="font-size: 16px; font-weight: 600;">Recent Reports</h3>
+            </div>
+            <div style="padding: 16px;">
+                <div class="recent-report-item">
+                    <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">January Energy Report</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">Generated 2 days ago</div>
+                    <button class="button-secondary" style="width: 100%; margin-top: 8px; padding: 6px;">📥 Download</button>
+                </div>
+                <div class="recent-report-item">
+                    <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">Equipment Status Q1</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">Generated 1 week ago</div>
+                    <button class="button-secondary" style="width: 100%; margin-top: 8px; padding: 6px;">📥 Download</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.radio-card {
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.radio-card:hover {
+    border-color: var(--primary);
+    background: rgba(0, 120, 212, 0.05);
+}
+
+.radio-card.active {
+    border-color: var(--primary);
+    background: rgba(0, 120, 212, 0.1);
+}
+
+.radio-card input[type="radio"] {
+    display: none;
+}
+
+.radio-card-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.radio-card-label {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.checkbox-label:hover {
+    background: var(--hover-color);
+}
+
+.checkbox-label input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.template-btn {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.template-btn:hover {
+    background: var(--hover-color);
+    border-color: var(--primary);
+}
+
+.recent-report-item {
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.recent-report-item:last-child {
+    margin-bottom: 0;
+}
+</style>
+
+<script>
+function generateReport() {
+    // Show loading
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '⏳ Generating...';
+    btn.disabled = true;
+    
+    // Simulate report generation
+    setTimeout(() => {
+        alert('✅ Report generated successfully!\n\nYour report has been created and is ready for download.');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }, 2000);
+}
+
+function loadTemplate(type) {
+    const templates = {
+        'daily': {
+            title: 'Daily Summary Report',
+            description: 'Daily system performance and energy consumption'
+        },
+        'weekly': {
+            title: 'Weekly Analysis Report',
+            description: 'Weekly trends and analytics'
+        },
+        'monthly': {
+            title: 'Monthly Performance Report',
+            description: 'Comprehensive monthly analysis'
+        },
+        'custom': {
+            title: 'Custom Report',
+            description: 'Customized report configuration'
+        }
+    };
+    
+    const template = templates[type];
+    document.querySelector('input[type="text"]').value = template.title;
+    document.querySelector('textarea').value = template.description;
+}
+
+// Radio card selection
+document.querySelectorAll('.radio-card').forEach(card => {
+    card.addEventListener('click', function() {
+        document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
+        this.querySelector('input[type="radio"]').checked = true;
+    });
+});
+</script>
+{% endblock %}

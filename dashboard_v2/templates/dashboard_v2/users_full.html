@@ -1,0 +1,283 @@
+{% extends 'dashboard_v2/base_full.html' %}
+{% load static %}
+
+{% block title %}Users Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Users Management</h1>
+    <p class="page-subtitle">Управление пользователями и доступами</p>
+</div>
+
+<!-- ACTION BAR -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <div style="display: flex; gap: 12px;">
+        <input type="search" class="form-control" placeholder="🔍 Search users..." style="width: 300px;">
+        <select class="form-control" style="width: 180px;">
+            <option value="">All Roles</option>
+            <option value="admin">Admin</option>
+            <option value="manager">Manager</option>
+            <option value="operator">Operator</option>
+            <option value="viewer">Viewer</option>
+        </select>
+    </div>
+    <button class="button-primary" onclick="openAddUserModal()">+ Add User</button>
+</div>
+
+<!-- USERS TABLE -->
+<div class="card">
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Department</th>
+                    <th>Status</th>
+                    <th>Last Login</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0078D4, #005A9E); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                AS
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">Admin Super</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">System Administrator</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>superadmin@promonitor.kz</td>
+                    <td><span class="role-badge role-admin">Admin</span></td>
+                    <td>IT Department</td>
+                    <td><span class="status-badge status-online">Active</span></td>
+                    <td>2 hours ago</td>
+                    <td>
+                        <button class="action-btn" onclick="editUser('superadmin')">✏️</button>
+                        <button class="action-btn" onclick="viewUser('superadmin')">👁️</button>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #10B981, #059669); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                AD
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">Admin User</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">Administrator</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>admin@promonitor.kz</td>
+                    <td><span class="role-badge role-admin">Admin</span></td>
+                    <td>Operations</td>
+                    <td><span class="status-badge status-online">Active</span></td>
+                    <td>30 min ago</td>
+                    <td>
+                        <button class="action-btn" onclick="editUser('admin')">✏️</button>
+                        <button class="action-btn" onclick="viewUser('admin')">👁️</button>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #F59E0B, #D97706); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                DM
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">Dmitry Manager</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">Facility Manager</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>d.manager@promonitor.kz</td>
+                    <td><span class="role-badge role-manager">Manager</span></td>
+                    <td>Facility Management</td>
+                    <td><span class="status-badge status-online">Active</span></td>
+                    <td>1 hour ago</td>
+                    <td>
+                        <button class="action-btn" onclick="editUser('dmitry')">✏️</button>
+                        <button class="action-btn" onclick="viewUser('dmitry')">👁️</button>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #8B5CF6, #7C3AED); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                AS
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">Anna Specialist</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">HVAC Operator</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>a.specialist@promonitor.kz</td>
+                    <td><span class="role-badge role-operator">Operator</span></td>
+                    <td>Technical Operations</td>
+                    <td><span class="status-badge status-online">Active</span></td>
+                    <td>3 hours ago</td>
+                    <td>
+                        <button class="action-btn" onclick="editUser('anna')">✏️</button>
+                        <button class="action-btn" onclick="viewUser('anna')">👁️</button>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #06B6D4, #0891B2); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                IA
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">Ivan Analyst</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">Data Analyst</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>i.analyst@promonitor.kz</td>
+                    <td><span class="role-badge role-viewer">Viewer</span></td>
+                    <td>Analytics</td>
+                    <td><span class="status-badge status-online">Active</span></td>
+                    <td>5 hours ago</td>
+                    <td>
+                        <button class="action-btn" onclick="editUser('ivan')">✏️</button>
+                        <button class="action-btn" onclick="viewUser('ivan')">👁️</button>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #EF4444, #DC2626); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                MT
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">Maria Tech</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">Technical Support</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>m.tech@promonitor.kz</td>
+                    <td><span class="role-badge role-operator">Operator</span></td>
+                    <td>Technical Support</td>
+                    <td><span class="status-badge status-warning">Inactive</span></td>
+                    <td>2 days ago</td>
+                    <td>
+                        <button class="action-btn" onclick="editUser('maria')">✏️</button>
+                        <button class="action-btn" onclick="viewUser('maria')">👁️</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- PAGINATION -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+    <div style="color: var(--text-secondary); font-size: 14px;">
+        Showing 1-6 of 24 users
+    </div>
+    <div style="display: flex; gap: 8px;">
+        <button class="button-secondary" style="padding: 8px 12px;">← Previous</button>
+        <button class="button-primary" style="padding: 8px 16px;">1</button>
+        <button class="button-secondary" style="padding: 8px 16px;">2</button>
+        <button class="button-secondary" style="padding: 8px 16px;">3</button>
+        <button class="button-secondary" style="padding: 8px 12px;">Next →</button>
+    </div>
+</div>
+
+<style>
+.role-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.role-admin {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+}
+
+.role-manager {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
+.role-operator {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8B5CF6;
+}
+
+.role-viewer {
+    background: rgba(6, 182, 212, 0.1);
+    color: #06B6D4;
+}
+</style>
+
+<script>
+function openAddUserModal() {
+    const drawer = document.getElementById('drawer');
+    const overlay = document.getElementById('overlay');
+    const drawerTitle = document.getElementById('drawerTitle');
+    const drawerContent = document.getElementById('drawerContent');
+    
+    drawerTitle.textContent = '➕ Add New User';
+    drawerContent.innerHTML = `
+        <div style="padding: 0;">
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px;">Full Name *</label>
+                <input type="text" class="form-control" placeholder="John Doe">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px;">Email *</label>
+                <input type="email" class="form-control" placeholder="john.doe@promonitor.kz">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px;">Role *</label>
+                <select class="form-control">
+                    <option value="">Select Role</option>
+                    <option value="admin">Admin</option>
+                    <option value="manager">Manager</option>
+                    <option value="operator">Operator</option>
+                    <option value="viewer">Viewer</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px;">Department</label>
+                <input type="text" class="form-control" placeholder="e.g. Operations">
+            </div>
+            
+            <button class="button-primary" style="width: 100%; margin-top: 10px;">
+                ✅ Create User
+            </button>
+        </div>
+    `;
+    
+    drawer.classList.add('open');
+    overlay.classList.add('active');
+}
+
+function editUser(userId) {
+    alert('Edit user: ' + userId);
+}
+
+function viewUser(userId) {
+    alert('View user details: ' + userId);
+}
+</script>
+{% endblock %}

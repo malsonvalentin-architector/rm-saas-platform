@@ -19,6 +19,16 @@ urlpatterns = [
     path('map/', views.map_page, name='map'),
     path('settings/', views.settings_page, name='settings'),
     
+    # Integrations & Controllers
+    path('controllers/', views.controllers_page, name='controllers'),
+    path('datasources/', views.datasources_page, name='datasources'),
+    
+    # Reports
+    path('reports/generate/', views.reports_generate_page, name='reports_generate'),
+    
+    # Company Management
+    path('users/', views.users_page, name='users'),
+    
     # Placeholder pages (in development)
     path('pages/<str:page_name>/', views.placeholder_page, name='placeholder'),
     
