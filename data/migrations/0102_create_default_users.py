@@ -1,6 +1,7 @@
 # Generated migration for creating default ProMonitor users
 
 from django.db import migrations
+from django.contrib.auth.hashers import make_password
 
 
 def create_users(apps, schema_editor):
@@ -18,7 +19,7 @@ def create_users(apps, schema_editor):
         }
     )
     
-    # Список пользователей
+    # Список пользователей с plaintext паролями
     users_data = [
         {
             'email': 'superadmin@promonitor.kz',
@@ -66,19 +67,22 @@ def create_users(apps, schema_editor):
         email = user_data['email']
         password = user_data.pop('password')
         
+        # Хешируем пароль с помощью Django hasher
+        hashed_password = make_password(password)
+        
         # Проверяем существует ли пользователь
         try:
             user = User.objects.get(email=email)
             # Обновляем существующего
             for key, value in user_data.items():
                 setattr(user, key, value)
-            user.set_password(password)
+            user.password = hashed_password
             user.save()
             print(f"Updated user: {email}")
         except User.DoesNotExist:
             # Создаем нового
+            user_data['password'] = hashed_password
             user = User(**user_data)
-            user.set_password(password)
             user.save()
             print(f"Created user: {email}")
 
