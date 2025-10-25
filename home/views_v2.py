@@ -23,12 +23,12 @@ from .utils import get_building_status, calculate_sensor_health
 def dashboard_v2_standalone(request):
     """Standalone Dashboard V2 with embedded styles"""
     from django.shortcuts import render
-    from data.models import Building, SensorReal, Alerts
+    from data.models import Obj, Atributes, AlertEvent
     
     context = {
-        'buildings_count': Building.objects.count(),
-        'sensors_count': SensorReal.objects.count(),
-        'alerts_count': Alerts.objects.filter(is_active=True).count(),
+        'buildings_count': Obj.objects.count(),
+        'sensors_count': Atributes.objects.count(),
+        'alerts_count': AlertEvent.objects.filter(resolved=False).count() if hasattr(AlertEvent, 'resolved') else AlertEvent.objects.count(),
     }
     
     return render(request, 'dashboard/v2/dashboard_standalone.html', context)
