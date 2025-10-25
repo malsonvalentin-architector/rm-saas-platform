@@ -20,6 +20,19 @@ from .utils import get_building_status, calculate_sensor_health
 
 
 @login_required
+def dashboard_main_professional(request):
+    """Professional Main Dashboard with full features"""
+    from django.shortcuts import render
+    from data.models import Obj, Atributes, AlertEvent
+    
+    context = {
+        'buildings_count': Obj.objects.count(),
+        'sensors_count': Atributes.objects.count(),
+        'alerts_count': AlertEvent.objects.count(),
+    }
+    
+    return render(request, 'dashboard/v2/main_professional.html', context)
+
 def dashboard_v2_standalone(request):
     """Standalone Dashboard V2 with embedded styles"""
     from django.shortcuts import render

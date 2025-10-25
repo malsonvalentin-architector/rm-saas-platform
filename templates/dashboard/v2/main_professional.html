@@ -1,0 +1,888 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProMonitor Dashboard - Professional Monitoring System</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <style>
+        /* ========================================
+           PROFESSIONAL ZABBIX-STYLE THEME
+        ======================================== */
+        
+        :root {
+            --bg-primary: #0f1419;
+            --bg-secondary: #1a1f2e;
+            --bg-tertiary: #252d3d;
+            --bg-card: #1e2635;
+            --bg-hover: #2a3447;
+            
+            --text-primary: #ffffff;
+            --text-secondary: #b8c5d6;
+            --text-muted: #6b7c93;
+            
+            --border-color: #2d3748;
+            --border-hover: #4a5568;
+            
+            --primary: #4299e1;
+            --primary-dark: #2b6cb0;
+            --primary-light: #63b3ed;
+            
+            --success: #48bb78;
+            --warning: #ed8936;
+            --danger: #f56565;
+            --info: #4299e1;
+            
+            --gradient-primary: linear-gradient(135deg, #4299e1 0%, #0BC5EA 100%);
+            --gradient-success: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            --gradient-warning: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+            --gradient-danger: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.5);
+            --shadow-glow: 0 0 20px rgba(66, 153, 225, 0.3);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* ========================================
+           SIDEBAR - PROFESSIONAL STYLE
+        ======================================== */
+        
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logo {
+            width: 180px;
+            height: auto;
+        }
+        
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+        
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .nav-section-title {
+            padding: 0.5rem 1.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.875rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-link:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            padding-left: 2rem;
+        }
+        
+        .nav-link.active {
+            background: rgba(66, 153, 225, 0.1);
+            color: var(--primary-light);
+            border-left: 3px solid var(--primary);
+            font-weight: 600;
+        }
+        
+        .nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--gradient-primary);
+            box-shadow: 0 0 10px var(--primary);
+        }
+        
+        .nav-icon {
+            width: 24px;
+            margin-right: 12px;
+            font-size: 1.1rem;
+        }
+        
+        /* ========================================
+           MAIN CONTENT AREA
+        ======================================== */
+        
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            min-height: 100vh;
+            background: var(--bg-primary);
+        }
+        
+        .topbar {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .topbar-left h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-input {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.625rem 2.5rem 0.625rem 1rem;
+            color: var(--text-primary);
+            width: 300px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .user-menu:hover {
+            background: var(--bg-hover);
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        
+        /* ========================================
+           CONTENT AREA
+        ======================================== */
+        
+        .content {
+            padding: 2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+        
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            position: relative;
+        }
+        
+        .stat-icon::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 14px;
+            padding: 2px;
+            background: var(--gradient);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .stat-card:hover .stat-icon::after {
+            opacity: 1;
+        }
+        
+        .stat-icon.primary {
+            background: rgba(66, 153, 225, 0.15);
+            color: var(--primary-light);
+            --gradient: var(--gradient-primary);
+        }
+        
+        .stat-icon.success {
+            background: rgba(72, 187, 120, 0.15);
+            color: #68d391;
+            --gradient: var(--gradient-success);
+        }
+        
+        .stat-icon.warning {
+            background: rgba(237, 137, 54, 0.15);
+            color: #f6ad55;
+            --gradient: var(--gradient-warning);
+        }
+        
+        .stat-icon.danger {
+            background: rgba(245, 101, 101, 0.15);
+            color: #fc8181;
+            --gradient: var(--gradient-danger);
+        }
+        
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            font-size: 0.813rem;
+        }
+        
+        .stat-trend.up {
+            color: var(--success);
+        }
+        
+        .stat-trend.down {
+            color: var(--danger);
+        }
+        
+        /* ========================================
+           CHARTS & GRAPHS
+        ======================================== */
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        
+        .chart-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .chart-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.813rem;
+        }
+        
+        .chart-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--primary);
+            color: var(--primary-light);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        /* ========================================
+           HONEYCOMB BUILDING MAP
+        ======================================== */
+        
+        .honeycomb-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .honeycomb-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .honeycomb-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .honeycomb-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+        
+        .hexagon {
+            width: 140px;
+            height: 160px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .hexagon:hover {
+            transform: scale(1.1) translateY(-8px);
+            filter: drop-shadow(0 10px 20px rgba(66, 153, 225, 0.4));
+        }
+        
+        .hexagon svg {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .hex-shape {
+            fill: var(--bg-tertiary);
+            stroke: var(--border-color);
+            stroke-width: 2;
+            transition: all 0.3s ease;
+        }
+        
+        .hexagon:hover .hex-shape {
+            stroke: var(--primary);
+            stroke-width: 3;
+        }
+        
+        .hex-shape.status-online {
+            fill: rgba(72, 187, 120, 0.1);
+            stroke: var(--success);
+        }
+        
+        .hex-shape.status-warning {
+            fill: rgba(237, 137, 54, 0.1);
+            stroke: var(--warning);
+        }
+        
+        .hex-shape.status-critical {
+            fill: rgba(245, 101, 101, 0.1);
+            stroke: var(--danger);
+        }
+        
+        .hex-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+        }
+        
+        .hex-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        
+        .hex-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .hex-status {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+        
+        /* ========================================
+           RESPONSIVE
+        ======================================== */
+        
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="https://page.gensparksite.com/v1/base64_upload/594bf021bb3ef4b76138b65e1e50e4d8" alt="ProMonitor.kz" class="logo">
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">MAIN</div>
+                    <ul class="nav-menu">
+                        <li><a href="/dashboard/main/" class="nav-link active">
+                            <i class="fas fa-home nav-icon"></i>
+                            <span>Dashboard</span>
+                        </a></li>
+                        <li><a href="/dashboard/v2/buildings/" class="nav-link">
+                            <i class="fas fa-building nav-icon"></i>
+                            <span>Buildings</span>
+                        </a></li>
+                        <li><a href="/dashboard/v2/sensors/" class="nav-link">
+                            <i class="fas fa-thermometer-half nav-icon"></i>
+                            <span>Sensors</span>
+                        </a></li>
+                        <li><a href="/dashboard/v2/alerts/" class="nav-link">
+                            <i class="fas fa-bell nav-icon"></i>
+                            <span>Alerts</span>
+                        </a></li>
+                    </ul>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">ANALYTICS</div>
+                    <ul class="nav-menu">
+                        <li><a href="/dashboard/v2/reports/" class="nav-link">
+                            <i class="fas fa-chart-line nav-icon"></i>
+                            <span>Reports</span>
+                        </a></li>
+                        <li><a href="/dashboard/v2/analytics/" class="nav-link">
+                            <i class="fas fa-chart-pie nav-icon"></i>
+                            <span>Analytics</span>
+                        </a></li>
+                    </ul>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">SYSTEM</div>
+                    <ul class="nav-menu">
+                        <li><a href="/dashboard/v2/settings/" class="nav-link">
+                            <i class="fas fa-cog nav-icon"></i>
+                            <span>Settings</span>
+                        </a></li>
+                        <li><a href="/dashboard/v2/users/" class="nav-link">
+                            <i class="fas fa-users nav-icon"></i>
+                            <span>Users</span>
+                        </a></li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <div class="topbar">
+                <div class="topbar-left">
+                    <h1>Professional Monitoring Dashboard</h1>
+                </div>
+                <div class="topbar-right">
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="Search...">
+                    </div>
+                    <div class="user-menu">
+                        <div class="user-avatar">{{ request.user.email.0|upper }}</div>
+                        <div>
+                            <div style="font-size: 0.875rem; font-weight: 600;">{{ request.user.email }}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ request.user.role|title }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Content -->
+            <div class="content">
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value">{{ buildings_count|default:10 }}</div>
+                                <div class="stat-label">Total Buildings</div>
+                            </div>
+                            <div class="stat-icon primary">
+                                <i class="fas fa-building"></i>
+                            </div>
+                        </div>
+                        <div class="stat-trend up">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>12% increase this month</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value">{{ sensors_count|default:380 }}</div>
+                                <div class="stat-label">Active Sensors</div>
+                            </div>
+                            <div class="stat-icon success">
+                                <i class="fas fa-thermometer-half"></i>
+                            </div>
+                        </div>
+                        <div class="stat-trend up">
+                            <i class="fas fa-check-circle"></i>
+                            <span>98.5% uptime</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value">{{ alerts_count|default:2 }}</div>
+                                <div class="stat-label">Active Alerts</div>
+                            </div>
+                            <div class="stat-icon warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                        </div>
+                        <div class="stat-trend down">
+                            <i class="fas fa-arrow-down"></i>
+                            <span>3 less than yesterday</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value">0</div>
+                                <div class="stat-label">Critical Issues</div>
+                            </div>
+                            <div class="stat-icon danger">
+                                <i class="fas fa-fire"></i>
+                            </div>
+                        </div>
+                        <div class="stat-trend up">
+                            <i class="fas fa-check"></i>
+                            <span>All systems operational</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Honeycomb Building Map -->
+                <div class="honeycomb-section">
+                    <div class="honeycomb-header">
+                        <h2 class="honeycomb-title">
+                            <i class="fas fa-th"></i>
+                            Building Overview Map
+                        </h2>
+                        <div class="chart-actions">
+                            <button class="chart-btn"><i class="fas fa-expand"></i> Fullscreen</button>
+                            <button class="chart-btn"><i class="fas fa-sync"></i> Refresh</button>
+                        </div>
+                    </div>
+                    <div class="honeycomb-container" id="honeycomb-map">
+                        <!-- Hexagons will be generated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Charts -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Temperature Trends (24h)</h3>
+                            <div class="chart-actions">
+                                <button class="chart-btn">1D</button>
+                                <button class="chart-btn">7D</button>
+                                <button class="chart-btn">30D</button>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="tempChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Sensor Status Distribution</h3>
+                            <div class="chart-actions">
+                                <button class="chart-btn"><i class="fas fa-download"></i> Export</button>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // ============================================
+        // HONEYCOMB BUILDING MAP GENERATION
+        // ============================================
+        
+        const buildings = [
+            { id: 1, name: 'Building A', status: 'online', sensors: 45 },
+            { id: 2, name: 'Building B', status: 'online', sensors: 38 },
+            { id: 3, name: 'Building C', status: 'warning', sensors: 42 },
+            { id: 4, name: 'Building D', status: 'online', sensors: 51 },
+            { id: 5, name: 'Building E', status: 'online', sensors: 29 },
+            { id: 6, name: 'Building F', status: 'critical', sensors: 33 },
+            { id: 7, name: 'Building G', status: 'online', sensors: 47 },
+            { id: 8, name: 'Building H', status: 'online', sensors: 40 },
+            { id: 9, name: 'Building I', status: 'online', sensors: 35 },
+            { id: 10, name: 'Building J', status: 'online', sensors: 44 }
+        ];
+        
+        function createHexagon(building) {
+            const hex = document.createElement('div');
+            hex.className = 'hexagon';
+            hex.innerHTML = `
+                <svg viewBox="0 0 100 115">
+                    <polygon class="hex-shape status-${building.status}" 
+                             points="50,5 93,28 93,72 50,95 7,72 7,28" />
+                </svg>
+                <div class="hex-content">
+                    <div class="hex-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="hex-label">${building.name}</div>
+                    <div class="hex-status">${building.sensors} sensors</div>
+                </div>
+            `;
+            return hex;
+        }
+        
+        const honeycombMap = document.getElementById('honeycomb-map');
+        buildings.forEach(building => {
+            honeycombMap.appendChild(createHexagon(building));
+        });
+        
+        // ============================================
+        // CHARTS - TEMPERATURE TRENDS
+        // ============================================
+        
+        const tempCtx = document.getElementById('tempChart').getContext('2d');
+        new Chart(tempCtx, {
+            type: 'line',
+            data: {
+                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+                datasets: [{
+                    label: 'Average Temperature',
+                    data: [18.5, 17.8, 19.2, 22.4, 24.1, 23.5, 21.2],
+                    borderColor: '#4299e1',
+                    backgroundColor: 'rgba(66, 153, 225, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        grid: { color: '#2d3748' },
+                        ticks: { color: '#b8c5d6' }
+                    },
+                    x: {
+                        grid: { color: '#2d3748' },
+                        ticks: { color: '#b8c5d6' }
+                    }
+                }
+            }
+        });
+        
+        // ============================================
+        // CHARTS - SENSOR STATUS PIE
+        // ============================================
+        
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Online', 'Warning', 'Critical', 'Offline'],
+                datasets: [{
+                    data: [372, 5, 1, 2],
+                    backgroundColor: ['#48bb78', '#ed8936', '#f56565', '#6b7c93'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#b8c5d6' }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

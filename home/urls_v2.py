@@ -10,9 +10,10 @@ from .ai_views import AIChatView, ai_rate_message, ai_chat_history, ai_clear_his
 app_name = 'dashboard_v2'  # Required for namespace in home/urls.py
 
 urlpatterns = [
-    # Main dashboard v2
-    path('', views_v2.dashboard_v2, name='dashboard_v2'),
-    path('v2/', views_v2.dashboard_v2, name='main'),
+    # Main dashboard v2 - PROFESSIONAL VERSION
+    path('', views_v2.dashboard_main_professional, name='dashboard_v2'),
+    path('v2/', views_v2.dashboard_main_professional, name='main'),
+    path('main/', views_v2.dashboard_main_professional, name='dashboard_main'),
     path('standalone/', views_v2.dashboard_v2_standalone, name='dashboard_v2_standalone'),
     
     # Navigation pages
