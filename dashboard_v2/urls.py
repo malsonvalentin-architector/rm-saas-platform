@@ -15,6 +15,7 @@ urlpatterns = [
     path('alerts/', views.alerts_page, name='alerts'),
     path('analytics/', views.analytics_page, name='analytics'),
     path('objects/', views.objects_page, name='objects'),
+    path('map/', views.map_page, name='map'),  # NEW
     path('settings/', views.settings_page, name='settings'),
     
     # API endpoints

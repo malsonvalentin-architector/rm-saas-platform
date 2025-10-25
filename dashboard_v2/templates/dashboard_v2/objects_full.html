@@ -1,0 +1,429 @@
+{% extends "dashboard_v2/base_full.html" %}
+{% load static %}
+
+{% block title %}Объекты - ProMonitor.kz{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ===== OBJECTS PAGE STYLES ===== */
+    .objects-container {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .objects-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .objects-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-add {
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+
+    .btn-add:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    /* Objects Grid */
+    .objects-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .object-card {
+        background: var(--bg-card);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .object-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 120, 212, 0.2);
+        border-color: var(--primary-blue);
+    }
+
+    .object-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 1rem;
+    }
+
+    .object-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .object-status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .object-status.active {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+    }
+
+    .object-status.offline {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--error);
+    }
+
+    .object-info h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 1rem 0 0.5rem 0;
+    }
+
+    .object-info p {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .object-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-blue);
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        margin-top: 0.25rem;
+    }
+
+    /* Filters */
+    .filters-bar {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 0.5rem 1rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover {
+        border-color: var(--primary-blue);
+        background: rgba(0, 120, 212, 0.1);
+    }
+
+    .filter-btn.active {
+        background: var(--primary-blue);
+        color: white;
+        border-color: var(--primary-blue);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-secondary);
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .objects-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .objects-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: stretch;
+        }
+
+        .header-actions {
+            width: 100%;
+        }
+
+        .btn-add {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="objects-container">
+    <!-- Header -->
+    <div class="objects-header">
+        <h1>🏢 Объекты</h1>
+        <div class="header-actions">
+            <button class="btn-add" onclick="addObject()">+ Добавить объект</button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-bar">
+        <button class="filter-btn active" onclick="filterObjects('all')">Все (12)</button>
+        <button class="filter-btn" onclick="filterObjects('active')">Активные (10)</button>
+        <button class="filter-btn" onclick="filterObjects('offline')">Оффлайн (2)</button>
+    </div>
+
+    <!-- Objects Grid -->
+    <div class="objects-grid" id="objectsGrid">
+        <!-- Objects will be loaded here via JavaScript -->
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Mock objects data
+    const objectsData = [
+        {
+            id: 1,
+            name: 'ТРЦ "Dostyk Plaza"',
+            address: 'г. Алматы, пр. Достык, 111',
+            status: 'active',
+            systems: 24,
+            devices: 156,
+            uptime: '99.8%'
+        },
+        {
+            id: 2,
+            name: 'БЦ "Nurly Tau"',
+            address: 'г. Алматы, пр. Аль-Фараби, 21',
+            status: 'active',
+            systems: 18,
+            devices: 98,
+            uptime: '99.2%'
+        },
+        {
+            id: 3,
+            name: 'ЖК "Highvill"',
+            address: 'г. Алматы, ул. Момышулы, 2',
+            status: 'active',
+            systems: 32,
+            devices: 210,
+            uptime: '99.5%'
+        },
+        {
+            id: 4,
+            name: 'ТРЦ "Mega Alma-Ata"',
+            address: 'г. Алматы, ул. Розыбакиева, 247',
+            status: 'active',
+            systems: 28,
+            devices: 175,
+            uptime: '98.9%'
+        },
+        {
+            id: 5,
+            name: 'БЦ "Samal Towers"',
+            address: 'г. Алматы, мкр. Самал-2, 100',
+            status: 'offline',
+            systems: 16,
+            devices: 89,
+            uptime: '92.1%'
+        },
+        {
+            id: 6,
+            name: 'ЖК "Seven Stars"',
+            address: 'г. Алматы, пр. Абая, 150',
+            status: 'active',
+            systems: 22,
+            devices: 134,
+            uptime: '99.1%'
+        },
+        {
+            id: 7,
+            name: 'ТЦ "Aport Mall"',
+            address: 'г. Алматы, ул. Тимирязева, 42',
+            status: 'active',
+            systems: 20,
+            devices: 122,
+            uptime: '98.7%'
+        },
+        {
+            id: 8,
+            name: 'БЦ "Esentai Tower"',
+            address: 'г. Алматы, пр. Аль-Фараби, 77',
+            status: 'active',
+            systems: 26,
+            devices: 168,
+            uptime: '99.6%'
+        },
+        {
+            id: 9,
+            name: 'ЖК "Grand Park"',
+            address: 'г. Алматы, ул. Байзакова, 280',
+            status: 'offline',
+            systems: 19,
+            devices: 102,
+            uptime: '88.3%'
+        },
+        {
+            id: 10,
+            name: 'ТРЦ "Mega Park"',
+            address: 'г. Алматы, ул. Макатаева, 127',
+            status: 'active',
+            systems: 25,
+            devices: 161,
+            uptime: '99.3%'
+        },
+        {
+            id: 11,
+            name: 'БЦ "Almaty Towers"',
+            address: 'г. Алматы, пр. Абая, 109',
+            status: 'active',
+            systems: 21,
+            devices: 128,
+            uptime: '99.0%'
+        },
+        {
+            id: 12,
+            name: 'ЖК "Park Avenue"',
+            address: 'г. Алматы, ул. Жандосова, 98',
+            status: 'active',
+            systems: 17,
+            devices: 95,
+            uptime: '98.8%'
+        }
+    ];
+
+    let currentFilter = 'all';
+
+    // Render objects
+    function renderObjects(filter = 'all') {
+        const grid = document.getElementById('objectsGrid');
+        let filtered = objectsData;
+
+        if (filter === 'active') {
+            filtered = objectsData.filter(obj => obj.status === 'active');
+        } else if (filter === 'offline') {
+            filtered = objectsData.filter(obj => obj.status === 'offline');
+        }
+
+        grid.innerHTML = filtered.map(obj => `
+            <div class="object-card" onclick="openObject(${obj.id})">
+                <div class="object-header">
+                    <div class="object-icon">🏢</div>
+                    <span class="object-status ${obj.status}">
+                        ${obj.status === 'active' ? 'Online' : 'Offline'}
+                    </span>
+                </div>
+                <div class="object-info">
+                    <h3>${obj.name}</h3>
+                    <p>📍 ${obj.address}</p>
+                </div>
+                <div class="object-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">${obj.systems}</div>
+                        <div class="stat-label">Систем</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${obj.devices}</div>
+                        <div class="stat-label">Устройств</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${obj.uptime}</div>
+                        <div class="stat-label">Uptime</div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        if (filtered.length === 0) {
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">🏢</div>
+                    <h3>Объекты не найдены</h3>
+                    <p>Попробуйте изменить фильтр или добавить новый объект</p>
+                </div>
+            `;
+        }
+    }
+
+    // Filter objects
+    function filterObjects(filter) {
+        currentFilter = filter;
+        
+        // Update active button
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        renderObjects(filter);
+    }
+
+    // Open object details
+    function openObject(objectId) {
+        console.log('Opening object:', objectId);
+        // TODO: Navigate to object details page
+        // window.location.href = `/dashboard/v2/objects/${objectId}/`;
+        alert(`Просмотр объекта #${objectId}\n\nСтраница деталей объекта в разработке`);
+    }
+
+    // Add new object
+    function addObject() {
+        alert('Форма добавления объекта в разработке');
+        // TODO: Open modal or navigate to add object page
+    }
+
+    // Initial render
+    document.addEventListener('DOMContentLoaded', function() {
+        renderObjects('all');
+    });
+</script>
+{% endblock %}

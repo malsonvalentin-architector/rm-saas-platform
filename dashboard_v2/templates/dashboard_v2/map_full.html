@@ -1,0 +1,522 @@
+{% extends "dashboard_v2/base_full.html" %}
+{% load static %}
+
+{% block title %}Карта объектов - ProMonitor.kz{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ===== MAP PAGE STYLES ===== */
+    .map-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 0;
+        margin: 0;
+    }
+
+    #map {
+        width: 100%;
+        height: 100%;
+        background: #1a2332;
+    }
+
+    /* Map Controls */
+    .map-controls {
+        position: absolute;
+        top: 2rem;
+        right: 2rem;
+        background: var(--bg-card);
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        min-width: 250px;
+    }
+
+    .map-controls h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+
+    .control-group {
+        margin-bottom: 1rem;
+    }
+
+    .control-group label {
+        display: block;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
+
+    .control-group select {
+        width: 100%;
+        padding: 0.5rem;
+        background: var(--bg-dark);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        color: var(--text-primary);
+    }
+
+    /* Object Marker */
+    .map-marker {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        background: var(--primary-blue);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 120, 212, 0.4);
+    }
+
+    .map-marker:hover {
+        transform: scale(1.2);
+        box-shadow: 0 4px 16px rgba(0, 120, 212, 0.6);
+    }
+
+    .map-marker.offline {
+        background: var(--error);
+    }
+
+    .map-marker.warning {
+        background: var(--warning);
+    }
+
+    /* Marker Pulse Animation */
+    .map-marker::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: inherit;
+        opacity: 0;
+        animation: marker-pulse 2s infinite;
+    }
+
+    @keyframes marker-pulse {
+        0% {
+            transform: scale(1);
+            opacity: 0.6;
+        }
+        100% {
+            transform: scale(1.8);
+            opacity: 0;
+        }
+    }
+
+    /* Info Popup */
+    .map-popup {
+        position: absolute;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        z-index: 2000;
+        min-width: 280px;
+        display: none;
+    }
+
+    .map-popup.show {
+        display: block;
+    }
+
+    .popup-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 1rem;
+    }
+
+    .popup-header h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .popup-close {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+    }
+
+    .popup-status {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
+
+    .popup-status.active {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+    }
+
+    .popup-status.offline {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--error);
+    }
+
+    .popup-info {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+    }
+
+    .popup-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .popup-stat {
+        text-align: center;
+        padding: 0.5rem;
+        background: rgba(0, 120, 212, 0.05);
+        border-radius: 6px;
+    }
+
+    .popup-stat-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary-blue);
+    }
+
+    .popup-stat-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        margin-top: 0.25rem;
+    }
+
+    .popup-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .popup-btn {
+        flex: 1;
+        padding: 0.5rem;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .popup-btn-primary {
+        background: var(--primary-blue);
+        color: white;
+    }
+
+    .popup-btn-primary:hover {
+        background: #0056b3;
+    }
+
+    .popup-btn-secondary {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .popup-btn-secondary:hover {
+        background: rgba(0, 120, 212, 0.1);
+    }
+
+    /* Legend */
+    .map-legend {
+        position: absolute;
+        bottom: 2rem;
+        left: 2rem;
+        background: var(--bg-card);
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+    }
+
+    .legend-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.75rem;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+
+    .legend-dot.active {
+        background: var(--primary-blue);
+    }
+
+    .legend-dot.warning {
+        background: var(--warning);
+    }
+
+    .legend-dot.offline {
+        background: var(--error);
+    }
+
+    @media (max-width: 768px) {
+        .map-controls {
+            top: 1rem;
+            right: 1rem;
+            left: 1rem;
+            min-width: auto;
+        }
+
+        .map-legend {
+            bottom: 1rem;
+            left: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="map-container">
+    <!-- Map Canvas -->
+    <div id="map"></div>
+
+    <!-- Map Controls -->
+    <div class="map-controls">
+        <h3>🌍 Фильтры карты</h3>
+        <div class="control-group">
+            <label>Статус объектов:</label>
+            <select id="statusFilter" onchange="filterMarkers()">
+                <option value="all">Все объекты</option>
+                <option value="active">Только активные</option>
+                <option value="offline">Только оффлайн</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>Тип объектов:</label>
+            <select id="typeFilter" onchange="filterMarkers()">
+                <option value="all">Все типы</option>
+                <option value="mall">Торговые центры</option>
+                <option value="office">Бизнес-центры</option>
+                <option value="residential">Жилые комплексы</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="map-legend">
+        <div class="legend-title">Легенда:</div>
+        <div class="legend-item">
+            <span class="legend-dot active"></span>
+            <span>Активные объекты</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-dot warning"></span>
+            <span>С предупреждениями</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-dot offline"></span>
+            <span>Оффлайн</span>
+        </div>
+    </div>
+
+    <!-- Popup (hidden by default) -->
+    <div class="map-popup" id="mapPopup">
+        <div class="popup-header">
+            <h4 id="popupTitle">Объект</h4>
+            <button class="popup-close" onclick="closePopup()">×</button>
+        </div>
+        <span class="popup-status active" id="popupStatus">Online</span>
+        <div class="popup-info" id="popupInfo">Загрузка...</div>
+        <div class="popup-stats">
+            <div class="popup-stat">
+                <div class="popup-stat-value" id="popupSystems">0</div>
+                <div class="popup-stat-label">Систем</div>
+            </div>
+            <div class="popup-stat">
+                <div class="popup-stat-value" id="popupDevices">0</div>
+                <div class="popup-stat-label">Устройств</div>
+            </div>
+        </div>
+        <div class="popup-actions">
+            <button class="popup-btn popup-btn-primary" onclick="viewObject()">Открыть</button>
+            <button class="popup-btn popup-btn-secondary" onclick="closePopup()">Закрыть</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Mock objects data with coordinates (Almaty, Kazakhstan)
+    const objectsData = [
+        { id: 1, name: 'ТРЦ "Dostyk Plaza"', lat: 43.238, lng: 76.945, status: 'active', type: 'mall', systems: 24, devices: 156 },
+        { id: 2, name: 'БЦ "Nurly Tau"', lat: 43.222, lng: 76.851, status: 'active', type: 'office', systems: 18, devices: 98 },
+        { id: 3, name: 'ЖК "Highvill"', lat: 43.215, lng: 76.875, status: 'active', type: 'residential', systems: 32, devices: 210 },
+        { id: 4, name: 'ТРЦ "Mega Alma-Ata"', lat: 43.209, lng: 76.665, status: 'active', type: 'mall', systems: 28, devices: 175 },
+        { id: 5, name: 'БЦ "Samal Towers"', lat: 43.234, lng: 76.956, status: 'offline', type: 'office', systems: 16, devices: 89 },
+        { id: 6, name: 'ЖК "Seven Stars"', lat: 43.247, lng: 76.914, status: 'active', type: 'residential', systems: 22, devices: 134 },
+        { id: 7, name: 'ТЦ "Aport Mall"', lat: 43.268, lng: 76.945, status: 'warning', type: 'mall', systems: 20, devices: 122 },
+        { id: 8, name: 'БЦ "Esentai Tower"', lat: 43.224, lng: 76.893, status: 'active', type: 'office', systems: 26, devices: 168 },
+        { id: 9, name: 'ЖК "Grand Park"', lat: 43.257, lng: 76.929, status: 'offline', type: 'residential', systems: 19, devices: 102 },
+        { id: 10, name: 'ТРЦ "Mega Park"', lat: 43.243, lng: 76.903, status: 'active', type: 'mall', systems: 25, devices: 161 }
+    ];
+
+    let selectedObject = null;
+    let markers = [];
+
+    // Initialize map
+    function initMap() {
+        const mapElement = document.getElementById('map');
+        
+        // Create simple map visualization (mock Google Maps)
+        mapElement.style.position = 'relative';
+        mapElement.style.background = 'linear-gradient(135deg, #1a2332 0%, #2d3e50 100%)';
+        
+        // Add grid lines for visual effect
+        addGridLines(mapElement);
+        
+        // Render markers
+        renderMarkers();
+    }
+
+    // Add decorative grid
+    function addGridLines(container) {
+        const gridOverlay = document.createElement('div');
+        gridOverlay.style.position = 'absolute';
+        gridOverlay.style.top = '0';
+        gridOverlay.style.left = '0';
+        gridOverlay.style.width = '100%';
+        gridOverlay.style.height = '100%';
+        gridOverlay.style.backgroundImage = `
+            linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)
+        `;
+        gridOverlay.style.backgroundSize = '50px 50px';
+        gridOverlay.style.pointerEvents = 'none';
+        container.appendChild(gridOverlay);
+    }
+
+    // Render markers on map
+    function renderMarkers() {
+        const mapElement = document.getElementById('map');
+        
+        // Clear existing markers
+        markers.forEach(marker => marker.remove());
+        markers = [];
+        
+        // Get filter values
+        const statusFilter = document.getElementById('statusFilter').value;
+        const typeFilter = document.getElementById('typeFilter').value;
+        
+        // Filter objects
+        let filtered = objectsData;
+        if (statusFilter !== 'all') {
+            filtered = filtered.filter(obj => obj.status === statusFilter);
+        }
+        if (typeFilter !== 'all') {
+            filtered = filtered.filter(obj => obj.type === typeFilter);
+        }
+        
+        // Create markers
+        filtered.forEach(obj => {
+            const marker = document.createElement('div');
+            marker.className = `map-marker ${obj.status}`;
+            marker.innerHTML = '🏢';
+            marker.title = obj.name;
+            
+            // Position marker (convert lat/lng to pixels - mock calculation)
+            const x = ((obj.lng - 76.5) / 0.8) * mapElement.clientWidth;
+            const y = ((43.35 - obj.lat) / 0.2) * mapElement.clientHeight;
+            
+            marker.style.left = `${x}px`;
+            marker.style.top = `${y}px`;
+            
+            // Click handler
+            marker.onclick = () => showPopup(obj, marker);
+            
+            mapElement.appendChild(marker);
+            markers.push(marker);
+        });
+    }
+
+    // Show popup for object
+    function showPopup(obj, marker) {
+        selectedObject = obj;
+        
+        const popup = document.getElementById('mapPopup');
+        const rect = marker.getBoundingClientRect();
+        
+        // Position popup
+        popup.style.left = `${rect.left + 50}px`;
+        popup.style.top = `${rect.top}px`;
+        
+        // Fill popup data
+        document.getElementById('popupTitle').textContent = obj.name;
+        
+        const statusBadge = document.getElementById('popupStatus');
+        statusBadge.className = `popup-status ${obj.status}`;
+        statusBadge.textContent = obj.status === 'active' ? 'Online' : obj.status === 'offline' ? 'Offline' : 'Warning';
+        
+        document.getElementById('popupInfo').textContent = `ID: ${obj.id} | Тип: ${obj.type}`;
+        document.getElementById('popupSystems').textContent = obj.systems;
+        document.getElementById('popupDevices').textContent = obj.devices;
+        
+        popup.classList.add('show');
+    }
+
+    // Close popup
+    function closePopup() {
+        document.getElementById('mapPopup').classList.remove('show');
+        selectedObject = null;
+    }
+
+    // View object details
+    function viewObject() {
+        if (selectedObject) {
+            alert(`Открытие объекта: ${selectedObject.name}\n\nСтраница деталей в разработке`);
+            closePopup();
+        }
+    }
+
+    // Filter markers
+    function filterMarkers() {
+        renderMarkers();
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', function() {
+        initMap();
+        
+        // Re-render on window resize
+        window.addEventListener('resize', renderMarkers);
+    });
+</script>
+{% endblock %}

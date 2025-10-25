@@ -120,12 +120,12 @@ def analytics_page(request):
 
 @login_required
 def objects_page(request):
-    """Objects management page"""
+    """Objects management page - PHASE 2.5 FULL VERSION"""
     context = {
         'page_title': 'Objects',
         'active_page': 'objects'
     }
-    return render(request, 'dashboard_v2/objects.html', context)
+    return render(request, 'dashboard_v2/objects_full.html', context)
 
 
 @login_required
@@ -136,6 +136,16 @@ def settings_page(request):
         'active_page': 'settings'
     }
     return render(request, 'dashboard_v2/settings_full.html', context)
+
+
+@login_required
+def map_page(request):
+    """Map view page - PHASE 2.5"""
+    context = {
+        'page_title': 'Map View',
+        'active_page': 'map'
+    }
+    return render(request, 'dashboard_v2/map_full.html', context)
 
 
 # ==================== API VIEWS ====================
