@@ -1,0 +1,230 @@
+{% extends "dashboard/v2/base.html" %}
+{% load static %}
+
+{% block title %}Analytics - ProMonitor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .analytics-card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        height: 100%;
+    }
+    .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    .stat-card.green {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    .stat-card.blue {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+    .stat-card.orange {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    }
+    .stat-value {
+        font-size: 36px;
+        font-weight: 700;
+        margin: 12px 0;
+    }
+    .stat-label {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+    .stat-change {
+        font-size: 12px;
+        margin-top: 8px;
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1><i class="fas fa-chart-bar"></i> Analytics</h1>
+        <p class="text-muted">System performance metrics and insights</p>
+    </div>
+    <div>
+        <select class="form-select" style="display: inline-block; width: auto;">
+            <option>Last 7 Days</option>
+            <option>Last 30 Days</option>
+            <option>Last 90 Days</option>
+            <option>Custom Range</option>
+        </select>
+    </div>
+</div>
+
+<!-- Key Metrics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-label">Total Buildings</div>
+            <div class="stat-value">{{ total_buildings|default:"0" }}</div>
+            <div class="stat-change">
+                <i class="fas fa-arrow-up"></i> 12% from last month
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card green">
+            <div class="stat-label">Active Sensors</div>
+            <div class="stat-value">{{ active_sensors|default:"0" }}</div>
+            <div class="stat-change">
+                <i class="fas fa-arrow-up"></i> 8% from last month
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card blue">
+            <div class="stat-label">Total Alerts</div>
+            <div class="stat-value">{{ total_alerts|default:"0" }}</div>
+            <div class="stat-change">
+                <i class="fas fa-arrow-down"></i> 15% from last month
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card orange">
+            <div class="stat-label">System Uptime</div>
+            <div class="stat-value">99.8%</div>
+            <div class="stat-change">
+                <i class="fas fa-check"></i> Excellent
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="analytics-card">
+            <h5><i class="fas fa-chart-line"></i> Sensor Readings Over Time</h5>
+            <div class="chart-container">
+                <canvas id="sensorChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="analytics-card">
+            <h5><i class="fas fa-chart-pie"></i> Alert Distribution</h5>
+            <div class="chart-container">
+                <canvas id="alertChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="analytics-card">
+            <h5><i class="fas fa-thermometer-half"></i> Temperature Trends</h5>
+            <div class="chart-container">
+                <canvas id="temperatureChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="analytics-card">
+            <h5><i class="fas fa-tint"></i> Humidity Trends</h5>
+            <div class="chart-container">
+                <canvas id="humidityChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    // Sample data - replace with real data from backend
+    const sensorCtx = document.getElementById('sensorChart');
+    if (sensorCtx) {
+        new Chart(sensorCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Active Sensors',
+                    data: [65, 59, 80, 81, 56, 55, 40],
+                    borderColor: '#667eea',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+
+    const alertCtx = document.getElementById('alertChart');
+    if (alertCtx) {
+        new Chart(alertCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Critical', 'Warning', 'Info'],
+                datasets: [{
+                    data: [12, 35, 53],
+                    backgroundColor: ['#dc3545', '#ffc107', '#17a2b8']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+
+    const tempCtx = document.getElementById('temperatureChart');
+    if (tempCtx) {
+        new Chart(tempCtx, {
+            type: 'line',
+            data: {
+                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+                datasets: [{
+                    label: 'Temperature (°C)',
+                    data: [20, 19, 21, 23, 25, 22, 20],
+                    borderColor: '#f5576c',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+
+    const humidityCtx = document.getElementById('humidityChart');
+    if (humidityCtx) {
+        new Chart(humidityCtx, {
+            type: 'line',
+            data: {
+                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+                datasets: [{
+                    label: 'Humidity (%)',
+                    data: [45, 48, 52, 55, 53, 50, 47],
+                    borderColor: '#00f2fe',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+</script>
+{% endblock %}

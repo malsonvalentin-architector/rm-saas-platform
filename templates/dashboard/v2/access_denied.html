@@ -1,0 +1,104 @@
+{% extends "dashboard/v2/base.html" %}
+{% load static %}
+
+{% block title %}Access Denied - ProMonitor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .access-denied-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 60vh;
+        text-align: center;
+    }
+    .access-denied-icon {
+        font-size: 120px;
+        color: #dc3545;
+        margin-bottom: 32px;
+        animation: shake 0.5s;
+    }
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
+    }
+    .access-denied-title {
+        font-size: 48px;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 16px;
+    }
+    .access-denied-message {
+        font-size: 18px;
+        color: var(--text-muted);
+        margin-bottom: 32px;
+        max-width: 600px;
+    }
+    .permissions-info {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 24px;
+        margin-top: 32px;
+        max-width: 500px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .permissions-info h5 {
+        color: var(--text-color);
+        margin-bottom: 16px;
+    }
+    .permissions-info ul {
+        text-align: left;
+        list-style: none;
+        padding: 0;
+    }
+    .permissions-info li {
+        padding: 8px 0;
+        color: var(--text-muted);
+    }
+    .permissions-info li i {
+        margin-right: 8px;
+        color: var(--primary-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="access-denied-container">
+    <div class="access-denied-icon">
+        <i class="fas fa-lock"></i>
+    </div>
+    
+    <h1 class="access-denied-title">Access Denied</h1>
+    
+    <p class="access-denied-message">
+        Sorry, you don't have permission to access this page. 
+        {% if required_role %}
+            This page requires <strong>{{ required_role }}</strong> role or higher.
+        {% endif %}
+    </p>
+    
+    <div>
+        <a href="{% url 'dashboard_v2:main' %}" class="btn btn-primary">
+            <i class="fas fa-home"></i> Go to Dashboard
+        </a>
+        <a href="javascript:history.back()" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Go Back
+        </a>
+    </div>
+    
+    <div class="permissions-info">
+        <h5><i class="fas fa-info-circle"></i> Your Current Permissions</h5>
+        <ul>
+            <li><i class="fas fa-user"></i> <strong>Role:</strong> {{ user.role }}</li>
+            <li><i class="fas fa-building"></i> <strong>Company:</strong> {{ user.company.name }}</li>
+            <li><i class="fas fa-envelope"></i> <strong>Email:</strong> {{ user.email }}</li>
+        </ul>
+        <hr>
+        <p class="text-muted small mb-0">
+            If you believe you should have access to this page, please contact your system administrator.
+        </p>
+    </div>
+</div>
+{% endblock %}

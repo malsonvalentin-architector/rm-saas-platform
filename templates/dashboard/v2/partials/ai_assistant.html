@@ -1,0 +1,21 @@
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- Scripts -->
+    <script src="{% static 'js/v2/theme-switcher.js' %}"></script>
+    <script src="{% static 'js/v2/honeycomb.js' %}"></script>
+    <script src="{% static 'js/v2/ai-assistant.js' %}"></script>
+    
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-toggle')?.addEventListener('click', () => {
+            document.getElementById('dashboard-sidebar').classList.toggle('open');

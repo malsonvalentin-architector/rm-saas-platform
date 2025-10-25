@@ -15,7 +15,7 @@ from django.contrib import messages
 import json
 from datetime import timedelta, datetime
 
-from data.models import Obj as Building, System as SensorSystem, Atributes as Sensor, Data as SensorReading, AlertEvent as Alert, User_profile as UserProfile
+from data.models import Obj as Building, System as SensorSystem, Atributes as Sensor, Data as SensorReading, AlertEvent as Alert, User_profile as UserProfile, ModbusConnection, ModbusRegisterMap
 from .utils import get_building_status, calculate_sensor_health
 
 
@@ -455,25 +455,48 @@ def buildings_list_v2(request):
         buildings = Building.objects.all()
     else:
         buildings = Building.objects.filter(company=request.user.company)
+    
+    # Add counts for each building
+    for building in buildings:
+        building.systems_count = SensorSystem.objects.filter(obj=building).count()
+        building.sensors_count = Sensor.objects.filter(sys__obj=building).count()
+        building.status = get_building_status(building)
+    
     context = {
         'buildings': buildings,
         'page_title': 'Buildings'
     }
-    return render(request, 'dashboard/v2/main.html', context)
+    return render(request, 'dashboard/v2/buildings.html', context)
 
 
 @login_required
 def sensors_list_v2(request):
-    """Sensors list view"""
+    """Sensors list view with Modbus connections"""
     if request.user.role == 'superadmin':
-        sensors = Sensor.objects.all()
+        sensors = Sensor.objects.all().select_related('sys__obj')
+        modbus_connections = ModbusConnection.objects.all().select_related('building')
     else:
-        sensors = Sensor.objects.filter(sys__obj__company=request.user.company)
+        sensors = Sensor.objects.filter(sys__obj__company=request.user.company).select_related('sys__obj')
+        modbus_connections = ModbusConnection.objects.filter(building__company=request.user.company).select_related('building')
+    
+    # Add latest readings to sensors
+    for sensor in sensors:
+        latest_reading = SensorReading.objects.filter(name=sensor).order_by('-date').first()
+        if latest_reading:
+            sensor.latest_value = latest_reading.value
+            sensor.last_update = latest_reading.date
+            sensor.status = 'healthy' if abs(latest_reading.value) < 1000 else 'warning'
+        else:
+            sensor.latest_value = None
+            sensor.last_update = None
+            sensor.status = 'inactive'
+    
     context = {
         'sensors': sensors,
-        'page_title': 'Sensors'
+        'modbus_connections': modbus_connections,
+        'page_title': 'Sensors & Modbus'
     }
-    return render(request, 'dashboard/v2/main.html', context)
+    return render(request, 'dashboard/v2/sensors.html', context)
 
 
 @login_required
@@ -482,14 +505,12 @@ def alerts_list_v2(request):
     if request.user.role == 'superadmin':
         alerts = Alert.objects.all().order_by('-triggered_at')
     else:
-        alerts = Alert.objects.filter(
-            rule__attribute__sys__obj__company=request.user.company
-        ).order_by('-triggered_at')
+        alerts = Alert.objects.filter(rule__attribute__sys__obj__company=request.user.company).order_by('-triggered_at')
     context = {
         'alerts': alerts,
         'page_title': 'Alerts'
     }
-    return render(request, 'dashboard/v2/main.html', context)
+    return render(request, 'dashboard/v2/alerts.html', context)
 
 
 @login_required
@@ -498,7 +519,7 @@ def reports_list_v2(request):
     context = {
         'page_title': 'Reports'
     }
-    return render(request, 'dashboard/v2/main.html', context)
+    return render(request, 'dashboard/v2/reports.html', context)
 
 
 @login_required
@@ -507,27 +528,31 @@ def analytics_v2(request):
     context = {
         'page_title': 'Analytics'
     }
-    return render(request, 'dashboard/v2/main.html', context)
+    return render(request, 'dashboard/v2/analytics.html', context)
 
 
 @login_required
 def settings_v2(request):
     """Settings view"""
     context = {
-        'page_title': 'Settings'
+        'page_title': 'Settings',
+        'user': request.user
     }
-    return render(request, 'dashboard/v2/main.html', context)
+    return render(request, 'dashboard/v2/settings.html', context)
 
 
 @login_required
 def users_list_v2(request):
-    """Users management view"""
-    if request.user.role == 'superadmin':
-        users = UserProfile.objects.all()
+    """Users list view"""
+    if request.user.role in ['superadmin', 'admin']:
+        if request.user.role == 'superadmin':
+            users = UserProfile.objects.all()
+        else:
+            users = UserProfile.objects.filter(company=request.user.company)
+        context = {
+            'users': users,
+            'page_title': 'Users'
+        }
+        return render(request, 'dashboard/v2/users.html', context)
     else:
-        users = UserProfile.objects.filter(company=request.user.company)
-    context = {
-        'users': users,
-        'page_title': 'Users'
-    }
-    return render(request, 'dashboard/v2/main.html', context)
+        return render(request, 'dashboard/v2/access_denied.html')

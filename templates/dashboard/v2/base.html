@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}Dashboard{% endblock %} - ProMonitor</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- ProMonitor V2 Styles -->
+    <link rel="stylesheet" href="{% static 'css/v2/themes.css' %}">
+    <link rel="stylesheet" href="{% static 'css/v2/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/v2/widgets.css' %}">
+    <link rel="stylesheet" href="{% static 'css/v2/honeycomb.css' %}">
+    <link rel="stylesheet" href="{% static 'css/v2/ai-assistant.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body data-theme="{{ request.user.theme|default:'dark' }}">
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        {% include 'dashboard/v2/partials/sidebar.html' %}
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Top Bar -->
+            {% include 'dashboard/v2/partials/topbar.html' %}
+
+            <!-- Page Content -->
+            <div class="dashboard-content">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- AI Assistant -->
+    {% include 'dashboard/v2/partials/ai_assistant.html' %}
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{% static 'js/v2/theme-switcher.js' %}"></script>
+    <script src="{% static 'js/v2/ai-assistant.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

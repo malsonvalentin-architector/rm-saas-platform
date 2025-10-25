@@ -1,0 +1,22 @@
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="header-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                </div>
+
+                <div class="header-right">
+                    <div class="header-search">
+                        <i class="fas fa-search header-search-icon"></i>
+                        <input 
+                            type="text" 
+                            class="header-search-input" 
+                            placeholder="Search..."
+                            id="global-search"
+                        >
+                    </div>
+
+                    <div class="header-actions">
+                        <button class="header-action-btn" id="notifications-btn" title="Notifications">

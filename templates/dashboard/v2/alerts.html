@@ -1,0 +1,41 @@
+{% extends 'dashboard/v2/base.html' %}
+
+{% block title %}Alerts{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-exclamation-triangle"></i> Alerts</h1>
+    <p>Monitor and manage system alerts</p>
+</div>
+
+<div class="alerts-container">
+    <table class="alerts-table">
+        <thead>
+            <tr>
+                <th>Severity</th>
+                <th>Message</th>
+                <th>Building</th>
+                <th>Status</th>
+                <th>Triggered At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for alert in alerts %}
+            <tr class="alert-row severity-{{ alert.severity }}">
+                <td><span class="severity-badge">{{ alert.severity }}</span></td>
+                <td><strong>{{ alert.message }}</strong></td>
+                <td>{{ alert.building|default:'N/A' }}</td>
+                <td><span class="status-badge status-{{ alert.status }}">{{ alert.status }}</span></td>
+                <td>{{ alert.triggered_at|date:'Y-m-d H:i' }}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary">Acknowledge</button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="empty-state">No alerts</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

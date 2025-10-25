@@ -1,0 +1,249 @@
+{% extends 'dashboard/v2/base.html' %}
+{% load static %}
+
+{% block title %}Sensors{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-thermometer-half"></i> Sensors</h1>
+    <p>Monitor all sensor readings across your buildings</p>
+</div>
+
+<!-- Modbus Connections Status -->
+<div class="modbus-status-section">
+    <h2><i class="fas fa-plug"></i> Modbus Connections</h2>
+    <div class="modbus-connections-grid">
+        {% for connection in modbus_connections %}
+        <div class="modbus-card">
+            <div class="modbus-header">
+                <h3>{{ connection.name }}</h3>
+                <span class="connection-status status-{{ connection.status }}">
+                    {% if connection.is_connected %}
+                        <i class="fas fa-circle"></i> Connected
+                    {% else %}
+                        <i class="fas fa-circle"></i> Disconnected
+                    {% endif %}
+                </span>
+            </div>
+            <div class="modbus-details">
+                <p><i class="fas fa-server"></i> <strong>Host:</strong> {{ connection.host }}:{{ connection.port }}</p>
+                <p><i class="fas fa-id-badge"></i> <strong>Slave ID:</strong> {{ connection.slave_id }}</p>
+                <p><i class="fas fa-clock"></i> <strong>Scan Interval:</strong> {{ connection.scan_interval }}s</p>
+                <p><i class="fas fa-building"></i> <strong>Building:</strong> {{ connection.building.name|default:'N/A' }}</p>
+            </div>
+            <div class="modbus-actions">
+                <button class="btn btn-sm {% if connection.is_connected %}btn-danger{% else %}btn-success{% endif %}" 
+                        onclick="toggleModbusConnection({{ connection.id }})">
+                    {% if connection.is_connected %}
+                        <i class="fas fa-stop"></i> Disconnect
+                    {% else %}
+                        <i class="fas fa-play"></i> Connect
+                    {% endif %}
+                </button>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <p>No Modbus connections configured</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Sensors List -->
+<div class="sensors-section">
+    <h2><i class="fas fa-list"></i> All Sensors</h2>
+    <div class="sensors-table-container">
+        <table class="sensors-table">
+            <thead>
+                <tr>
+                    <th>Sensor Name</th>
+                    <th>Building</th>
+                    <th>System</th>
+                    <th>Latest Value</th>
+                    <th>Unit</th>
+                    <th>Status</th>
+                    <th>Last Update</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sensor in sensors %}
+                <tr>
+                    <td><strong>{{ sensor.name }}</strong></td>
+                    <td>{{ sensor.sys.obj.name }}</td>
+                    <td>{{ sensor.sys.name }}</td>
+                    <td class="sensor-value">{{ sensor.latest_value|default:'--' }}</td>
+                    <td>{{ sensor.unit|default:'--' }}</td>
+                    <td>
+                        <span class="sensor-status status-{{ sensor.status }}">
+                            {{ sensor.status|title }}
+                        </span>
+                    </td>
+                    <td>{{ sensor.last_update|default:'Never'|date:'Y-m-d H:i' }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="empty-state">No sensors found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+.page-header {
+    padding: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: 1.5rem;
+}
+
+.page-header h1 {
+    margin: 0 0 0.5rem 0;
+}
+
+.page-header p {
+    margin: 0;
+    color: var(--text-secondary);
+}
+
+.modbus-status-section, .sensors-section {
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.modbus-connections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.modbus-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.modbus-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.modbus-header h3 {
+    margin: 0;
+}
+
+.connection-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.status-connected, .status-active { background: #10b981; color: white; }
+.status-disconnected, .status-inactive { background: #ef4444; color: white; }
+
+.modbus-details p {
+    margin: 0.5rem 0;
+    color: var(--text-secondary);
+}
+
+.modbus-actions {
+    margin-top: 1rem;
+}
+
+.sensors-table-container {
+    overflow-x: auto;
+    margin-top: 1rem;
+}
+
+.sensors-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card-bg);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.sensors-table th {
+    background: var(--hover-color);
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+}
+
+.sensors-table td {
+    padding: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.sensor-value {
+    font-weight: 700;
+    color: var(--accent-color);
+    font-size: 1.1rem;
+}
+
+.sensor-status {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.status-healthy { background: #10b981; color: white; }
+.status-warning { background: #f59e0b; color: white; }
+.status-critical { background: #ef4444; color: white; }
+
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.btn-success {
+    background: #10b981;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #059669;
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+}
+</style>
+
+<script>
+function toggleModbusConnection(connectionId) {
+    // TODO: Implement Modbus connection toggle via API
+    alert('Modbus connection toggle for ID: ' + connectionId);
+}
+</script>
+{% endblock %}

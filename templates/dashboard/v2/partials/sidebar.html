@@ -1,0 +1,83 @@
+        <aside class="dashboard-sidebar" id="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">PM</div>
+                <div class="sidebar-title">ProMonitor</div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Main</div>
+                    <ul class="sidebar-menu">
+                        <li class="sidebar-menu-item">
+                            <a href="{% url 'dashboard_v2:dashboard_v2' %}" class="sidebar-menu-link active">
+                                <span class="sidebar-menu-icon"><i class="fas fa-home"></i></span>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-menu-item">
+                            <a href="{% url 'dashboard_v2:dashboard_v2_buildings' %}" class="sidebar-menu-link">
+                                <span class="sidebar-menu-icon"><i class="fas fa-building"></i></span>
+                                <span>Buildings</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-menu-item">
+                            <a href="{% url 'dashboard_v2:dashboard_v2_sensors' %}" class="sidebar-menu-link">
+                                <span class="sidebar-menu-icon"><i class="fas fa-thermometer-half"></i></span>
+                                <span>Sensors</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-menu-item">
+                            <a href="{% url 'dashboard_v2:dashboard_v2_alerts' %}" class="sidebar-menu-link">
+                                <span class="sidebar-menu-icon"><i class="fas fa-bell"></i></span>
+                                <span>Alerts</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Analytics</div>
+                    <ul class="sidebar-menu">
+                        <li class="sidebar-menu-item">
+                            <a href="{% url 'dashboard_v2:dashboard_v2_reports' %}" class="sidebar-menu-link">
+                                <span class="sidebar-menu-icon"><i class="fas fa-chart-line"></i></span>
+                                <span>Reports</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-menu-item">
+                            <a href="{% url 'dashboard_v2:dashboard_v2_analytics' %}" class="sidebar-menu-link">
+                                <span class="sidebar-menu-icon"><i class="fas fa-chart-pie"></i></span>
+                                <span>Analytics</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">System</div>
+                    <ul class="sidebar-menu">
+                        <li class="sidebar-menu-item">
+                            <a href="{% url 'dashboard_v2:dashboard_v2_settings' %}" class="sidebar-menu-link">
+                                <span class="sidebar-menu-icon"><i class="fas fa-cog"></i></span>
+                                <span>Settings</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-menu-item">
+                            <a href="{% url 'dashboard_v2:dashboard_v2_users' %}" class="sidebar-menu-link">
+                                <span class="sidebar-menu-icon"><i class="fas fa-users"></i></span>
+                                <span>Users</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="flex align-center justify-between">
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">v2.0.0</span>
+                    <button class="btn-icon" data-theme-toggle title="Toggle Theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
