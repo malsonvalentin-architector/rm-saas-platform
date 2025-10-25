@@ -1,0 +1,564 @@
+{% extends 'dashboard_v2/base_full.html' %}
+{% load static %}
+
+{% block title %}Analytics - Energy & Performance{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chart-container {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 24px;
+        margin-bottom: 20px;
+        position: relative;
+        min-height: 400px;
+    }
+
+    body.light-theme .chart-container {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .chart-title {
+        font-size: 18px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .chart-controls {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .date-picker {
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: rgba(0, 0, 0, 0.2);
+        color: var(--text-primary);
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    body.light-theme .date-picker {
+        background: white;
+    }
+
+    .date-picker:hover {
+        border-color: var(--primary-blue);
+    }
+
+    .export-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: 1px solid var(--primary-blue);
+        background: rgba(0, 120, 212, 0.1);
+        color: var(--primary-blue);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .export-btn:hover {
+        background: var(--primary-blue);
+        color: white;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        background: rgba(0, 120, 212, 0.05);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 16px;
+        text-align: center;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--primary-blue), var(--primary-orange));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-change {
+        font-size: 11px;
+        margin-top: 4px;
+        font-weight: 600;
+    }
+
+    .stat-change.positive {
+        color: var(--success);
+    }
+
+    .stat-change.negative {
+        color: var(--error);
+    }
+
+    canvas {
+        max-height: 350px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Analytics & Performance</h1>
+    <p class="page-subtitle">Детальная аналитика энергопотребления и производительности систем</p>
+</div>
+
+<!-- SUMMARY STATS -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Avg Temperature</div>
+        <div class="stat-value">22.3°C</div>
+        <div class="stat-change positive">▲ 0.5°C vs yesterday</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Avg Pressure</div>
+        <div class="stat-value">2.4 bar</div>
+        <div class="stat-change positive">▲ 0.1 bar</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Energy Today</div>
+        <div class="stat-value">1,247 kWh</div>
+        <div class="stat-change negative">▼ 8% vs yesterday</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Cost Today</div>
+        <div class="stat-value">₸18,705</div>
+        <div class="stat-change negative">▼ 8%</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Efficiency</div>
+        <div class="stat-value">94.2%</div>
+        <div class="stat-change positive">▲ 2.1%</div>
+    </div>
+</div>
+
+<!-- TEMPERATURE CHART -->
+<div class="chart-container">
+    <div class="chart-header">
+        <h2 class="chart-title">
+            🌡️ Temperature Analytics
+        </h2>
+        <div class="chart-controls">
+            <input type="text" class="date-picker" id="tempDateRange" placeholder="Select date range">
+            <button class="export-btn" onclick="exportChartData('temperature')">📊 Export CSV</button>
+        </div>
+    </div>
+    <canvas id="temperatureChart"></canvas>
+</div>
+
+<!-- PRESSURE CHART -->
+<div class="chart-container">
+    <div class="chart-header">
+        <h2 class="chart-title">
+            💨 Pressure Analytics
+        </h2>
+        <div class="chart-controls">
+            <input type="text" class="date-picker" id="pressureDateRange" placeholder="Select date range">
+            <button class="export-btn" onclick="exportChartData('pressure')">📊 Export CSV</button>
+        </div>
+    </div>
+    <canvas id="pressureChart"></canvas>
+</div>
+
+<!-- ENERGY CHART -->
+<div class="chart-container">
+    <div class="chart-header">
+        <h2 class="chart-title">
+            ⚡ Energy Consumption
+        </h2>
+        <div class="chart-controls">
+            <input type="text" class="date-picker" id="energyDateRange" placeholder="Select date range">
+            <button class="export-btn" onclick="exportChartData('energy')">📊 Export CSV</button>
+        </div>
+    </div>
+    <canvas id="energyChart"></canvas>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Flatpickr -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+    // ==================== CHART.JS CONFIGURATION ====================
+    
+    // Theme colors
+    const isDarkTheme = !document.body.classList.contains('light-theme');
+    const textColor = isDarkTheme ? '#E8EDF5' : '#1A202C';
+    const gridColor = isDarkTheme ? 'rgba(0, 120, 212, 0.1)' : 'rgba(0, 120, 212, 0.15)';
+
+    // ==================== TEMPERATURE CHART ====================
+    const temperatureCtx = document.getElementById('temperatureChart').getContext('2d');
+    const temperatureChart = new Chart(temperatureCtx, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [
+                {
+                    label: 'Ambient Temperature',
+                    data: [22.5, 23.1, 22.8, 23.4, 22.9, 23.2, 22.3],
+                    borderColor: '#0078D4',
+                    backgroundColor: 'rgba(0, 120, 212, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Supply Temperature',
+                    data: [18.2, 18.5, 18.3, 18.8, 18.4, 18.6, 18.1],
+                    borderColor: '#10B981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Return Temperature',
+                    data: [26.8, 27.2, 27.0, 27.5, 27.1, 27.3, 26.5],
+                    borderColor: '#FF8C42',
+                    backgroundColor: 'rgba(255, 140, 66, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        color: textColor,
+                        usePointStyle: true,
+                        padding: 15
+                    }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(20, 38, 66, 0.95)',
+                    titleColor: '#E8EDF5',
+                    bodyColor: '#A0AEC0',
+                    borderColor: '#0078D4',
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: true,
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.parsed.y + '°C';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        color: textColor,
+                        callback: function(value) {
+                            return value + '°C';
+                        }
+                    },
+                    grid: {
+                        color: gridColor
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: textColor
+                    },
+                    grid: {
+                        color: gridColor
+                    }
+                }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
+            }
+        }
+    });
+
+    // ==================== PRESSURE CHART ====================
+    const pressureCtx = document.getElementById('pressureChart').getContext('2d');
+    const pressureChart = new Chart(pressureCtx, {
+        type: 'line',
+        data: {
+            labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+            datasets: [
+                {
+                    label: 'High Pressure',
+                    data: [2.5, 2.6, 2.8, 2.9, 2.7, 2.6, 2.4],
+                    borderColor: '#EF4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4
+                },
+                {
+                    label: 'Low Pressure',
+                    data: [1.2, 1.3, 1.4, 1.5, 1.4, 1.3, 1.2],
+                    borderColor: '#0078D4',
+                    backgroundColor: 'rgba(0, 120, 212, 0.2)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        color: textColor,
+                        usePointStyle: true,
+                        padding: 15
+                    }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(20, 38, 66, 0.95)',
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.parsed.y + ' bar';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        color: textColor,
+                        callback: function(value) {
+                            return value + ' bar';
+                        }
+                    },
+                    grid: {
+                        color: gridColor
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: textColor
+                    },
+                    grid: {
+                        color: gridColor
+                    }
+                }
+            }
+        }
+    });
+
+    // ==================== ENERGY CHART ====================
+    const energyCtx = document.getElementById('energyChart').getContext('2d');
+    
+    // Generate 30 days of data
+    const energyLabels = [];
+    const energyData = [];
+    for (let i = 30; i >= 1; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        energyLabels.push(date.getDate() + '/' + (date.getMonth() + 1));
+        energyData.push(Math.floor(1000 + Math.random() * 500));
+    }
+
+    const energyChart = new Chart(energyCtx, {
+        type: 'bar',
+        data: {
+            labels: energyLabels,
+            datasets: [{
+                label: 'Energy Consumption (kWh)',
+                data: energyData,
+                backgroundColor: energyData.map(val => {
+                    if (val > 1400) return 'rgba(239, 68, 68, 0.7)'; // Red
+                    if (val > 1200) return 'rgba(245, 158, 11, 0.7)'; // Yellow
+                    return 'rgba(16, 185, 129, 0.7)'; // Green
+                }),
+                borderColor: energyData.map(val => {
+                    if (val > 1400) return '#EF4444';
+                    if (val > 1200) return '#F59E0B';
+                    return '#10B981';
+                }),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(20, 38, 66, 0.95)',
+                    callbacks: {
+                        label: function(context) {
+                            return 'Energy: ' + context.parsed.y + ' kWh';
+                        },
+                        afterLabel: function(context) {
+                            const cost = (context.parsed.y * 15).toFixed(0);
+                            return 'Cost: ₸' + cost;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: textColor,
+                        callback: function(value) {
+                            return value + ' kWh';
+                        }
+                    },
+                    grid: {
+                        color: gridColor
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: textColor,
+                        maxRotation: 45,
+                        minRotation: 45
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // ==================== DATE PICKERS ====================
+    flatpickr("#tempDateRange", {
+        mode: "range",
+        dateFormat: "Y-m-d",
+        defaultDate: [new Date().setDate(new Date().getDate() - 7), new Date()],
+        onChange: function(selectedDates) {
+            console.log('Temperature date range changed:', selectedDates);
+            // TODO: Fetch new data and update chart
+        }
+    });
+
+    flatpickr("#pressureDateRange", {
+        mode: "range",
+        dateFormat: "Y-m-d",
+        defaultDate: [new Date().setDate(new Date().getDate() - 1), new Date()],
+        onChange: function(selectedDates) {
+            console.log('Pressure date range changed:', selectedDates);
+        }
+    });
+
+    flatpickr("#energyDateRange", {
+        mode: "range",
+        dateFormat: "Y-m-d",
+        defaultDate: [new Date().setDate(new Date().getDate() - 30), new Date()],
+        onChange: function(selectedDates) {
+            console.log('Energy date range changed:', selectedDates);
+        }
+    });
+
+    // ==================== EXPORT FUNCTIONS ====================
+    function exportChartData(chartType) {
+        console.log('Exporting chart data:', chartType);
+        
+        let csv = '';
+        let filename = '';
+        
+        switch(chartType) {
+            case 'temperature':
+                csv = 'Date,Ambient,Supply,Return\n';
+                temperatureChart.data.labels.forEach((label, i) => {
+                    csv += `${label},${temperatureChart.data.datasets[0].data[i]},${temperatureChart.data.datasets[1].data[i]},${temperatureChart.data.datasets[2].data[i]}\n`;
+                });
+                filename = 'temperature_analytics.csv';
+                break;
+            case 'pressure':
+                csv = 'Time,High Pressure,Low Pressure\n';
+                pressureChart.data.labels.forEach((label, i) => {
+                    csv += `${label},${pressureChart.data.datasets[0].data[i]},${pressureChart.data.datasets[1].data[i]}\n`;
+                });
+                filename = 'pressure_analytics.csv';
+                break;
+            case 'energy':
+                csv = 'Date,Energy (kWh),Cost (KZT)\n';
+                energyChart.data.labels.forEach((label, i) => {
+                    const energy = energyChart.data.datasets[0].data[i];
+                    const cost = (energy * 15).toFixed(0);
+                    csv += `${label},${energy},${cost}\n`;
+                });
+                filename = 'energy_analytics.csv';
+                break;
+        }
+        
+        // Download CSV
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        
+        alert('✅ CSV exported: ' + filename);
+    }
+
+    // ==================== THEME CHANGE HANDLER ====================
+    // Re-render charts when theme changes
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'promonitor_theme') {
+            location.reload();
+        }
+    });
+</script>
+{% endblock %}

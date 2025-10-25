@@ -100,22 +100,22 @@ def control_panel(request):
 
 @login_required
 def alerts_page(request):
-    """Alerts & Notifications page"""
+    """Alerts & Notifications page - PHASE 2 FULL VERSION"""
     context = {
         'page_title': 'Alerts',
         'active_page': 'alerts'
     }
-    return render(request, 'dashboard_v2/alerts.html', context)
+    return render(request, 'dashboard_v2/alerts_full.html', context)
 
 
 @login_required
 def analytics_page(request):
-    """Analytics & Reports page"""
+    """Analytics & Reports page - PHASE 2 FULL VERSION"""
     context = {
         'page_title': 'Analytics',
         'active_page': 'analytics'
     }
-    return render(request, 'dashboard_v2/analytics.html', context)
+    return render(request, 'dashboard_v2/analytics_full.html', context)
 
 
 @login_required
@@ -130,12 +130,12 @@ def objects_page(request):
 
 @login_required
 def settings_page(request):
-    """Settings & Profile page"""
+    """Settings & Profile page - PHASE 2 FULL VERSION"""
     context = {
         'page_title': 'Settings',
         'active_page': 'settings'
     }
-    return render(request, 'dashboard_v2/settings.html', context)
+    return render(request, 'dashboard_v2/settings_full.html', context)
 
 
 # ==================== API VIEWS ====================

@@ -1,0 +1,585 @@
+{% extends 'dashboard_v2/base_full.html' %}
+{% load static %}
+
+{% block title %}Alerts & Notifications{% endblock %}
+
+{% block extra_css %}
+<style>
+    .alerts-container {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+
+    body.light-theme .alerts-container {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .alerts-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .alerts-title {
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .filters {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: rgba(0, 0, 0, 0.2);
+        color: var(--text-secondary);
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    body.light-theme .filter-btn {
+        background: white;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+        background: var(--primary-blue);
+        border-color: var(--primary-blue);
+        color: white;
+    }
+
+    .filter-btn.critical {
+        border-color: var(--error);
+        color: var(--error);
+    }
+
+    .filter-btn.critical.active {
+        background: var(--error);
+        color: white;
+    }
+
+    .filter-btn.warning {
+        border-color: var(--warning);
+        color: var(--warning);
+    }
+
+    .filter-btn.warning.active {
+        background: var(--warning);
+        color: white;
+    }
+
+    .filter-btn.info {
+        border-color: var(--primary-blue);
+        color: var(--primary-blue);
+    }
+
+    .alerts-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+    }
+
+    .alerts-table thead th {
+        text-align: left;
+        padding: 12px 16px;
+        font-size: 12px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .alerts-table tbody tr {
+        background: rgba(0, 0, 0, 0.2);
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    body.light-theme .alerts-table tbody tr {
+        background: rgba(0, 120, 212, 0.03);
+    }
+
+    .alerts-table tbody tr:hover {
+        background: rgba(0, 120, 212, 0.1);
+        transform: translateX(4px);
+    }
+
+    .alerts-table tbody td {
+        padding: 14px 16px;
+        border-top: 1px solid transparent;
+        border-bottom: 1px solid transparent;
+    }
+
+    .alerts-table tbody tr td:first-child {
+        border-left: 3px solid transparent;
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+    }
+
+    .alerts-table tbody tr td:last-child {
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+    .alerts-table tbody tr.critical td:first-child {
+        border-left-color: var(--error);
+    }
+
+    .alerts-table tbody tr.warning td:first-child {
+        border-left-color: var(--warning);
+    }
+
+    .alerts-table tbody tr.info td:first-child {
+        border-left-color: var(--primary-blue);
+    }
+
+    .alert-time {
+        font-size: 13px;
+        color: var(--text-secondary);
+    }
+
+    .alert-severity {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .alert-severity.critical {
+        background: rgba(239, 68, 68, 0.15);
+        color: var(--error);
+    }
+
+    .alert-severity.warning {
+        background: rgba(245, 158, 11, 0.15);
+        color: var(--warning);
+    }
+
+    .alert-severity.info {
+        background: rgba(0, 120, 212, 0.15);
+        color: var(--primary-blue);
+    }
+
+    .alert-equipment {
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    .alert-message {
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+
+    .alert-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .alert-status.active {
+        color: var(--error);
+    }
+
+    .alert-status.acknowledged {
+        color: var(--warning);
+    }
+
+    .alert-status.resolved {
+        color: var(--success);
+    }
+
+    .alert-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .action-btn {
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        background: transparent;
+        color: var(--text-primary);
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+        background: var(--primary-blue);
+        border-color: var(--primary-blue);
+        color: white;
+    }
+
+    .action-btn.resolve:hover {
+        background: var(--success);
+        border-color: var(--success);
+    }
+
+    .no-alerts {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-secondary);
+    }
+
+    .no-alerts-icon {
+        font-size: 64px;
+        opacity: 0.5;
+        margin-bottom: 16px;
+    }
+
+    .stats-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .stat-item {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .stat-icon {
+        font-size: 32px;
+    }
+
+    .stat-info {
+        flex: 1;
+    }
+
+    .stat-info-label {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 4px;
+    }
+
+    .stat-info-value {
+        font-size: 24px;
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Alerts & Notifications</h1>
+    <p class="page-subtitle">Мониторинг активных тревог и управление уведомлениями</p>
+</div>
+
+<!-- STATS SUMMARY -->
+<div class="stats-summary">
+    <div class="stat-item">
+        <div class="stat-icon">🚨</div>
+        <div class="stat-info">
+            <div class="stat-info-label">Critical Alerts</div>
+            <div class="stat-info-value" style="color: var(--error);" id="criticalCount">0</div>
+        </div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-info">
+            <div class="stat-info-label">Warnings</div>
+            <div class="stat-info-value" style="color: var(--warning);" id="warningCount">0</div>
+        </div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-icon">ℹ️</div>
+        <div class="stat-info">
+            <div class="stat-info-label">Info</div>
+            <div class="stat-info-value" style="color: var(--primary-blue);" id="infoCount">0</div>
+        </div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-icon">✅</div>
+        <div class="stat-info">
+            <div class="stat-info-label">Resolved Today</div>
+            <div class="stat-info-value" style="color: var(--success);" id="resolvedCount">8</div>
+        </div>
+    </div>
+</div>
+
+<!-- ALERTS TABLE -->
+<div class="alerts-container">
+    <div class="alerts-header">
+        <h2 class="alerts-title">Active Alerts</h2>
+        <div class="filters">
+            <button class="filter-btn active" onclick="filterAlerts('all')">All</button>
+            <button class="filter-btn critical" onclick="filterAlerts('critical')">🚨 Critical</button>
+            <button class="filter-btn warning" onclick="filterAlerts('warning')">⚠️ Warning</button>
+            <button class="filter-btn info" onclick="filterAlerts('info')">ℹ️ Info</button>
+        </div>
+    </div>
+
+    <table class="alerts-table" id="alertsTable">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Severity</th>
+                <th>Equipment</th>
+                <th>Message</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="alertsBody">
+            <!-- Dynamic content populated by JavaScript -->
+        </tbody>
+    </table>
+
+    <div class="no-alerts" id="noAlerts" style="display: none;">
+        <div class="no-alerts-icon">✅</div>
+        <h3>No Alerts Found</h3>
+        <p>All systems operating normally</p>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // ==================== MOCK ALERTS DATA ====================
+    const alertsData = [
+        {
+            id: 1,
+            time: '2 minutes ago',
+            severity: 'critical',
+            equipment: 'HVAC Zone 2',
+            message: 'Temperature exceeded threshold (25.8°C)',
+            status: 'active',
+            timestamp: new Date().getTime() - 120000
+        },
+        {
+            id: 2,
+            time: '15 minutes ago',
+            severity: 'warning',
+            equipment: 'Pump #3',
+            message: 'Pressure fluctuation detected',
+            status: 'acknowledged',
+            timestamp: new Date().getTime() - 900000
+        },
+        {
+            id: 3,
+            time: '1 hour ago',
+            severity: 'info',
+            equipment: 'Boiler #1',
+            message: 'Scheduled maintenance reminder',
+            status: 'active',
+            timestamp: new Date().getTime() - 3600000
+        },
+        {
+            id: 4,
+            time: '2 hours ago',
+            severity: 'warning',
+            equipment: 'Fan #12',
+            message: 'RPM below optimal range (1350 RPM)',
+            status: 'active',
+            timestamp: new Date().getTime() - 7200000
+        },
+        {
+            id: 5,
+            time: '3 hours ago',
+            severity: 'info',
+            equipment: 'Sensor #5',
+            message: 'Battery level low (15%)',
+            status: 'acknowledged',
+            timestamp: new Date().getTime() - 10800000
+        },
+        {
+            id: 6,
+            time: '5 hours ago',
+            severity: 'critical',
+            equipment: 'Controller PLC-1',
+            message: 'Communication timeout',
+            status: 'acknowledged',
+            timestamp: new Date().getTime() - 18000000
+        },
+        {
+            id: 7,
+            time: '6 hours ago',
+            severity: 'warning',
+            equipment: 'HVAC Zone 1',
+            message: 'Filter replacement required',
+            status: 'active',
+            timestamp: new Date().getTime() - 21600000
+        },
+        {
+            id: 8,
+            time: '8 hours ago',
+            severity: 'info',
+            equipment: 'Energy Meter',
+            message: 'Daily report generated',
+            status: 'active',
+            timestamp: new Date().getTime() - 28800000
+        }
+    ];
+
+    let currentFilter = 'all';
+
+    // ==================== RENDER ALERTS ====================
+    function renderAlerts(filter = 'all') {
+        const tbody = document.getElementById('alertsBody');
+        const noAlerts = document.getElementById('noAlerts');
+        
+        // Filter alerts
+        let filtered = alertsData;
+        if (filter !== 'all') {
+            filtered = alertsData.filter(alert => alert.severity === filter);
+        }
+
+        // Update counts
+        updateCounts();
+
+        // Render
+        if (filtered.length === 0) {
+            tbody.innerHTML = '';
+            noAlerts.style.display = 'block';
+            return;
+        }
+
+        noAlerts.style.display = 'none';
+        tbody.innerHTML = filtered.map(alert => `
+            <tr class="${alert.severity}" data-alert-id="${alert.id}">
+                <td class="alert-time">${alert.time}</td>
+                <td>
+                    <span class="alert-severity ${alert.severity}">${alert.severity}</span>
+                </td>
+                <td class="alert-equipment">${alert.equipment}</td>
+                <td class="alert-message">${alert.message}</td>
+                <td>
+                    <span class="alert-status ${alert.status}">
+                        ${alert.status === 'active' ? '🔴' : alert.status === 'acknowledged' ? '🟡' : '🟢'}
+                        ${alert.status}
+                    </span>
+                </td>
+                <td class="alert-actions">
+                    ${alert.status !== 'acknowledged' ? 
+                        `<button class="action-btn" onclick="acknowledgeAlert(${alert.id})">✓ Acknowledge</button>` 
+                        : ''}
+                    ${alert.status !== 'resolved' ? 
+                        `<button class="action-btn resolve" onclick="resolveAlert(${alert.id})">✓ Resolve</button>` 
+                        : ''}
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // ==================== UPDATE COUNTS ====================
+    function updateCounts() {
+        const critical = alertsData.filter(a => a.severity === 'critical' && a.status !== 'resolved').length;
+        const warning = alertsData.filter(a => a.severity === 'warning' && a.status !== 'resolved').length;
+        const info = alertsData.filter(a => a.severity === 'info' && a.status !== 'resolved').length;
+        
+        document.getElementById('criticalCount').textContent = critical;
+        document.getElementById('warningCount').textContent = warning;
+        document.getElementById('infoCount').textContent = info;
+
+        // Update sidebar badge
+        const totalActive = critical + warning + info;
+        const badge = document.getElementById('alertsBadge');
+        if (badge) {
+            badge.textContent = totalActive;
+        }
+    }
+
+    // ==================== FILTER ALERTS ====================
+    function filterAlerts(severity) {
+        currentFilter = severity;
+        
+        // Update filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        // Re-render
+        renderAlerts(severity);
+    }
+
+    // ==================== ACKNOWLEDGE ALERT ====================
+    function acknowledgeAlert(alertId) {
+        const alert = alertsData.find(a => a.id === alertId);
+        if (alert) {
+            alert.status = 'acknowledged';
+            renderAlerts(currentFilter);
+            console.log('Alert acknowledged:', alertId);
+            
+            // TODO: Send to backend
+            // fetch(URLS.command, {
+            //     method: 'POST',
+            //     body: JSON.stringify({ alert_id: alertId, action: 'acknowledge' })
+            // });
+        }
+    }
+
+    // ==================== RESOLVE ALERT ====================
+    function resolveAlert(alertId) {
+        const alertIndex = alertsData.findIndex(a => a.id === alertId);
+        if (alertIndex !== -1) {
+            // Remove from active alerts
+            alertsData.splice(alertIndex, 1);
+            
+            // Update resolved count
+            const resolvedCount = document.getElementById('resolvedCount');
+            resolvedCount.textContent = parseInt(resolvedCount.textContent) + 1;
+            
+            renderAlerts(currentFilter);
+            console.log('Alert resolved:', alertId);
+            
+            // Show success message
+            alert('✅ Alert resolved successfully');
+            
+            // TODO: Send to backend
+        }
+    }
+
+    // ==================== AUTO-UPDATE ====================
+    function updateAlertTimes() {
+        // Update relative times
+        alertsData.forEach(alert => {
+            const diff = new Date().getTime() - alert.timestamp;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            
+            if (hours > 0) {
+                alert.time = hours + ' hour' + (hours > 1 ? 's' : '') + ' ago';
+            } else if (minutes > 0) {
+                alert.time = minutes + ' minute' + (minutes > 1 ? 's' : '') + ' ago';
+            } else {
+                alert.time = 'Just now';
+            }
+        });
+        
+        renderAlerts(currentFilter);
+    }
+
+    // Update every 10 seconds
+    setInterval(updateAlertTimes, 10000);
+
+    // ==================== INITIAL RENDER ====================
+    document.addEventListener('DOMContentLoaded', function() {
+        renderAlerts('all');
+        updateCounts();
+    });
+</script>
+{% endblock %}

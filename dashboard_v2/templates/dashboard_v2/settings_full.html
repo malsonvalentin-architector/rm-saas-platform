@@ -1,0 +1,791 @@
+{% extends "dashboard_v2/base_full.html" %}
+{% load static %}
+
+{% block title %}Настройки - ProMonitor.kz{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ===== SETTINGS PAGE STYLES ===== */
+    .settings-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .settings-header {
+        margin-bottom: 2rem;
+    }
+
+    .settings-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .settings-header p {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+    }
+
+    /* Settings Grid */
+    .settings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 2rem;
+    }
+
+    /* Settings Card */
+    .settings-card {
+        background: var(--surface-primary);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border: 1px solid var(--border-color);
+    }
+
+    .settings-card-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .settings-card-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .settings-card-title h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .settings-card-title p {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        margin: 0.25rem 0 0 0;
+    }
+
+    /* Form Groups */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group input[type="password"],
+    .form-group select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--surface-secondary);
+        color: var(--text-primary);
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-group small {
+        display: block;
+        margin-top: 0.5rem;
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+    }
+
+    /* Avatar Upload */
+    .avatar-upload {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .avatar-preview {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        font-weight: 600;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .avatar-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .avatar-controls {
+        flex: 1;
+    }
+
+    .avatar-controls p {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .avatar-buttons {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .btn-upload,
+    .btn-remove {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    .btn-upload {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-upload:hover {
+        background: #5568d3;
+    }
+
+    .btn-remove {
+        background: transparent;
+        color: #ef4444;
+        border: 1px solid #ef4444;
+    }
+
+    .btn-remove:hover {
+        background: #ef4444;
+        color: white;
+    }
+
+    /* Checkbox Group */
+    .checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .checkbox-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        margin-top: 0.1rem;
+        cursor: pointer;
+        accent-color: #667eea;
+    }
+
+    .checkbox-label {
+        flex: 1;
+    }
+
+    .checkbox-label strong {
+        display: block;
+        color: var(--text-primary);
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+    }
+
+    .checkbox-label span {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        flex: 1;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+        background: transparent;
+        color: var(--text-secondary);
+        border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+        background: var(--surface-secondary);
+    }
+
+    /* Success Message */
+    .success-message {
+        display: none;
+        padding: 1rem 1.5rem;
+        background: #10b981;
+        color: white;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        font-weight: 500;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .success-message.show {
+        display: flex;
+    }
+
+    /* Danger Zone */
+    .danger-zone {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        border: 2px solid #ef4444;
+        border-radius: 12px;
+        background: rgba(239, 68, 68, 0.05);
+    }
+
+    .danger-zone h4 {
+        color: #ef4444;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .danger-zone p {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+    }
+
+    .btn-danger {
+        padding: 0.75rem 1.5rem;
+        background: #ef4444;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .settings-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .settings-container {
+            padding: 1rem;
+        }
+
+        .settings-card {
+            padding: 1.5rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <!-- Header -->
+    <div class="settings-header">
+        <h1>⚙️ Настройки</h1>
+        <p>Управление профилем, уведомлениями и безопасностью аккаунта</p>
+    </div>
+
+    <!-- Success Message -->
+    <div class="success-message" id="successMessage">
+        <span>✓</span>
+        <span>Настройки успешно сохранены!</span>
+    </div>
+
+    <!-- Settings Grid -->
+    <div class="settings-grid">
+        <!-- Profile Settings -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <div class="settings-card-icon">👤</div>
+                <div class="settings-card-title">
+                    <h3>Профиль</h3>
+                    <p>Персональная информация и аватар</p>
+                </div>
+            </div>
+
+            <form id="profileForm">
+                <!-- Avatar Upload -->
+                <div class="avatar-upload">
+                    <div class="avatar-preview" id="avatarPreview">
+                        {% if request.user.first_name %}
+                            {{ request.user.first_name.0 }}{{ request.user.last_name.0|default:"" }}
+                        {% else %}
+                            {{ request.user.username.0|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="avatar-controls">
+                        <p>JPG, GIF или PNG. Максимум 1MB.</p>
+                        <div class="avatar-buttons">
+                            <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+                            <button type="button" class="btn-upload" onclick="document.getElementById('avatarInput').click()">
+                                Загрузить фото
+                            </button>
+                            <button type="button" class="btn-remove">Удалить</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Name Fields -->
+                <div class="form-group">
+                    <label for="firstName">Имя</label>
+                    <input type="text" id="firstName" name="first_name" 
+                           value="{{ request.user.first_name|default:'' }}" 
+                           placeholder="Введите имя">
+                </div>
+
+                <div class="form-group">
+                    <label for="lastName">Фамилия</label>
+                    <input type="text" id="lastName" name="last_name" 
+                           value="{{ request.user.last_name|default:'' }}" 
+                           placeholder="Введите фамилию">
+                </div>
+
+                <!-- Email -->
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" 
+                           value="{{ request.user.email }}" 
+                           placeholder="your@email.com">
+                    <small>Используется для входа и уведомлений</small>
+                </div>
+
+                <!-- Phone -->
+                <div class="form-group">
+                    <label for="phone">Телефон</label>
+                    <input type="text" id="phone" name="phone" 
+                           value="{{ request.user.profile.phone|default:'' }}" 
+                           placeholder="+7 (___) ___-__-__">
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button type="submit" class="btn-primary">Сохранить изменения</button>
+                    <button type="button" class="btn-secondary" onclick="resetForm('profileForm')">Отменить</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Theme & Display Settings -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <div class="settings-card-icon">🎨</div>
+                <div class="settings-card-title">
+                    <h3>Отображение</h3>
+                    <p>Тема и режим интерфейса</p>
+                </div>
+            </div>
+
+            <form id="displayForm">
+                <!-- Theme Selection -->
+                <div class="form-group">
+                    <label for="theme">Тема интерфейса</label>
+                    <select id="theme" name="theme">
+                        <option value="light">☀️ Светлая</option>
+                        <option value="dark">🌙 Тёмная</option>
+                        <option value="auto">🔄 Системная</option>
+                    </select>
+                    <small>Выберите предпочитаемую цветовую схему</small>
+                </div>
+
+                <!-- Mode Selection -->
+                <div class="form-group">
+                    <label for="mode">Режим работы</label>
+                    <select id="mode" name="mode">
+                        <option value="monitoring">📊 Мониторинг</option>
+                        <option value="control">🎮 Управление</option>
+                    </select>
+                    <small>Режим по умолчанию при входе</small>
+                </div>
+
+                <!-- Language -->
+                <div class="form-group">
+                    <label for="language">Язык интерфейса</label>
+                    <select id="language" name="language">
+                        <option value="ru">🇷🇺 Русский</option>
+                        <option value="kk">🇰🇿 Қазақша</option>
+                        <option value="en">🇬🇧 English</option>
+                    </select>
+                </div>
+
+                <!-- Timezone -->
+                <div class="form-group">
+                    <label for="timezone">Часовой пояс</label>
+                    <select id="timezone" name="timezone">
+                        <option value="Asia/Almaty">🇰🇿 Алматы (UTC+6)</option>
+                        <option value="Asia/Nur-Sultan">🇰🇿 Астана (UTC+6)</option>
+                        <option value="Europe/Moscow">🇷🇺 Москва (UTC+3)</option>
+                        <option value="UTC">🌍 UTC (UTC+0)</option>
+                    </select>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button type="submit" class="btn-primary">Применить настройки</button>
+                    <button type="button" class="btn-secondary" onclick="resetForm('displayForm')">Сбросить</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Notification Settings -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <div class="settings-card-icon">🔔</div>
+                <div class="settings-card-title">
+                    <h3>Уведомления</h3>
+                    <p>Управление оповещениями</p>
+                </div>
+            </div>
+
+            <form id="notificationsForm">
+                <div class="checkbox-group">
+                    <!-- Email Notifications -->
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="emailAlerts" name="email_alerts" checked>
+                        <div class="checkbox-label">
+                            <strong>Email уведомления</strong>
+                            <span>Получать критические алерты на почту</span>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="emailReports" name="email_reports" checked>
+                        <div class="checkbox-label">
+                            <strong>Еженедельные отчёты</strong>
+                            <span>Сводка по системе каждый понедельник</span>
+                        </div>
+                    </div>
+
+                    <!-- SMS Notifications -->
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="smsAlerts" name="sms_alerts">
+                        <div class="checkbox-label">
+                            <strong>SMS уведомления</strong>
+                            <span>Критические алерты по SMS</span>
+                        </div>
+                    </div>
+
+                    <!-- Browser Notifications -->
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="browserNotifs" name="browser_notifications" checked>
+                        <div class="checkbox-label">
+                            <strong>Браузерные уведомления</strong>
+                            <span>Push-уведомления в браузере</span>
+                        </div>
+                    </div>
+
+                    <!-- Telegram Bot -->
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="telegramNotifs" name="telegram_notifications">
+                        <div class="checkbox-label">
+                            <strong>Telegram бот</strong>
+                            <span>Алерты через Telegram (требуется настройка)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button type="submit" class="btn-primary">Сохранить настройки</button>
+                    <button type="button" class="btn-secondary" onclick="resetForm('notificationsForm')">Отменить</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Security Settings -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <div class="settings-card-icon">🔒</div>
+                <div class="settings-card-title">
+                    <h3>Безопасность</h3>
+                    <p>Пароль и доступ к аккаунту</p>
+                </div>
+            </div>
+
+            <form id="securityForm">
+                <!-- Current Password -->
+                <div class="form-group">
+                    <label for="currentPassword">Текущий пароль</label>
+                    <input type="password" id="currentPassword" name="current_password" 
+                           placeholder="Введите текущий пароль">
+                </div>
+
+                <!-- New Password -->
+                <div class="form-group">
+                    <label for="newPassword">Новый пароль</label>
+                    <input type="password" id="newPassword" name="new_password" 
+                           placeholder="Минимум 8 символов">
+                    <small>Используйте буквы, цифры и спецсимволы</small>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="form-group">
+                    <label for="confirmPassword">Подтвердите пароль</label>
+                    <input type="password" id="confirmPassword" name="confirm_password" 
+                           placeholder="Повторите новый пароль">
+                </div>
+
+                <!-- Two-Factor Auth -->
+                <div class="form-group">
+                    <label>Двухфакторная аутентификация</label>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="enable2FA" name="enable_2fa">
+                        <div class="checkbox-label">
+                            <strong>Включить 2FA</strong>
+                            <span>Дополнительная защита при входе (SMS или Google Authenticator)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button type="submit" class="btn-primary">Изменить пароль</button>
+                    <button type="button" class="btn-secondary" onclick="resetForm('securityForm')">Отменить</button>
+                </div>
+
+                <!-- Danger Zone -->
+                <div class="danger-zone">
+                    <h4>⚠️ Опасная зона</h4>
+                    <p>Удаление аккаунта необратимо. Все данные будут утеряны.</p>
+                    <button type="button" class="btn-danger" onclick="confirmDelete()">
+                        Удалить аккаунт
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ===== FORM SUBMISSION HANDLERS =====
+
+// Profile Form
+document.getElementById('profileForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    saveSettings('profile');
+});
+
+// Display Form
+document.getElementById('displayForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Apply theme/mode immediately
+    const theme = document.getElementById('theme').value;
+    const mode = document.getElementById('mode').value;
+    
+    if (theme === 'dark') {
+        document.body.classList.add('dark-theme');
+        localStorage.setItem('theme', 'dark');
+    } else if (theme === 'light') {
+        document.body.classList.remove('dark-theme');
+        localStorage.setItem('theme', 'light');
+    }
+    
+    localStorage.setItem('mode', mode);
+    
+    saveSettings('display');
+});
+
+// Notifications Form
+document.getElementById('notificationsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    saveSettings('notifications');
+});
+
+// Security Form
+document.getElementById('securityForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const newPass = document.getElementById('newPassword').value;
+    const confirmPass = document.getElementById('confirmPassword').value;
+    
+    if (newPass !== confirmPass) {
+        alert('Пароли не совпадают!');
+        return;
+    }
+    
+    if (newPass.length < 8) {
+        alert('Пароль должен быть минимум 8 символов!');
+        return;
+    }
+    
+    saveSettings('security');
+});
+
+// ===== SAVE SETTINGS FUNCTION =====
+function saveSettings(section) {
+    // Mock save (replace with real API call)
+    console.log(`Saving ${section} settings...`);
+    
+    // Show success message
+    const successMsg = document.getElementById('successMessage');
+    successMsg.classList.add('show');
+    
+    setTimeout(() => {
+        successMsg.classList.remove('show');
+    }, 3000);
+    
+    // In production, send data to backend:
+    /*
+    fetch('/api/settings/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessMessage();
+        }
+    });
+    */
+}
+
+// ===== RESET FORM =====
+function resetForm(formId) {
+    document.getElementById(formId).reset();
+}
+
+// ===== AVATAR UPLOAD =====
+document.getElementById('avatarInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('avatarPreview');
+            preview.innerHTML = `<img src="${e.target.result}" alt="Avatar">`;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// ===== DELETE ACCOUNT CONFIRMATION =====
+function confirmDelete() {
+    const confirmed = confirm(
+        '⚠️ ВНИМАНИЕ!\n\n' +
+        'Вы уверены что хотите удалить аккаунт?\n' +
+        'Это действие нельзя отменить!\n\n' +
+        'Все данные будут безвозвратно удалены.'
+    );
+    
+    if (confirmed) {
+        const doubleConfirm = confirm(
+            'Последнее предупреждение!\n\n' +
+            'Нажмите OK для окончательного удаления аккаунта.'
+        );
+        
+        if (doubleConfirm) {
+            console.log('Account deletion requested');
+            // In production: send delete request to backend
+            alert('Функция удаления аккаунта временно недоступна');
+        }
+    }
+}
+
+// ===== LOAD SAVED PREFERENCES =====
+document.addEventListener('DOMContentLoaded', function() {
+    // Load theme preference
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.getElementById('theme').value = savedTheme;
+    
+    // Load mode preference
+    const savedMode = localStorage.getItem('mode') || 'monitoring';
+    document.getElementById('mode').value = savedMode;
+});
+
+// ===== CSRF TOKEN HELPER =====
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}
