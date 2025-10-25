@@ -24,8 +24,11 @@ urlpatterns = [
     # Data & Objects (BEFORE home to avoid conflicts)
     path('', include('data.urls', namespace='data')),
     
-    # Dashboard - New Clean Structure
-    path('dashboard/', include(('home.urls_v2', 'dashboard_v2'))),
+    # Dashboard v2 - Modern Sidebar Interface
+    path('dashboard/v2/', include('dashboard_v2.urls', namespace='dashboard_v2')),
+    
+    # Dashboard - New Clean Structure (legacy)
+    path('dashboard/', include(('home.urls_v2', 'dashboard_v2_old'))),
     
     # Legacy redirects for old URLs
     path('dashboard/v2/', RedirectView.as_view(url='/dashboard/', permanent=True)),

@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     'teleg',
     'home.apps.HomeConfig',
     'superadmin',  # Super admin panel for SaaS
+    'dashboard_v2',  # New modern dashboard
     
     'django.contrib.admin',
     'django.contrib.auth',
