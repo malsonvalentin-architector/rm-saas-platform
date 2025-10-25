@@ -22,9 +22,12 @@ urlpatterns = [
     # Integrations & Controllers
     path('controllers/', views.controllers_page, name='controllers'),
     path('datasources/', views.datasources_page, name='datasources'),
+    path('services/', views.services_page, name='services'),
     
     # Reports
     path('reports/generate/', views.reports_generate_page, name='reports_generate'),
+    path('reports/scheduled/', views.reports_scheduled_page, name='reports_scheduled'),
+    path('reports/library/', views.reports_library_page, name='reports_library'),
     
     # Company Management
     path('users/', views.users_page, name='users'),

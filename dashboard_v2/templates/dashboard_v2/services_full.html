@@ -1,0 +1,236 @@
+{% extends 'dashboard_v2/base_full.html' %}
+{% load static %}
+
+{% block title %}Connected Services{% endblock %}
+
+{% block extra_css %}<style>
+    .service-card h3,
+    .service-card p,
+    .service-card span {
+        letter-spacing: 0.4px !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Connected Services</h1>
+    <p class="page-subtitle">Внешние сервисы и API интеграции</p>
+</div>
+
+<!-- ACTION BAR -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <button class="button-primary" onclick="alert('Add Service feature coming soon!')">+ Connect Service</button>
+    <button class="button-secondary" onclick="alert('Refresh all services')">🔄 Refresh All</button>
+</div>
+
+<!-- SERVICES GRID -->
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+    
+    <!-- WEATHER API -->
+    <div class="card service-card" style="position: relative;">
+        <div style="position: absolute; top: 16px; right: 16px;">
+            <span class="status-badge status-online">Active</span>
+        </div>
+        
+        <div style="padding: 24px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    ☁️
+                </div>
+                <div>
+                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">Weather API</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary);">OpenWeatherMap</p>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Requests Today</span>
+                    <span style="font-size: 13px; font-weight: 600;">2,450</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Rate Limit</span>
+                    <span style="font-size: 13px; font-weight: 600;">5,000/day</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Last Call</span>
+                    <span style="font-size: 13px; font-weight: 600;">2 min ago</span>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 8px;">
+                <button class="button-secondary" style="flex: 1; padding: 8px;" onclick="alert('Configure Weather API')">⚙️ Configure</button>
+                <button class="button-secondary" style="flex: 1; padding: 8px;" onclick="alert('View Weather Data')">📊 View</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- TELEGRAM BOT -->
+    <div class="card service-card" style="position: relative;">
+        <div style="position: absolute; top: 16px; right: 16px;">
+            <span class="status-badge status-online">Active</span>
+        </div>
+        
+        <div style="padding: 24px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #0088CC 0%, #006699 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    💬
+                </div>
+                <div>
+                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">Telegram Bot</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary);">Notifications</p>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Active Chats</span>
+                    <span style="font-size: 13px; font-weight: 600;">12</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Messages Sent</span>
+                    <span style="font-size: 13px; font-weight: 600;">340</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Last Message</span>
+                    <span style="font-size: 13px; font-weight: 600;">5 min ago</span>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 8px;">
+                <button class="button-secondary" style="flex: 1; padding: 8px;" onclick="alert('Configure Telegram Bot')">⚙️ Configure</button>
+                <button class="button-secondary" style="flex: 1; padding: 8px;" onclick="alert('View Messages')">📊 View</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- EMAIL SERVICE -->
+    <div class="card service-card" style="position: relative;">
+        <div style="position: absolute; top: 16px; right: 16px;">
+            <span class="status-badge status-online">Active</span>
+        </div>
+        
+        <div style="padding: 24px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    📧
+                </div>
+                <div>
+                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">Email Service</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary);">SMTP Server</p>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Emails Sent</span>
+                    <span style="font-size: 13px; font-weight: 600;">128</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Queue</span>
+                    <span style="font-size: 13px; font-weight: 600;">3 pending</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Last Sent</span>
+                    <span style="font-size: 13px; font-weight: 600;">10 min ago</span>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 8px;">
+                <button class="button-secondary" style="flex: 1; padding: 8px;" onclick="alert('Configure Email')">⚙️ Configure</button>
+                <button class="button-secondary" style="flex: 1; padding: 8px;" onclick="alert('View Email Logs')">📊 View</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SMS GATEWAY -->
+    <div class="card service-card" style="position: relative;">
+        <div style="position: absolute; top: 16px; right: 16px;">
+            <span class="status-badge status-warning">Limited</span>
+        </div>
+        
+        <div style="padding: 24px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    📱
+                </div>
+                <div>
+                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">SMS Gateway</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary);">Twilio</p>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">SMS Sent</span>
+                    <span style="font-size: 13px; font-weight: 600;">45</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Balance</span>
+                    <span style="font-size: 13px; font-weight: 600; color: var(--warning);">$12.50</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Last SMS</span>
+                    <span style="font-size: 13px; font-weight: 600;">1 hour ago</span>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 8px;">
+                <button class="button-secondary" style="flex: 1; padding: 8px;" onclick="alert('Configure SMS Gateway')">⚙️ Configure</button>
+                <button class="button-secondary" style="flex: 1; padding: 8px;" onclick="alert('View SMS Logs')">📊 View</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CONNECTION LOGS -->
+<div class="card" style="margin-top: 30px;">
+    <div class="card-header" style="padding: 20px; border-bottom: 1px solid var(--border-color);">
+        <h3 style="font-size: 18px; font-weight: 600; letter-spacing: 0.4px;">Service Activity Log</h3>
+    </div>
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Service</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2024-01-15 14:45:20</td>
+                    <td>Weather API</td>
+                    <td>API Call</td>
+                    <td>Fetched weather data for Almaty</td>
+                    <td><span class="status-badge status-online">Success</span></td>
+                </tr>
+                <tr>
+                    <td>2024-01-15 14:42:15</td>
+                    <td>Telegram Bot</td>
+                    <td>Message Sent</td>
+                    <td>Alert notification to admin</td>
+                    <td><span class="status-badge status-online">Delivered</span></td>
+                </tr>
+                <tr>
+                    <td>2024-01-15 14:38:00</td>
+                    <td>Email Service</td>
+                    <td>Email Sent</td>
+                    <td>Daily report to management</td>
+                    <td><span class="status-badge status-online">Sent</span></td>
+                </tr>
+                <tr>
+                    <td>2024-01-15 14:25:10</td>
+                    <td>SMS Gateway</td>
+                    <td>SMS Sent</td>
+                    <td>Critical alert to ops team</td>
+                    <td><span class="status-badge status-online">Delivered</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

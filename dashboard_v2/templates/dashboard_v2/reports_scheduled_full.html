@@ -1,0 +1,172 @@
+{% extends 'dashboard_v2/base_full.html' %}
+{% load static %}
+
+{% block title %}Scheduled Reports{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Scheduled Reports</h1>
+    <p class="page-subtitle">Автоматическая генерация и отправка отчётов</p>
+</div>
+
+<!-- ACTION BAR -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <button class="button-primary" onclick="alert('Create new schedule')">+ New Schedule</button>
+    <div style="display: flex; gap: 12px;">
+        <select class="form-control" style="width: 160px;">
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="paused">Paused</option>
+        </select>
+    </div>
+</div>
+
+<!-- SCHEDULES TABLE -->
+<div class="card">
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Schedule</th>
+                    <th>Recipients</th>
+                    <th>Last Run</th>
+                    <th>Next Run</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="font-weight: 600;">Daily Energy Report</td>
+                    <td>⚡ Energy</td>
+                    <td>Every Day, 08:00</td>
+                    <td>5 recipients</td>
+                    <td>Today, 08:00</td>
+                    <td>Tomorrow, 08:00</td>
+                    <td><span class="status-badge status-online">Active</span></td>
+                    <td>
+                        <button class="action-btn" onclick="alert('Edit schedule')">✏️</button>
+                        <button class="action-btn" onclick="alert('Pause')">⏸️</button>
+                        <button class="action-btn" onclick="alert('Delete')">🗑️</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600;">Weekly Summary</td>
+                    <td>📊 Summary</td>
+                    <td>Every Monday, 09:00</td>
+                    <td>12 recipients</td>
+                    <td>2024-01-08 09:00</td>
+                    <td>2024-01-15 09:00</td>
+                    <td><span class="status-badge status-online">Active</span></td>
+                    <td>
+                        <button class="action-btn" onclick="alert('Edit schedule')">✏️</button>
+                        <button class="action-btn" onclick="alert('Pause')">⏸️</button>
+                        <button class="action-btn" onclick="alert('Delete')">🗑️</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600;">Monthly Equipment Report</td>
+                    <td>⚙️ Equipment</td>
+                    <td>1st of month, 10:00</td>
+                    <td>8 recipients</td>
+                    <td>2024-01-01 10:00</td>
+                    <td>2024-02-01 10:00</td>
+                    <td><span class="status-badge status-online">Active</span></td>
+                    <td>
+                        <button class="action-btn" onclick="alert('Edit schedule')">✏️</button>
+                        <button class="action-btn" onclick="alert('Pause')">⏸️</button>
+                        <button class="action-btn" onclick="alert('Delete')">🗑️</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600;">Hourly Temperature Check</td>
+                    <td>🌡️ Temperature</td>
+                    <td>Every hour</td>
+                    <td>3 recipients</td>
+                    <td>14:00</td>
+                    <td>15:00</td>
+                    <td><span class="status-badge status-warning">Paused</span></td>
+                    <td>
+                        <button class="action-btn" onclick="alert('Edit schedule')">✏️</button>
+                        <button class="action-btn" onclick="alert('Resume')">▶️</button>
+                        <button class="action-btn" onclick="alert('Delete')">🗑️</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600;">Alert Digest</td>
+                    <td>🚨 Alerts</td>
+                    <td>Every 6 hours</td>
+                    <td>6 recipients</td>
+                    <td>12:00</td>
+                    <td>18:00</td>
+                    <td><span class="status-badge status-online">Active</span></td>
+                    <td>
+                        <button class="action-btn" onclick="alert('Edit schedule')">✏️</button>
+                        <button class="action-btn" onclick="alert('Pause')">⏸️</button>
+                        <button class="action-btn" onclick="alert('Delete')">🗑️</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- RECENT EXECUTIONS -->
+<div class="page-header" style="margin-top: 40px;">
+    <h2 style="font-size: 20px; font-weight: 600;">Recent Executions</h2>
+</div>
+
+<div class="card">
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Execution Time</th>
+                    <th>Schedule Name</th>
+                    <th>Duration</th>
+                    <th>Recipients</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2024-01-15 08:00:15</td>
+                    <td>Daily Energy Report</td>
+                    <td>12s</td>
+                    <td>5 emails sent</td>
+                    <td><span class="status-badge status-online">Success</span></td>
+                    <td>
+                        <button class="action-btn" onclick="alert('View report')">📄</button>
+                        <button class="action-btn" onclick="alert('Download')">📥</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2024-01-15 06:00:08</td>
+                    <td>Alert Digest</td>
+                    <td>8s</td>
+                    <td>6 emails sent</td>
+                    <td><span class="status-badge status-online">Success</span></td>
+                    <td>
+                        <button class="action-btn" onclick="alert('View report')">📄</button>
+                        <button class="action-btn" onclick="alert('Download')">📥</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2024-01-14 08:00:10</td>
+                    <td>Daily Energy Report</td>
+                    <td>15s</td>
+                    <td>5 emails sent</td>
+                    <td><span class="status-badge status-online">Success</span></td>
+                    <td>
+                        <button class="action-btn" onclick="alert('View report')">📄</button>
+                        <button class="action-btn" onclick="alert('Download')">📥</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

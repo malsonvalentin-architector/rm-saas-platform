@@ -201,6 +201,36 @@ def users_page(request):
 
 
 @login_required
+def services_page(request):
+    """Connected Services page"""
+    context = {
+        'page_title': 'Connected Services',
+        'active_page': 'integrations'
+    }
+    return render(request, 'dashboard_v2/services_full.html', context)
+
+
+@login_required
+def reports_scheduled_page(request):
+    """Scheduled Reports page"""
+    context = {
+        'page_title': 'Scheduled Reports',
+        'active_page': 'reports'
+    }
+    return render(request, 'dashboard_v2/reports_scheduled_full.html', context)
+
+
+@login_required
+def reports_library_page(request):
+    """Report Library page"""
+    context = {
+        'page_title': 'Report Library',
+        'active_page': 'reports'
+    }
+    return render(request, 'dashboard_v2/reports_library_full.html', context)
+
+
+@login_required
 def placeholder_page(request, page_name):
     """Generic placeholder page for pages in development"""
     
