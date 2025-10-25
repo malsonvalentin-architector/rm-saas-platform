@@ -13,6 +13,7 @@ urlpatterns = [
     # Main dashboard v2
     path('', views_v2.dashboard_v2, name='dashboard_v2'),
     path('v2/', views_v2.dashboard_v2, name='main'),
+    path('standalone/', views_v2.dashboard_v2_standalone, name='dashboard_v2_standalone'),
     
     # Navigation pages
     path('buildings/', views_v2.buildings_list_v2, name='dashboard_v2_buildings'),

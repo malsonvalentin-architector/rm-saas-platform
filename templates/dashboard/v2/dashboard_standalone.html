@@ -1,0 +1,549 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard V2 - ProMonitor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* === DARK THEME EMBEDDED === */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1d24;
+            color: #e4e6eb;
+            line-height: 1.6;
+        }
+        
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* === SIDEBAR === */
+        .dashboard-sidebar {
+            width: 260px;
+            background: #1a1d29;
+            border-right: 1px solid #3d4250;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #3d4250;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .sidebar-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #2196f3 0%, #00bcd4 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: white;
+        }
+        
+        .sidebar-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #2196f3 0%, #00bcd4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .sidebar-nav {
+            flex: 1;
+            padding: 1rem 0;
+        }
+        
+        .sidebar-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .sidebar-section-title {
+            padding: 0.5rem 1.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #8a8f9e;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+        }
+        
+        .sidebar-menu-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: #b8bcc8;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-menu-link:hover {
+            background: #252833;
+            color: #ffffff;
+        }
+        
+        .sidebar-menu-link.active {
+            background: rgba(33, 150, 243, 0.1);
+            color: #2196f3;
+            border-left: 3px solid #2196f3;
+        }
+        
+        .sidebar-menu-icon {
+            width: 20px;
+            margin-right: 12px;
+        }
+        
+        /* === MAIN CONTENT === */
+        .dashboard-main {
+            flex: 1;
+            margin-left: 260px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .dashboard-header {
+            background: #252833;
+            border-bottom: 1px solid #3d4250;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .dashboard-content {
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        
+        /* === WIDGETS === */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .widget {
+            background: #2d3139;
+            border: 1px solid #3d4250;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stat-widget {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .stat-icon.primary {
+            background: rgba(33, 150, 243, 0.15);
+            color: #2196f3;
+        }
+        
+        .stat-icon.success {
+            background: rgba(76, 175, 80, 0.15);
+            color: #4caf50;
+        }
+        
+        .stat-icon.warning {
+            background: rgba(255, 152, 0, 0.15);
+            color: #ff9800;
+        }
+        
+        .stat-icon.danger {
+            background: rgba(244, 67, 54, 0.15);
+            color: #f44336;
+        }
+        
+        .stat-content {
+            flex: 1;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: #8a8f9e;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-change {
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .stat-change.positive {
+            color: #4caf50;
+        }
+        
+        .stat-change.negative {
+            color: #f44336;
+        }
+        
+        /* === WIDGET HEADER === */
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .widget-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+        
+        .btn-secondary {
+            background: #3d4250;
+            color: #ffffff;
+        }
+        
+        .btn-secondary:hover {
+            background: #4a4f5e;
+        }
+        
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+        }
+        
+        /* === ALERTS === */
+        .alert-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .alert-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border-left: 3px solid;
+        }
+        
+        .alert-item.critical {
+            border-color: #f44336;
+        }
+        
+        .alert-item.warning {
+            border-color: #ff9800;
+        }
+        
+        .alert-item.info {
+            border-color: #2196f3;
+        }
+        
+        .alert-icon {
+            font-size: 1.5rem;
+        }
+        
+        .alert-item.critical .alert-icon {
+            color: #f44336;
+        }
+        
+        .alert-item.warning .alert-icon {
+            color: #ff9800;
+        }
+        
+        .alert-item.info .alert-icon {
+            color: #2196f3;
+        }
+        
+        .alert-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .alert-message {
+            font-size: 0.875rem;
+            color: #b8bcc8;
+            margin-bottom: 0.5rem;
+        }
+        
+        .alert-time {
+            font-size: 0.75rem;
+            color: #8a8f9e;
+        }
+        
+        /* === SYSTEM HEALTH === */
+        .health-indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 1rem;
+        }
+        
+        .health-ring {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        
+        .health-ring-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .health-ring-bg {
+            fill: none;
+            stroke: #3d4250;
+            stroke-width: 8;
+        }
+        
+        .health-ring-progress {
+            fill: none;
+            stroke: #4caf50;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        
+        .health-label {
+            font-size: 0.875rem;
+            color: #8a8f9e;
+            margin-bottom: 0.5rem;
+        }
+        
+        .health-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #4caf50;
+            margin-bottom: 0.25rem;
+        }
+        
+        .health-description {
+            font-size: 0.75rem;
+            color: #b8bcc8;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">PM</div>
+                <div class="sidebar-title">ProMonitor</div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Main</div>
+                    <ul class="sidebar-menu">
+                        <li><a href="/dashboard/v2/" class="sidebar-menu-link active">
+                            <span class="sidebar-menu-icon"><i class="fas fa-home"></i></span>
+                            <span>Dashboard</span>
+                        </a></li>
+                        <li><a href="/dashboard/v2/buildings/" class="sidebar-menu-link">
+                            <span class="sidebar-menu-icon"><i class="fas fa-building"></i></span>
+                            <span>Buildings</span>
+                        </a></li>
+                        <li><a href="/dashboard/v2/sensors/" class="sidebar-menu-link">
+                            <span class="sidebar-menu-icon"><i class="fas fa-thermometer-half"></i></span>
+                            <span>Sensors</span>
+                        </a></li>
+                        <li><a href="/dashboard/v2/alerts/" class="sidebar-menu-link">
+                            <span class="sidebar-menu-icon"><i class="fas fa-bell"></i></span>
+                            <span>Alerts</span>
+                        </a></li>
+                    </ul>
+                </div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Analytics</div>
+                    <ul class="sidebar-menu">
+                        <li><a href="/dashboard/v2/reports/" class="sidebar-menu-link">
+                            <span class="sidebar-menu-icon"><i class="fas fa-chart-line"></i></span>
+                            <span>Reports</span>
+                        </a></li>
+                        <li><a href="/dashboard/v2/analytics/" class="sidebar-menu-link">
+                            <span class="sidebar-menu-icon"><i class="fas fa-chart-pie"></i></span>
+                            <span>Analytics</span>
+                        </a></li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <header class="dashboard-header">
+                <h1 class="header-title">Dashboard V2 - Standalone</h1>
+            </header>
+            
+            <div class="dashboard-content">
+                <!-- Stats -->
+                <div class="dashboard-grid">
+                    <div class="widget">
+                        <div class="stat-widget">
+                            <div class="stat-icon primary">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Total Buildings</div>
+                                <div class="stat-value">{{ buildings_count|default:10 }}</div>
+                                <div class="stat-change positive">
+                                    <i class="fas fa-arrow-up"></i> Active
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="widget">
+                        <div class="stat-widget">
+                            <div class="stat-icon success">
+                                <i class="fas fa-thermometer-half"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Active Sensors</div>
+                                <div class="stat-value">{{ sensors_count|default:380 }}</div>
+                                <div class="stat-change positive">
+                                    <i class="fas fa-check"></i> Online
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="widget">
+                        <div class="stat-widget">
+                            <div class="stat-icon warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Active Alerts</div>
+                                <div class="stat-value">{{ alerts_count|default:2 }}</div>
+                                <div class="stat-change negative">
+                                    <i class="fas fa-bell"></i> Requires attention
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="widget">
+                        <div class="stat-widget">
+                            <div class="stat-icon danger">
+                                <i class="fas fa-fire"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Critical Issues</div>
+                                <div class="stat-value">0</div>
+                                <div class="stat-change positive">
+                                    <i class="fas fa-check"></i> All resolved
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Alerts & Health -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+                    <div class="widget">
+                        <div class="widget-header">
+                            <h3 class="widget-title">Recent Alerts</h3>
+                            <a href="/dashboard/v2/alerts/" class="btn btn-secondary btn-sm">View All</a>
+                        </div>
+                        <div class="alert-list">
+                            <div class="alert-item critical">
+                                <div class="alert-icon">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <div class="alert-content">
+                                    <div class="alert-title">Temperature Critical</div>
+                                    <div class="alert-message">Building 3: Temperature exceeded threshold</div>
+                                    <div class="alert-time">5 minutes ago</div>
+                                </div>
+                            </div>
+                            <div class="alert-item warning">
+                                <div class="alert-icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="alert-content">
+                                    <div class="alert-title">Humidity Warning</div>
+                                    <div class="alert-message">Building 7: Humidity levels high (72%)</div>
+                                    <div class="alert-time">23 minutes ago</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="widget">
+                        <div class="widget-header">
+                            <h3 class="widget-title">System Health</h3>
+                        </div>
+                        <div class="health-indicator">
+                            <div class="health-ring">
+                                <svg width="120" height="120">
+                                    <circle class="health-ring-bg" cx="60" cy="60" r="54"></circle>
+                                    <circle class="health-ring-progress" cx="60" cy="60" r="54"
+                                        stroke-dasharray="339" stroke-dashoffset="34"></circle>
+                                </svg>
+                                <div class="health-ring-text">98%</div>
+                            </div>
+                            <div class="health-info">
+                                <div class="health-label">Overall System Health</div>
+                                <div class="health-value">Excellent</div>
+                                <div class="health-description">All systems operational</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

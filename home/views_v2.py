@@ -20,6 +20,19 @@ from .utils import get_building_status, calculate_sensor_health
 
 
 @login_required
+def dashboard_v2_standalone(request):
+    """Standalone Dashboard V2 with embedded styles"""
+    from django.shortcuts import render
+    from data.models import Building, SensorReal, Alerts
+    
+    context = {
+        'buildings_count': Building.objects.count(),
+        'sensors_count': SensorReal.objects.count(),
+        'alerts_count': Alerts.objects.filter(is_active=True).count(),
+    }
+    
+    return render(request, 'dashboard/v2/dashboard_standalone.html', context)
+
 def dashboard_v2(request):
     """
     Main dashboard v2 with honeycomb building visualization
