@@ -99,9 +99,9 @@
         .logo {
             width: 180px;
             height: auto;
-            /* Remove white/gray background from PNG */
-            mix-blend-mode: multiply;
-            filter: brightness(1.2) contrast(1.1);
+            /* Transparent background fix */
+            background: transparent !important;
+            opacity: 0.9;
         }
         
         .logo-text {
@@ -540,6 +540,10 @@
             transform: translate(-50%, -50%);
             text-align: center;
             pointer-events: none;
+            width: 85%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
         .hex-icon {
@@ -585,7 +589,10 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo-container">
-                    <img src="https://page.gensparksite.com/v1/base64_upload/594bf021bb3ef4b76138b65e1e50e4d8" alt="ProMonitor.kz" class="logo">
+                    <!-- ProMonitor Logo - using text fallback if image not visible -->
+                    <div style="font-size: 1.5rem; font-weight: 700; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -0.5px;">
+                        ProMonitor.kz
+                    </div>
                 </div>
             </div>
             
@@ -636,6 +643,18 @@
                         <li><a href="/dashboard/v2/users/" class="nav-link">
                             <i class="fas fa-users nav-icon"></i>
                             <span>Users</span>
+                        </a></li>
+                    </ul>
+                </div>
+                
+                <!-- Emulator Link -->
+                <div class="nav-section">
+                    <div class="nav-section-title">TOOLS</div>
+                    <ul class="nav-menu">
+                        <li><a href="https://emulator.promonitor.kz/" target="_blank" class="nav-link" style="color: var(--primary);">
+                            <i class="fas fa-rocket nav-icon"></i>
+                            <span>Modbus Emulator</span>
+                            <i class="fas fa-external-link-alt" style="margin-left: auto; font-size: 0.75rem; opacity: 0.7;"></i>
                         </a></li>
                     </ul>
                 </div>
